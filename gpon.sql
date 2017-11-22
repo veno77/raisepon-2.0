@@ -1,0 +1,385 @@
+-- MySQL dump 10.13  Distrib 5.6.36, for FreeBSD10.3 (amd64)
+--
+-- Host: localhost    Database: gpon
+-- ------------------------------------------------------
+-- Server version	5.6.25
+
+/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
+/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
+/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
+/*!40101 SET NAMES utf8 */;
+/*!40103 SET @OLD_TIME_ZONE=@@TIME_ZONE */;
+/*!40103 SET TIME_ZONE='+00:00' */;
+/*!40014 SET @OLD_UNIQUE_CHECKS=@@UNIQUE_CHECKS, UNIQUE_CHECKS=0 */;
+/*!40014 SET @OLD_FOREIGN_KEY_CHECKS=@@FOREIGN_KEY_CHECKS, FOREIGN_KEY_CHECKS=0 */;
+/*!40101 SET @OLD_SQL_MODE=@@SQL_MODE, SQL_MODE='NO_AUTO_VALUE_ON_ZERO' */;
+/*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
+
+--
+-- Table structure for table `ACCOUNTS`
+--
+
+DROP TABLE IF EXISTS `ACCOUNTS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ACCOUNTS` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `USERNAME` varchar(20) NOT NULL,
+  `PASSWORD` char(40) NOT NULL,
+  `TYPE` int(11) NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `USERNAME` (`USERNAME`)
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ACCOUNTS`
+--
+
+LOCK TABLES `ACCOUNTS` WRITE;
+/*!40000 ALTER TABLE `ACCOUNTS` DISABLE KEYS */;
+INSERT INTO `ACCOUNTS` VALUES (1,'admin','f865b53623b121fd34ee5426c792e5c33af8c227',9);
+/*!40000 ALTER TABLE `ACCOUNTS` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `CARDS`
+--
+
+DROP TABLE IF EXISTS `CARDS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CARDS` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `OLT_ID` int(11) NOT NULL,
+  `SLOT` smallint(6) NOT NULL,
+  `CARDS_MODEL_ID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `CARDS`
+--
+
+LOCK TABLES `CARDS` WRITE;
+/*!40000 ALTER TABLE `CARDS` DISABLE KEYS */;
+/*!40000 ALTER TABLE `CARDS` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `CARDS_MODEL`
+--
+
+DROP TABLE IF EXISTS `CARDS_MODEL`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CARDS_MODEL` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(50) NOT NULL,
+  `PON_TYPE` enum('EPON','GPON') NOT NULL,
+  `PORTS` smallint(6) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `CARDS_MODEL`
+--
+
+LOCK TABLES `CARDS_MODEL` WRITE;
+/*!40000 ALTER TABLE `CARDS_MODEL` DISABLE KEYS */;
+INSERT INTO `CARDS_MODEL` VALUES (1,'EP4B','EPON',4),(2,'GP4A','GPON',4),(3,'EP16','EPON',16),(4,'GP16','GPON',16),(5,'GP8','GPON',8);
+/*!40000 ALTER TABLE `CARDS_MODEL` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `CUSTOMERS`
+--
+
+DROP TABLE IF EXISTS `CUSTOMERS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `CUSTOMERS` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `ADDRESS` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `EGN` bigint(10) unsigned NOT NULL,
+  `OLT` int(11) NOT NULL,
+  `PON_PORT` int(11) NOT NULL,
+  `PON_ONU_ID` tinyint(4) NOT NULL,
+  `SERVICE` tinyint(4) NOT NULL,
+  `SN` varchar(255) CHARACTER SET utf8 NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `OLT` (`OLT`),
+  KEY `PON_PORT` (`PON_PORT`)
+) ENGINE=InnoDB AUTO_INCREMENT=194 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `CUSTOMERS`
+--
+
+LOCK TABLES `CUSTOMERS` WRITE;
+/*!40000 ALTER TABLE `CUSTOMERS` DISABLE KEYS */;
+INSERT INTO `CUSTOMERS` VALUES (189,'ISCOM HT803(T)','',0,10,41,1,3,'000E5E7CF9F2'),(191,'ISCOMHT803-W(T)','',0,10,41,4,8,'000E5E9D1985'),(192,'HT803-U(T)','',0,10,41,5,8,'000E5E8376A5'),(193,'veno','',0,10,41,2,3,'000E5E7CFE02');
+/*!40000 ALTER TABLE `CUSTOMERS` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `HISTORY`
+--
+
+DROP TABLE IF EXISTS `HISTORY`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `HISTORY` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `CUSTOMERS_ID` int(11) NOT NULL,
+  `DATE` datetime NOT NULL,
+  `ACTION` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `SN` varchar(255) NOT NULL,
+  `USER_ID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `CUSTOMERS_ID` (`CUSTOMERS_ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=366 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `HISTORY`
+--
+
+LOCK TABLES `HISTORY` WRITE;
+/*!40000 ALTER TABLE `HISTORY` DISABLE KEYS */;
+INSERT INTO `HISTORY` VALUES (1,96,'2017-01-26 16:49:09','Add New Customer','52434d47185800ef',0),(2,97,'2017-01-26 16:51:16','Add New Customer','52434d47185800ef',0),(3,98,'2017-01-26 16:52:06','Add New Customer','52434d47185800ef',0),(4,99,'2017-01-27 10:59:50','Add New Customer','52434d47185800ef',0),(5,99,'2017-01-27 11:00:42','Delete Customer Veno, , 0','52434d47185800ef',0),(6,100,'2017-01-27 11:01:05','Add New Customer','52434d47185800ef',0),(7,100,'2017-01-27 11:16:34','Edit Customer','52434d47185800ef',0),(8,100,'2017-01-27 11:18:06','Delete Customer Veno2, , 0','52434d47185800ef',0),(9,101,'2017-01-27 11:18:17','Add New Customer','52434d47185800ef',0),(10,101,'2017-01-27 11:20:39','Delete Customer Veno, , 0','52434d47185800ef',0),(11,102,'2017-01-27 11:20:56','Add New Customer','52434d47185800ef',0),(12,102,'2017-01-27 11:27:57','Edit Customer','52434d47185800ef',0),(13,102,'2017-01-27 12:05:11','Edit Customer','52434d47185800ef',0),(14,102,'2017-01-27 15:19:57','Edit Customer','52434d47185800ef',0),(15,102,'2017-01-30 13:42:58','Edit Customer','52434d47185800ef',0),(16,102,'2017-01-30 17:16:09','Edit Customer','52434d47185800ef',0),(17,103,'2017-01-31 13:51:44','Add New Customer','52434d47185800ef',0),(18,103,'2017-01-31 13:53:26','Edit Customer','52434d47185800ef',0),(19,103,'2017-01-31 13:58:06','Edit Customer','52434d47185800ef',0),(20,103,'2017-01-31 14:17:14','Edit Customer','52434d47185800ef',0),(21,103,'2017-02-01 14:23:07','Edit Customer','52434d47185800ef',0),(22,103,'2017-02-01 14:53:31','Edit Customer','52434d47185800ef',0),(23,103,'2017-02-01 14:56:14','Edit Customer','52434d47185800ef',0),(24,103,'2017-02-01 15:08:58','Edit Customer','52434d47185800ef',0),(25,103,'2017-02-01 15:16:47','Edit Customer','52434d47185800ef',0),(26,103,'2017-02-01 15:22:19','Edit Customer','52434d47185800ef',0),(27,103,'2017-02-01 15:27:27','Edit Customer','52434d47185800ef',0),(28,103,'2017-02-01 15:32:22','Edit Customer','52434d47185800ef',0),(29,103,'2017-02-01 15:36:01','Edit Customer','52434d47185800ef',0),(30,103,'2017-02-01 15:39:03','Edit Customer','52434d47185800ef',0),(31,103,'2017-02-13 13:33:22','Edit Customer','52434d47185800ef',0),(32,103,'2017-02-23 16:14:43','Delete Customer Veno, , 0','52434d47185800ef',0),(33,104,'2017-02-23 16:15:06','Add New Customer','RCMG185800ef',0),(34,104,'2017-02-23 16:15:59','Edit Customer','rcmg185800ef',0),(35,104,'2017-02-23 16:16:11','Delete Customer Veno, , 0','rcmg185800ef',0),(36,105,'2017-02-23 16:16:39','Add New Customer','52434d47185800ef',0),(37,105,'2017-02-27 14:30:37','Edit Customer','52434d47185800ef',0),(38,105,'2017-02-27 14:32:11','Edit Customer','52434d47185800ef',0),(39,105,'2017-02-27 14:34:15','Edit Customer','52434d47185800ef',0),(40,105,'2017-02-27 14:37:51','Edit Customer','52434d47185800ef',0),(41,105,'2017-02-27 14:41:09','Edit Customer','52434d47185800ef',0),(42,105,'2017-02-27 14:41:54','Edit Customer','52434d47185800ef',0),(43,105,'2017-02-27 14:43:58','Edit Customer','52434d47185800ef',0),(44,105,'2017-02-27 14:45:21','Edit Customer','52434d47185800ef',0),(45,105,'2017-02-27 14:47:49','Edit Customer','52434d47185800ef',0),(46,105,'2017-02-27 14:50:36','Edit Customer','52434d47185800ef',0),(47,105,'2017-02-27 14:50:54','Edit Customer','52434d47185800ef',0),(48,105,'2017-02-27 14:52:49','Edit Customer','52434d47185800ef',0),(49,105,'2017-02-27 14:53:15','Edit Customer','52434d47185800ef',0),(50,105,'2017-02-27 14:54:34','Edit Customer','52434d47185800ef',0),(51,105,'2017-02-27 14:55:41','Edit Customer','52434d47185800ef',0),(52,105,'2017-02-27 15:00:42','Edit Customer','52434d47185800ef',0),(53,105,'2017-02-27 15:07:16','Edit Customer','52434d47185800ef',0),(54,105,'2017-02-27 15:07:45','Edit Customer','52434d47185800ef',0),(55,105,'2017-02-27 15:09:43','Edit Customer','52434d47185800ef',0),(56,105,'2017-02-27 15:11:49','Edit Customer','52434d47185800ef',0),(57,105,'2017-02-27 15:12:20','Edit Customer','52434d47185800ef',0),(58,105,'2017-02-27 15:13:02','Edit Customer','52434d47185800ef',0),(59,105,'2017-02-27 15:15:30','Edit Customer','52434d47185800ef',0),(60,105,'2017-02-27 15:15:52','Edit Customer','52434d47185800ef',0),(61,105,'2017-02-27 15:16:07','Edit Customer','52434d47185800ef',0),(62,105,'2017-02-27 15:16:21','Edit Customer','52434d47185800ef',0),(63,105,'2017-02-27 15:16:47','Edit Customer','52434d47185800ef',0),(64,105,'2017-02-27 15:17:08','Edit Customer','52434d47185800ef',0),(65,105,'2017-02-27 15:19:32','Edit Customer','52434d47185800ef',0),(66,106,'2017-02-27 15:20:14','Add New Customer','01020304050607',0),(67,107,'2017-02-27 15:20:58','Add New Customer','52434d47185800ee',0),(68,106,'2017-02-27 15:21:08','Delete Customer Joko Rosich, , 0','01020304050607',0),(69,107,'2017-02-27 15:24:01','Edit Customer','52434d47185800ee',0),(70,107,'2017-02-27 15:24:25','Edit Customer','52434d47185800ee',0),(71,107,'2017-02-27 15:24:41','Edit Customer','52434d47185800ee',0),(72,107,'2017-02-27 15:24:56','Edit Customer','52434d47185800ee',0),(73,107,'2017-02-27 15:25:16','Edit Customer','52434d47185800ee',0),(74,105,'2017-02-27 15:26:57','Edit Customer','52434d47185800ef',0),(75,105,'2017-02-27 15:27:56','Edit Customer','52434d47185800ef',0),(76,108,'2017-02-27 15:28:49','Add New Customer','52434d47185800ea',0),(77,108,'2017-02-27 15:30:26','Edit Customer','52434d47185800ea',0),(78,108,'2017-02-27 15:30:43','Edit Customer','52434d47185800ea',0),(79,105,'2017-02-27 15:30:57','Edit Customer','52434d47185800ef',0),(80,105,'2017-02-27 15:31:11','Delete Customer Veno, , 0','52434d47185800ef',0),(81,109,'2017-02-27 15:31:19','Add New Customer','52434d47185800ef',0),(82,109,'2017-02-27 15:31:37','Edit Customer','52434d47185800ef',0),(83,109,'2017-02-27 15:31:47','Edit Customer','52434d47185800ef',0),(84,109,'2017-02-27 15:32:02','Edit Customer','52434d47185800ef',0),(85,109,'2017-02-27 15:32:20','Edit Customer','52434d47185800ef',0),(86,109,'2017-02-27 15:32:28','Edit Customer','52434d47185800ef',0),(87,109,'2017-02-27 15:32:39','Edit Customer','52434d47185800ef',0),(88,109,'2017-02-27 15:34:39','Edit Customer','52434d47185800ef',0),(89,109,'2017-02-27 15:34:50','Edit Customer','52434d47185800ef',0),(90,109,'2017-02-27 15:35:00','Edit Customer','52434d47185800ef',0),(91,109,'2017-02-27 15:35:11','Edit Customer','52434d47185800ef',0),(92,109,'2017-02-27 15:36:10','Delete Customer Veno1 Boza, , 0','52434d47185800ef',0),(93,110,'2017-02-27 15:36:18','Add New Customer','52434d47185800ef',0),(94,110,'2017-02-27 15:36:37','Delete Customer Veno, , 0','52434d47185800ef',0),(95,111,'2017-02-27 15:38:55','Add New Customer','52434d47185800ef',0),(96,111,'2017-02-27 15:42:44','Edit Customer','52434d47185800ef',0),(97,111,'2017-02-27 15:43:10','Edit Customer','52434d47185800ef',0),(98,111,'2017-02-27 15:43:29','Edit Customer','52434d47185800ef',0),(99,111,'2017-02-27 15:43:46','Edit Customer','52434d47185800ef',0),(100,111,'2017-02-27 16:02:51','Edit Customer','52434d47185800ef',0),(101,111,'2017-02-27 16:03:38','Edit Customer','52434d47185800ef',0),(102,111,'2017-02-27 16:03:51','Edit Customer','52434d47185800ef',0),(103,112,'2017-02-27 16:06:55','Delete Customer Choko Rosich, , 0','123123123',0),(104,113,'2017-02-27 16:17:34','Delete Customer Choko Boko, , 0','11111111111111',0),(105,114,'2017-02-27 16:17:53','Delete Customer Bozklo, , 0','11111111111111',0),(106,115,'2017-02-27 16:18:25','Delete Customer Bozko, , 0','321321321321',0),(107,116,'2017-02-27 16:24:53','Delete Customer vvvvvvvv, , 0','32132132112',0),(108,117,'2017-02-27 16:25:17','Delete Customer fasdfvasdf, , 0','fad1234123',0),(109,117,'2017-02-27 16:26:21','Delete Customer fasdfvasdf, , 0','fad1234123',0),(110,118,'2017-02-27 16:27:13','Delete Customer Beeeeenno, , 0','fasdfasdfasdfa',0),(111,119,'2017-02-27 16:37:10','Delete Customer Bozko, , 0','321123321123',0),(112,120,'2017-02-27 16:38:58','Delete Customer Veno, , 0','123',0),(113,121,'2017-02-27 16:39:50','Delete Customer Vennno, , 0','321123321',0),(114,122,'2017-02-27 16:43:24','Delete Customer Bozzza, , 0','32112321',0),(115,124,'2017-02-27 16:45:23','Delete Customer 1123123123, , 0','12312312222',0),(116,123,'2017-02-27 16:46:48','Delete Customer 1111111111, , 0','1111111111111',0),(117,126,'2017-02-27 16:49:29','Delete Customer 3333333333, , 0','33333333333',0),(118,127,'2017-02-27 16:50:16','Delete Customer 22222222222, , 0','22222222222',0),(119,125,'2017-02-27 16:50:32','Delete Customer 12312314412, , 0','1231231222',0),(120,107,'2017-03-01 11:03:42','Delete Customer Joro Momchev, , 0','52434d47185800ee',0),(121,108,'2017-03-01 11:12:51','Delete Customer Nik, , 0','52434d47185800ea',0),(122,111,'2017-03-01 11:12:58','Delete Customer Veno Boza, , 0','52434d47185800ef',0),(123,112,'2017-03-01 11:19:35','Add New Customer','52434D4718480065',0),(124,112,'2017-03-01 11:27:32','Edit Customer','52434D4718480065',0),(125,112,'2017-03-01 11:31:37','Edit Customer','52434D4718480065',0),(126,112,'2017-03-01 11:31:51','Edit Customer','52434D4718480065',0),(127,112,'2017-03-01 11:32:09','Edit Customer','52434D4718480065',0),(128,112,'2017-03-01 11:32:21','Edit Customer','52434D4718480065',0),(129,112,'2017-03-01 11:32:34','Edit Customer','52434D4718480065',0),(130,112,'2017-03-01 11:35:59','Edit Customer','52434D4718480065',0),(131,112,'2017-03-01 11:38:56','Edit Customer','52434D4718480065',0),(132,112,'2017-03-01 11:42:32','Edit Customer','52434D4718480065',0),(133,112,'2017-03-01 11:43:06','Edit Customer','52434D4718480065',0),(134,112,'2017-03-01 11:43:21','Edit Customer','52434D4718480065',0),(135,112,'2017-03-01 11:44:53','Edit Customer','52434D4718480065',0),(136,112,'2017-03-01 11:45:21','Edit Customer','52434D4718480065',0),(137,112,'2017-03-01 11:46:00','Edit Customer','52434D4718480065',0),(138,112,'2017-03-01 11:59:22','Edit Customer','52434D4718480065',0),(139,112,'2017-03-01 11:59:41','Edit Customer','52434D4718480065',0),(140,112,'2017-03-01 11:59:52','Edit Customer','52434D4718480065',0),(141,112,'2017-03-01 12:01:17','Edit Customer','52434D4718480065',0),(142,112,'2017-03-01 12:05:05','Edit Customer','52434D4718480065',0),(143,112,'2017-03-01 12:05:56','Edit Customer','52434D4718480065',0),(144,112,'2017-03-01 12:07:41','Delete Customer Osvobojdenie Trakiya, , 0','52434D4718480065',0),(145,113,'2017-03-01 12:13:24','Add New Customer','52434D4718480065',0),(146,113,'2017-03-01 12:13:57','Delete Customer Osvobojdenie-Trakiya, , 0','52434D4718480065',0),(147,115,'2017-03-01 12:19:04','Add New Customer','52434D4718480065',0),(148,116,'2017-03-01 12:20:17','Add New Customer','52434D471858007F',0),(149,117,'2017-03-01 12:20:38','Add New Customer','52434D4718580081',0),(150,118,'2017-03-01 12:21:01','Add New Customer','52434D47185800BE',0),(151,119,'2017-03-01 12:21:24','Add New Customer','52434D47185800F9',0),(152,120,'2017-03-01 12:21:45','Add New Customer','52434D471858006F',0),(153,121,'2017-03-01 12:22:28','Add New Customer','52434D4718580073',0),(154,122,'2017-03-01 12:25:17','Add New Customer','52434D471858007B',0),(155,123,'2017-03-01 12:46:22','Add New Customer','52434D471858008C',0),(156,124,'2017-03-01 12:46:41','Add New Customer','52434D4718580083',0),(157,125,'2017-03-01 12:46:56','Add New Customer','52434D47185800EC',0),(158,126,'2017-03-01 12:47:28','Add New Customer','52434D47185800B3',0),(159,127,'2017-03-01 12:50:38','Add New Customer','52434D47185800CD',0),(160,128,'2017-03-01 12:50:58','Add New Customer','52434D47185800D9',0),(161,129,'2017-03-01 12:51:17','Add New Customer','52434D471858009A',0),(162,130,'2017-03-01 12:51:35','Add New Customer','52434D47185800F6',0),(163,131,'2017-03-01 12:51:59','Add New Customer','52434D47185800C0',0),(164,132,'2017-03-01 12:52:21','Add New Customer','52434D47185800B6',0),(165,133,'2017-03-01 12:52:38','Add New Customer','52434D47185800C3',0),(166,115,'2017-03-02 10:44:48','Edit Customer','52434D47185800ef',0),(167,115,'2017-03-02 10:45:23','Edit Customer','52434D47185800EF',0),(168,115,'2017-03-02 10:46:11','Delete Customer ht803g, , 0','52434D47185800EF',0),(169,134,'2017-03-02 10:46:24','Add New Customer','52434D47185800EF',0),(170,116,'2017-03-02 10:46:31','Delete Customer Orlovska-Preslav, , 0','52434D471858007F',0),(171,117,'2017-03-02 10:46:46','Delete Customer PGZ, , 0','52434D4718580081',0),(172,118,'2017-03-02 10:46:49','Delete Customer Rila-9, , 0','52434D47185800BE',0),(173,119,'2017-03-02 10:46:54','Delete Customer Ludogorie-40, , 0','52434D47185800F9',0),(174,120,'2017-03-02 10:46:59','Delete Customer Car-Simeon-45, , 0','52434D471858006F',0),(175,121,'2017-03-02 10:47:03','Delete Customer Dimitar-Polyanov-17, , 0','52434D4718580073',0),(176,122,'2017-03-02 10:47:09','Delete Customer Kiril-i-Metodiy-18, , 0','52434D471858007B',0),(177,123,'2017-03-02 10:47:14','Delete Customer Han-Kubrat-4, , 0','52434D471858008C',0),(178,124,'2017-03-02 10:47:18','Delete Customer Elin-Pelin-23, , 0','52434D4718580083',0),(179,125,'2017-03-02 10:47:22','Delete Customer Kiril-i-Metodiy-Kamchiya, , 0','52434D47185800EC',0),(180,126,'2017-03-02 10:47:26','Delete Customer Vasil-Levski-Yovkov, , 0','52434D47185800B3',0),(181,127,'2017-03-02 10:47:30','Delete Customer Vasil-Levski-14, , 0','52434D47185800CD',0),(182,128,'2017-03-02 10:47:34','Delete Customer Vapcarov-11, , 0','52434D47185800D9',0),(183,129,'2017-03-02 10:47:41','Delete Customer Slaveykov-6a, , 0','52434D471858009A',0),(184,130,'2017-03-02 10:47:45','Delete Customer Elin-Pelin-24, , 0','52434D47185800F6',0),(185,131,'2017-03-02 10:47:51','Delete Customer Latinka-10, , 0','52434D47185800C0',0),(186,132,'2017-03-02 10:47:57','Delete Customer Lyulyak-i-Kitka, , 0','52434D47185800B6',0),(187,133,'2017-03-02 10:48:04','Delete Customer 19, , 0','52434D47185800C3',0),(188,134,'2017-03-02 11:38:42','Edit Customer','52434D47185800EF',0),(189,134,'2017-03-02 11:40:25','Edit Customer','52434D47185800EF',0),(190,134,'2017-03-06 10:18:13','Edit Customer','52434D47185800EF',0),(191,134,'2017-03-06 10:24:32','Edit Customer','52434D47185800EF',0),(192,134,'2017-03-06 10:25:26','Edit Customer','52434D47185800EF',0),(193,134,'2017-03-06 10:47:51','Delete Customer Osvobojdenie-Trakiya, , 0','52434D47185800EF',0),(194,135,'2017-03-06 10:48:14','Add New Customer','52434D47185800EF',0),(195,135,'2017-03-06 10:57:53','Delete Customer Osvobojdenie Trakiya, , 0','52434D47185800EF',0),(196,136,'2017-03-06 10:58:05','Add New Customer','52434D47185800EF',0),(197,136,'2017-03-06 11:21:15','Edit Customer','52434D47185800EE',0),(198,137,'2017-03-06 11:21:26','Add New Customer','52434D47185800EF',0),(199,137,'2017-03-07 14:40:48','Delete Customer Veno, , 0','52434D47185800EF',0),(200,136,'2017-03-08 12:02:28','Edit Customer','RCMG185800ef',0),(201,136,'2017-03-08 12:03:25','Edit Customer','RCMG185800ef',0),(202,136,'2017-03-08 12:04:03','Edit Customer','RCMG185800ef',0),(203,136,'2017-03-08 12:04:30','Edit Customer','RCMG185800ef',0),(204,136,'2017-03-08 12:04:45','Edit Customer','RCMG185800ef',0),(205,136,'2017-03-08 12:05:02','Edit Customer','RCMG185800ef',0),(206,136,'2017-03-08 12:05:38','Edit Customer','RCMG185800ef',0),(207,136,'2017-03-08 12:05:51','Edit Customer','RCMG185800ef',0),(208,136,'2017-03-08 12:05:53','Edit Customer','RCMG185800ef',0),(209,136,'2017-03-08 12:06:03','Edit Customer','RCMG185800ef',0),(210,136,'2017-03-08 12:06:22','Edit Customer','52434D7185800ef',0),(211,136,'2017-03-08 12:07:34','Edit Customer','RCMG185800ef',0),(212,136,'2017-03-08 13:14:42','Delete Customer Osvobojdenie Trakiya, , 0','RCMG185800ef',0),(213,138,'2017-03-13 16:45:39','Add New Customer','52434D47185800ef',0),(214,138,'2017-03-27 16:00:28','Edit Customer','RCMG185800ef',0),(215,138,'2017-03-27 16:00:33','Edit Customer','RCMG185800ef',0),(216,138,'2017-03-27 16:00:37','Edit Customer','RCMG185800ef',0),(217,138,'2017-03-27 16:00:40','Edit Customer','RCMG185800ef',0),(218,138,'2017-03-27 16:00:45','Edit Customer','RCMG185800ef',0),(219,138,'2017-03-27 16:00:49','Edit Customer','RCMG185800ef',0),(220,138,'2017-03-27 16:00:55','Edit Customer','RCMG185800ef',0),(221,138,'2017-04-04 15:19:22','Edit Customer','RCMG185800ef',0),(222,139,'2017-06-05 11:12:31','Add New Customer','52434D471838177f',0),(223,139,'2017-06-05 11:36:21','Edit Customer','RCMG1838177f',0),(224,139,'2017-06-05 11:56:29','Edit Customer','RCMG1838177f',0),(225,139,'2017-06-05 11:58:12','Edit Customer','RCMG1838177f',0),(226,139,'2017-06-05 11:58:39','Edit Customer','RCMG1838177f',0),(227,139,'2017-06-05 11:58:52','Edit Customer','RCMG1838177f',0),(228,139,'2017-06-05 12:00:23','Edit Customer','RCMG1838177f',0),(229,139,'2017-07-11 09:48:00','Edit Customer','RCMG1838177f',0),(230,139,'2017-07-11 09:49:06','Edit Customer','RCMG1838177f',0),(231,139,'2017-07-11 13:00:04','Edit Customer','RCMG1838177f',0),(232,139,'2017-07-11 13:11:45','Edit Customer','RCMG1838177f',0),(233,139,'2017-07-11 13:12:02','Edit Customer','RCMG1838177f',0),(234,139,'2017-07-11 13:14:00','Edit Customer','RCMG1838177f',0),(235,139,'2017-07-11 13:15:00','Edit Customer','RCMG1838177f',0),(236,139,'2017-07-11 13:15:55','Edit Customer','RCMG1838177f',0),(237,139,'2017-07-11 13:16:35','Edit Customer','RCMG1838177f',0),(238,139,'2017-07-11 13:19:19','Edit Customer','RCMG1838177f',0),(239,139,'2017-07-11 13:19:33','Edit Customer','RCMG1838177f',0),(240,139,'2017-07-11 13:21:31','Delete Customer ht803g-w, , 0','RCMG1838177f',0),(241,140,'2017-07-11 13:21:50','Add New Customer','RCMG1838177f',0),(242,140,'2017-07-11 13:23:01','Edit Customer','RCMG1838177f',0),(243,140,'2017-07-11 13:26:19','Edit Customer','RCMG1838177f',0),(244,140,'2017-07-11 13:26:32','Edit Customer','RCMG1838177f',0),(245,140,'2017-07-11 13:27:54','Edit Customer','RCMG1838177f',0),(246,138,'2017-07-11 13:28:06','Edit Customer','RCMG185800ef',0),(247,140,'2017-07-11 13:28:35','Edit Customer','RCMG1838177f',0),(248,138,'2017-07-11 13:28:44','Edit Customer','RCMG185800ef',0),(249,140,'2017-07-11 13:30:18','Edit Customer','RCMG1838177f',0),(250,138,'2017-07-11 13:30:31','Edit Customer','RCMG185800ef',0),(251,140,'2017-07-11 13:31:38','Edit Customer','RCMG1838177f',0),(252,138,'2017-07-11 13:31:52','Edit Customer','RCMG185800ef',0),(253,140,'2017-07-11 13:32:07','Edit Customer','RCMG1838177f',0),(254,140,'2017-07-11 13:39:20','Edit Customer','RCMG1838177f',0),(255,140,'2017-07-11 13:44:06','Edit Customer','RCMG1838177f',0),(256,140,'2017-07-12 11:00:28','Edit Customer','RCMG1838177f',0),(257,138,'2017-07-12 11:00:36','Edit Customer','RCMG185800ef',0),(258,138,'2017-07-12 11:01:06','Edit Customer','RCMG185800ef',0),(259,140,'2017-07-12 11:01:47','Edit Customer','RCMG1838177f',0),(260,138,'2017-07-21 16:52:49','Edit Customer','RCMG185800ef',0),(261,138,'2017-07-26 11:12:42','Edit Customer','RCMG185800ef',0),(262,147,'2017-07-26 16:59:45','Delete Customer Veeeeno, , 1231231231','RCMG1838177a',0),(263,140,'2017-07-26 17:04:00','Edit Customer','RCMG1838177f',0),(264,140,'2017-07-26 17:04:11','Edit Customer','RCMG1838177f',0),(265,148,'2017-07-26 17:11:52','Delete Customer Ntimpqq, , 0','RCMG1838177e',0),(266,149,'2017-07-26 17:14:34','Edit Customer','RCMG1838177b',0),(267,149,'2017-07-26 17:17:01','Edit Customer','RCMG1838177b',0),(268,149,'2017-07-26 17:17:27','Edit Customer','RCMG1838177b',0),(269,149,'2017-07-26 17:17:37','Edit Customer','RCMG1838177b',0),(270,138,'2017-07-26 17:18:29','Edit Customer','RCMG185800ef',0),(271,138,'2017-07-26 17:18:40','Edit Customer','RCMG185800ef',0),(272,157,'2017-07-28 12:18:14','Added New Customer','RCMG18381779',1),(273,158,'2017-07-28 12:53:26','Added New Customer','RCMG18381775',1),(274,159,'2017-07-28 12:57:47','Added New Customer','RCMG18381771',1),(275,160,'2017-07-28 13:03:52','Added New Customer','RCMG18381771',1),(276,161,'2017-07-28 13:11:26','Added New Customer','RCMG18381772',1),(277,162,'2017-07-28 13:13:40','Added New Customer','RCMG18381774',1),(278,163,'2017-07-28 13:26:26','Added New Customer','RCMG185800ea',1),(279,164,'2017-07-28 13:27:10','Added New Customer','RCMG185800ee',1),(280,164,'2017-08-03 13:52:38','Edit Customer','RCMG185800ee',1),(281,164,'2017-08-03 13:53:21','Edit Customer','RCMG185800ee',1),(282,153,'2017-08-03 13:56:13','Edit Customer','RCMG1838177D',1),(283,164,'2017-08-03 13:57:01','Edit Customer','RCMG185800ee',1),(284,164,'2017-08-03 13:58:46','Edit Customer','RCMG185800ee',1),(285,153,'2017-08-03 13:59:22','Edit Customer','RCMG1838177D',1),(286,164,'2017-08-03 14:06:17','Edit Customer','RCMG185800ee',1),(287,164,'2017-08-03 14:49:12','','RCMG185800ee',1),(288,164,'2017-08-03 14:49:30','','RCMG185800ee',1),(289,164,'2017-08-03 14:52:35','','RCMG185800ee',1),(290,164,'2017-08-03 14:53:17','','RCMG185800ee',1),(291,138,'2017-08-08 10:20:28','Edit Customer','RCMG185800ef',1),(292,166,'2017-08-08 10:25:15','Edit Customer','RCMG18381775',1),(293,166,'2017-08-08 10:25:38','','RCMG18381775',1),(294,138,'2017-08-08 10:36:07','Edit Customer','RCMG185800ef',1),(295,153,'2017-08-08 10:36:46','Edit Customer','RCMG1838177D',1),(296,167,'2017-08-08 10:51:33','Edit Customer','RCMG185800ea',1),(297,167,'2017-08-08 11:26:09','Edit Customer','RCMG185800ea',1),(298,167,'2017-08-08 11:26:36','Edit Customer','RCMG185800ea',1),(299,168,'2017-10-27 16:04:05','Added New Customer','RCMG185800e5',1),(300,138,'2017-11-08 15:47:37','','RCMG185800ef',1),(301,140,'2017-11-08 16:05:41','','RCMG1838177f',1),(302,153,'2017-11-08 16:12:24','Edit Customer','RCMG1838177D',1),(303,168,'2017-11-13 09:55:36','','RCMG185800e5',1),(304,167,'2017-11-13 09:55:43','','RCMG185800ea',1),(305,169,'2017-11-13 10:43:12','Added New Customer','000e5e7cf9f2',1),(306,169,'2017-11-13 10:45:13','','000e5e7cf9f2',1),(307,170,'2017-11-13 11:30:06','Added New Customer','000e5e7c.f9f2',1),(308,170,'2017-11-13 11:30:25','','000e5e7c.f9f2',1),(309,153,'2017-11-13 11:30:31','','RCMG1838177D',1),(310,171,'2017-11-13 11:30:51','Added New Customer','000e5e7cf9f2',1),(311,171,'2017-11-13 11:36:32','','000e5e7cf9f2',1),(312,172,'2017-11-13 11:36:55','Added New Customer','000e5e7cf9f2',1),(313,172,'2017-11-13 11:37:25','','000e5e7cf9f2',1),(314,173,'2017-11-13 11:38:58','Added New Customer','000e5e7cf9f2',1),(315,173,'2017-11-13 11:41:32','','000e5e7cf9f2',1),(316,174,'2017-11-13 11:41:44','Added New Customer','000e5e7cf9f2',1),(317,165,'2017-11-13 11:43:11','','RCMG18381774',1),(318,174,'2017-11-13 11:43:20','','000e5e7cf9f2',1),(319,175,'2017-11-13 11:43:30','Added New Customer','000e5e7cf9f2',1),(320,175,'2017-11-13 11:49:44','','000e5e7cf9f2',1),(321,176,'2017-11-13 11:49:53','Added New Customer','000e5e7cf9f2',1),(322,176,'2017-11-13 11:50:40','','000e5e7cf9f2',1),(323,177,'2017-11-13 11:50:53','Added New Customer','000e5e7cf9f2',1),(324,177,'2017-11-13 11:53:01','','000e5e7cf9f2',1),(325,178,'2017-11-13 11:53:10','Added New Customer','000e5e7cf9f2',1),(326,178,'2017-11-13 11:54:36','Edit Customer','000e5e7cf9f2',1),(327,178,'2017-11-13 11:54:44','','000e5e7cf9f2',1),(328,179,'2017-11-13 11:54:53','Added New Customer','000e5e7cf9f2',1),(329,179,'2017-11-13 11:55:30','','000e5e7cf9f2',1),(330,180,'2017-11-13 11:56:42','Added New Customer','000e5e7cf9f2',1),(331,181,'2017-11-14 15:33:00','Added New Customer','000e5e7cfe02',1),(332,182,'2017-11-14 15:33:28','Added New Customer','e067b33bc5d1',1),(333,182,'2017-11-14 15:34:19','','e067b33bc5d1',1),(334,183,'2017-11-14 15:34:33','Added New Customer','e067b33bc5d1',1),(335,184,'2017-11-14 15:35:22','Added New Customer','000e5e8376a5.',1),(336,185,'2017-11-14 15:35:52','Added New Customer','000e5e8376a5',1),(337,184,'2017-11-14 15:36:01','','000e5e8376a5.',1),(338,181,'2017-11-14 15:37:25','Edit Customer','000e5e7cfe02',1),(339,186,'2017-11-15 14:45:43','Added New Customer','000e5ec53e71',1),(340,181,'2017-11-15 16:14:37','Edit Customer','000e5e7cfe02',1),(341,186,'2017-11-15 16:16:42','','000e5ec53e71',1),(342,185,'2017-11-16 10:34:34','Edit Customer','000e5e8376a5',1),(343,180,'2017-11-16 10:43:21','','000e5e7cf9f2',1),(344,181,'2017-11-16 10:52:07','','000e5e7cfe02',1),(345,185,'2017-11-17 12:28:30','Edit Customer','000e5e8376a5',1),(346,187,'2017-11-17 12:28:59','Added New Customer','000E5E7CFE02',1),(347,187,'2017-11-17 12:30:02','Edit Customer','000E5E7CFE02',1),(348,187,'2017-11-17 12:31:52','Edit Customer','000E5E7CFE02',1),(349,187,'2017-11-17 12:48:28','','000E5E7CFE02',1),(350,188,'2017-11-17 13:55:23','Added New Customer','000E5E7CFE02',1),(351,188,'2017-11-17 13:55:44','','000E5E7CFE02',1),(352,189,'2017-11-17 16:32:43','Added New Customer','000E5E7CF9F2',1),(353,190,'2017-11-17 16:32:48','Added New Customer','000E5E7CFE02',1),(354,191,'2017-11-17 16:32:52','Added New Customer','000E5E9D1985',1),(355,190,'2017-11-17 16:33:36','Edit Customer','000E5E7CFE02',1),(356,189,'2017-11-17 16:34:14','Edit Customer','000E5E7CF9F2',1),(357,191,'2017-11-17 16:34:41','Edit Customer','000E5E9D1985',1),(358,185,'2017-11-18 22:19:21','Edit Customer','000e5e8376a5',1),(359,191,'2017-11-18 22:19:40','Edit Customer','000E5E9D1985',1),(360,185,'2017-11-18 22:30:39','','000e5e8376a5',1),(361,192,'2017-11-18 22:31:04','Added New Customer','000E5E8376A5',1),(362,189,'2017-11-18 22:31:29','Edit Customer','000E5E7CF9F2',1),(363,190,'2017-11-21 11:55:16','','000E5E7CFE02',1),(364,183,'2017-11-21 11:56:28','','e067b33bc5d1',1),(365,193,'2017-11-21 11:57:04','Added New Customer','000E5E7CFE02',1);
+/*!40000 ALTER TABLE `HISTORY` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `LINE_PROFILE`
+--
+
+DROP TABLE IF EXISTS `LINE_PROFILE`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `LINE_PROFILE` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(255) NOT NULL,
+  `LINE_PROFILE_ID` tinyint(4) NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `TEMPLATE_ID` (`LINE_PROFILE_ID`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `LINE_PROFILE`
+--
+
+LOCK TABLES `LINE_PROFILE` WRITE;
+/*!40000 ALTER TABLE `LINE_PROFILE` DISABLE KEYS */;
+INSERT INTO `LINE_PROFILE` VALUES (2,'default',1);
+/*!40000 ALTER TABLE `LINE_PROFILE` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `OLT`
+--
+
+DROP TABLE IF EXISTS `OLT`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `OLT` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(255) NOT NULL,
+  `MODEL` tinyint(4) NOT NULL,
+  `IP_ADDRESS` int(10) unsigned NOT NULL,
+  `RO` varchar(50) NOT NULL,
+  `RW` varchar(50) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `OLT`
+--
+
+LOCK TABLES `OLT` WRITE;
+/*!40000 ALTER TABLE `OLT` DISABLE KEYS */;
+INSERT INTO `OLT` VALUES (10,'ISCOM5508(B)',1,3232261728,'public','private'),(11,'ISCOM5508-GP',2,3232261729,'public','private');
+/*!40000 ALTER TABLE `OLT` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `OLT_CARDS`
+--
+
+DROP TABLE IF EXISTS `OLT_CARDS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `OLT_CARDS` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `OLT_MODEL_ID` int(11) NOT NULL,
+  `CARDS_MODEL_ID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `OLT_CARDS`
+--
+
+LOCK TABLES `OLT_CARDS` WRITE;
+/*!40000 ALTER TABLE `OLT_CARDS` DISABLE KEYS */;
+INSERT INTO `OLT_CARDS` VALUES (1,1,1),(2,2,2),(3,3,3),(4,3,4),(5,3,5),(6,4,3),(7,4,4),(8,4,5);
+/*!40000 ALTER TABLE `OLT_CARDS` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `OLT_MODEL`
+--
+
+DROP TABLE IF EXISTS `OLT_MODEL`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `OLT_MODEL` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(50) NOT NULL,
+  `SLOTS` smallint(6) NOT NULL,
+  `TYPE` tinyint(4) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `OLT_MODEL`
+--
+
+LOCK TABLES `OLT_MODEL` WRITE;
+/*!40000 ALTER TABLE `OLT_MODEL` DISABLE KEYS */;
+INSERT INTO `OLT_MODEL` VALUES (1,'ISCOM5508(B)',3,2),(2,'ISCOM5508-GP',3,2),(3,'ISCOM6800',14,2),(4,'ISCOM6860',7,2);
+/*!40000 ALTER TABLE `OLT_MODEL` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `ONU`
+--
+
+DROP TABLE IF EXISTS `ONU`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ONU` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(50) CHARACTER SET utf8 NOT NULL,
+  `PORTS` tinyint(4) NOT NULL,
+  `RF` tinyint(1) NOT NULL,
+  `PSE` tinyint(1) NOT NULL,
+  `HGU` tinyint(1) NOT NULL,
+  `PON_TYPE` enum('EPON','GPON') NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `ONU`
+--
+
+LOCK TABLES `ONU` WRITE;
+/*!40000 ALTER TABLE `ONU` DISABLE KEYS */;
+INSERT INTO `ONU` VALUES (1,'ht803g',4,0,0,0,'GPON'),(16,'ht803g-1ge',1,0,0,0,'GPON'),(17,'ht803g-w',4,0,0,1,'GPON'),(28,'veli',4,1,1,0,'GPON');
+/*!40000 ALTER TABLE `ONU` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `PON`
+--
+
+DROP TABLE IF EXISTS `PON`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `PON` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `OLT` int(11) NOT NULL,
+  `SLOT_ID` tinyint(4) NOT NULL,
+  `PORT_ID` tinyint(4) NOT NULL,
+  `CARDS_MODEL_ID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`),
+  KEY `OLT` (`OLT`)
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `PON`
+--
+
+LOCK TABLES `PON` WRITE;
+/*!40000 ALTER TABLE `PON` DISABLE KEYS */;
+INSERT INTO `PON` VALUES (41,'port1',10,1,1,1),(42,'port2',10,1,2,1),(43,'pon1',11,1,1,2),(44,'port3',10,1,3,1);
+/*!40000 ALTER TABLE `PON` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `SERVICES`
+--
+
+DROP TABLE IF EXISTS `SERVICES`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SERVICES` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(255) NOT NULL,
+  `LINE_PROFILE_ID` int(11) NOT NULL,
+  `SERVICE_PROFILE_ID` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `SERVICES`
+--
+
+LOCK TABLES `SERVICES` WRITE;
+/*!40000 ALTER TABLE `SERVICES` DISABLE KEYS */;
+INSERT INTO `SERVICES` VALUES (3,'Internet_4port',2,9),(7,'Internet_1port',2,10),(8,'HGU',2,12);
+/*!40000 ALTER TABLE `SERVICES` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
+-- Table structure for table `SERVICE_PROFILE`
+--
+
+DROP TABLE IF EXISTS `SERVICE_PROFILE`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SERVICE_PROFILE` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(255) NOT NULL,
+  `PORTS` tinyint(4) NOT NULL,
+  `SERVICE_PROFILE_ID` tinyint(4) NOT NULL,
+  `HGU` int(11) NOT NULL,
+  PRIMARY KEY (`id`) USING BTREE,
+  KEY `OLT` (`HGU`),
+  KEY `TEMPLATE_ID` (`SERVICE_PROFILE_ID`) USING BTREE
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `SERVICE_PROFILE`
+--
+
+LOCK TABLES `SERVICE_PROFILE` WRITE;
+/*!40000 ALTER TABLE `SERVICE_PROFILE` DISABLE KEYS */;
+INSERT INTO `SERVICE_PROFILE` VALUES (9,'4port',4,1,2),(10,'1port',1,2,2),(11,'isperih',4,3,2),(12,'HGU',1,4,2);
+/*!40000 ALTER TABLE `SERVICE_PROFILE` ENABLE KEYS */;
+UNLOCK TABLES;
+/*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
+
+/*!40101 SET SQL_MODE=@OLD_SQL_MODE */;
+/*!40014 SET FOREIGN_KEY_CHECKS=@OLD_FOREIGN_KEY_CHECKS */;
+/*!40014 SET UNIQUE_CHECKS=@OLD_UNIQUE_CHECKS */;
+/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
+/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
+/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
+/*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
+
+-- Dump completed on 2017-11-22 11:10:53
