@@ -2,7 +2,7 @@
 /*** begin our session ***/
 include ("common.php");
 include ("dbconnect.php");
-navigation();
+
 if ($user_class < "9")
 	exit();
 
