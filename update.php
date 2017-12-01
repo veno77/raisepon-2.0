@@ -1,7 +1,6 @@
 <?php
 include ("common.php");
 include ("dbconnect.php");
-navigation();
 
 $check_list = $new_pon_id = $new_olt = $state =  "";
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
