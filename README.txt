@@ -34,7 +34,8 @@ Default username/password admin/admin123.
 
 Usage:
 1. You need to add at least One OLT and one pon port to be able to add customers.
-2. Clicking on STATUS in index.html when you load the customers on selected OLT and PON will give you more information.
+2. If you are provisioning GPON/GEPON, you need to create also line-profile, service-profile and match them to Services ID in the web-interface. You need to pre-create the same profiles with same ids on the OLTs you are going to provision.
+3. Clicking on STATUS in index.html when you load the customers on selected OLT and PON will give you more information.
 4. You can use parse.php to parse existing ONUs on your OLTs. - Currently not working with 2.0.
 
 
