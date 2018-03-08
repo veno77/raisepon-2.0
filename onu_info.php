@@ -94,14 +94,7 @@ where CUSTOMERS.ID = '$customer_id'");
 		$device_type = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $device_type);
         $hw_revision = $session->get($hw_revision_oid);
 		$match_state = $session->get($match_state_oid);
-		$onu_active_state = $session->get($onu_active_state_oid);
-   
-		
-		if ($onu_active_state == "1") {
-			$onu_active_state = "active";
-		}elseif ($onu_active_state == "2"){
-			$onu_active_state = "suspended";
-		}
+	
 		if ($pon_type == "GPON") {	
 			if ($match_state == "1") {
 				$match_state = " match(1) ";
@@ -118,10 +111,10 @@ where CUSTOMERS.ID = '$customer_id'");
 			$onu_pon_temp_value = $snmp_obj->get_pon_oid("onu_pon_temp_oid", $pon_type) . "." . $index2;
 			$line_profile_name = $session->get($line_profile_name_oid);
 			$line_profile_name = str_replace('Hex-STRING: ', '', $line_profile_name);
-			$line_profile_name = hex2bin(str_replace(' ', '', $line_profile_name));
+			$line_profile_name = str_replace(' ', '', $line_profile_name);
 			$service_profile_name = $session->get($service_profile_name_oid);
 			$service_profile_name = str_replace('Hex-STRING: ', '', $service_profile_name);
-			$service_profile_name = hex2bin(str_replace(' ', '', $service_profile_name));
+			$service_profile_name = str_replace(' ', '', $service_profile_name);
 			$onu_register_distance = $session->get($onu_register_distance_oid);
 			
 			
@@ -150,6 +143,12 @@ where CUSTOMERS.ID = '$customer_id'");
 			$line_profile_name = str_replace('STRING: ', '', $line_profile_name);
 			$service_profile_name = $session->get($service_profile_name_oid);
 			$service_profile_name = str_replace('STRING: ', '', $service_profile_name);
+			$onu_active_state = $session->get($onu_active_state_oid);
+			if ($onu_active_state == "1") {
+				$onu_active_state = "active";
+			}elseif ($onu_active_state == "2"){
+				$onu_active_state = "suspended";
+			}
 		}
   		
         $onu_pon_temp_value = $session->get($onu_pon_temp_value);
@@ -211,8 +210,9 @@ where CUSTOMERS.ID = '$customer_id'");
 			print "<tr><th>Onu Distance:</th><td>" . $onu_register_distance . " m.</td></tr>";
 			print "<tr><th>Onu SysUptime:</th><td>" . $onu_sysuptime . "</td></tr>";
 		}
-		print "<tr><th>Onu State:</th><td>" . $onu_active_state . "</td></tr>";
-
+		if ($pon_type == "EPON") {	
+			print "<tr><th>Onu State:</th><td>" . $onu_active_state . "</td></tr>";
+		}
 
 //		print "<tr><td>Software version:</td><td>" . $version . "</td></tr>";
 //		print "<tr><td>Firmware version:</td><td>" . $firmware . "</td></tr>";
@@ -276,9 +276,10 @@ where CUSTOMERS.ID = '$customer_id'");
 			$port_autong_oid = $snmp_obj->get_pon_oid("uni_port_autong_oid", $pon_type) . "." . $gindex;
 			$port_flowctrl_oid = $snmp_obj->get_pon_oid("uni_port_flowctrl_oid", $pon_type) . "." . $gindex;
 			$port_speed_duplex_oid = $snmp_obj->get_pon_oid("uni_port_speed_duplex_oid", $pon_type) . "." . $gindex;
-			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-			$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
+		
 			if ($pon_type == "GPON") {
+				snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+				$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 				$EthPortNativeVlan_oid = $snmp_obj->get_pon_oid("uni_port_nativevlan_oid", $pon_type) . "." . $gindex;
 				$rcGponOnuEthPortDSPolicingProfileId_oid = "1.3.6.1.4.1.8886.18.3.6.5.1.1.19." . $gindex;
 				$rcGponOnuEthPortUSPolicingProfileId_oid = "1.3.6.1.4.1.8886.18.3.6.5.1.1.18." . $gindex;
@@ -288,6 +289,9 @@ where CUSTOMERS.ID = '$customer_id'");
 				$mac_address_perport_oid = "1.3.6.1.4.1.8886.18.3.6.12.1.1.1." . $gindex;
 				$mac_address_perport_number_oid = "1.3.6.1.4.1.8886.18.3.6.12.1.1.2." . $gindex;
 				$mac_address_perport_number = $session->get($mac_address_perport_number_oid);
+				snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+				$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
+				$mac_address_perport = $session->get($mac_address_perport_oid);
 				$mac_address_perport = str_replace('Hex-STRING: ', '', $mac_address_perport);
 				$mac_address_perport = str_replace(' ', '', $mac_address_perport);
 				$mac_address_perport = str_replace('"', '', $mac_address_perport);
@@ -300,10 +304,13 @@ where CUSTOMERS.ID = '$customer_id'");
 				$mac_address_table =  $mac_address_table . "<tr  align=center><td>" . $i . "</td><td>" . $mac_address_boza . "</td><td>" . $mac_address_perport_number . "</td></tr>";
 			}	
 			if ($pon_type == "EPON") {
+				snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+				$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 				$port_isolation_oid = "1.3.6.1.4.1.8886.18.2.6.3.2.1.4." . $gindex;
 				$port_isolation = $session->get($port_isolation_oid);
 			}
-			
+			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+			$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 			$port_admin = $session->get($port_admin_oid);
 			$port_link = $session->get($port_link_oid);
 			$port_flowctrl = $session->get($port_flowctrl_oid);
@@ -313,9 +320,7 @@ where CUSTOMERS.ID = '$customer_id'");
 			
 			if ($pon_type == "GPON") {
 				
-				snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-				$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
-				$mac_address_perport = $session->get($mac_address_perport_oid);
+				
 			
 				if ($port_admin == '2') {
 					$port_admin = "<font color=red>Disabled</font>";
@@ -404,8 +409,9 @@ where CUSTOMERS.ID = '$customer_id'");
 			
 			print "<tr  align=center><td>" . $i . "</td><td>" . $port_admin . "</td><td>" . $port_link .  "</td><td>" . $port_flowctrl . "</td><td>" . $port_speed_duplex . "</td>";
 			if ($pon_type == "GPON") 
-				print "<td>" . $EthPortNativeVlan . "</td><td>" . $rcGponOnuEthPortDSPolicingProfileId . "</td><td>" . $rcGponOnuEthPortUSPolicingProfileId . "</td>"	;	
-			print "<td>" . $port_isolation . "</td>";
+				print "<td>" . $EthPortNativeVlan . "</td><td>" . $rcGponOnuEthPortDSPolicingProfileId . "</td><td>" . $rcGponOnuEthPortUSPolicingProfileId . "</td>"	;
+			if ($pon_type == "EPON")			
+				print "<td>" . $port_isolation . "</td>";
 			print "</tr>";
             
 			

@@ -36,7 +36,9 @@ class snmp_oid {
 		"olt_rx_power_oid" => "1.3.6.1.4.1.8886.18.3.1.3.3.1.1",
 		"uni_octets_in_ethernet_oid" => "1.3.6.1.4.1.8886.18.3.6.5.2.1.2",
 		"uni_octets_out_ethernet_oid" => "1.3.6.1.4.1.8886.18.3.6.5.2.1.15",
-
+		"illegal_onu_sn_oid" => "1.3.6.1.4.1.8886.18.3.1.2.2.1.1",
+		"illegal_onu_login_time_oid" => "1.3.6.1.4.1.8886.18.3.1.2.2.1.5",
+		"illegal_onu_row_status_oid" => "1.3.6.1.4.1.8886.18.3.1.2.2.1.6",
 	);
 	
 	private $epon_oid = array(

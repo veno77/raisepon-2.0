@@ -10,7 +10,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	//INSERT NEW CUSTOMER
 	if ($customers_obj->getSubmit() == "ADD") {
-		if (!empty($customers_obj->getName()) && !empty($customers_obj->getService()) && !empty($customers_obj->getOlt()) && !empty($customers_obj->getPon_port()) && !empty($customers_obj->getSn())) {
+		if (!empty($customers_obj->getName()) && !empty($customers_obj->getSn())) {
 			$error = $customers_obj->add_customer();	
 			if (!empty($error)) {
 				echo $error;
@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	// EDIT CUSTOMER
 	if ($customers_obj->getSubmit() == "EDIT") {
-		if (!empty($customers_obj->getCustomers_id()) && !empty($customers_obj->getName())  && !empty($customers_obj->getOlt()) && !empty($customers_obj->getPon_port()) && !empty($customers_obj->getSn())) {
+		if (!empty($customers_obj->getCustomers_id()) && !empty($customers_obj->getName())  && !empty($customers_obj->getSn())) {
 			$error = $customers_obj->edit_customer();	
 			if (!empty($error)) {
 				echo $error;
@@ -64,43 +64,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
 $rows = $customers_obj->get_Illegal_onus();
-foreach ($rows as $k => $v) {
-	$olt_model = $customers_obj->get_Olt_model($k);
-	if ($v) {
-		foreach ($olt_model as $row) {
-			$olt_name = $row['NAME'];
-		}
-		?>
-		<div class="container">
-		<div class="text-center">
-			<div class="page-header">
-			
-				<?php 	print "<h2>OLT: " . $olt_name . "</h2>"; ?>
-			</div>
+?>
+<div class="container">
+<div class="text-center">
+	<div class="page-header">
+	
+		<?php 	print "<h2>Illegal ONUs</h2>"; ?>
+	</div>
+</div>
+<div class=row>
+	<div class="text-center">
+		<div class="table-responsive">
+			<table class="table table-bordered table-condensed table-hover">
+				<thead>
+					<tr align=center style=font-weight:bold>
+						<th>OLT</th>
+						<th>MAC_ADDRESS/SN</th>
+						<th>PON PORT</th>
+						<th>TIME</th>
+						<th>ADD</th>
+					</tr>
+				</thead>
+				<?php
+				foreach ($rows as $k => $v) {
+					$olt_model = $customers_obj->get_Olt_model($k);
+					if ($v) { 
+						foreach ($olt_model as $row) {
+							$olt_name = $row['NAME'];
+						}
+						foreach ($v as $roww) {
+							print "<tr><td>" . $olt_name . "</td><td>" . $roww{'0'} . "</td><td>" . $roww{'1'} . "/"  . $roww{'2'} . "</td><td>" . $roww{'3'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"addCustomer('" . $k . "','" . $roww{'1'} . "','" . $roww{'0'} . "');\">ADD</button></td></tr>";
+						}
+					}
+				}?>					
+			</table>
 		</div>
-		<div class=row>
-			<div class="text-center">
-				<div class="table-responsive">
-					<table class="table table-bordered table-condensed table-hover">
-						<thead>
-							<tr align=center style=font-weight:bold>
-								<th>MAC_ADDRESS</th>
-								<th>PON PORT</th>
-								<th>TIME</th>
-								<th>ADD</th>
-							</tr>
-						</thead>
-						<?php
-							foreach ($v as $roww) {
-								print "<tr><td>" . $roww{'0'} . "</td><td>" . $roww{'1'} . "/"  . $roww{'2'} . "</td><td>" . $roww{'3'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"addCustomer('" . $k . "','" . $roww{'1'} . "','" . $roww{'0'} . "');\">ADD</button></td></tr>";
-							}
-						?>
-					</table>
-				</div>
-			</div>
-		</div>
-	<?php }
-}?>
+	</div>
+</div>
 <div class="container">
 	<div class="row">
 			<div class="col-md-4 col-md-offset-4">

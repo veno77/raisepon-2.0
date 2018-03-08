@@ -65,17 +65,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			</div>
 		</div>
 	</div>
+	<div class="row justify-content-md-center">
+		<div class="text-center">
+			<div class="form-group">
+				<form class="form-inline" action="index.php" method="post">
+					<button class="btn btn-basic"  type="submit" name="SUBMIT" value="UNASSIGNED">UNASSIGNED</button>
+				</form>
+			</div>
+		</div>
+	</div>
 </div>
 <?php
-if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($index_obj->getEgn()) || !empty($index_obj->getSn())) {
+if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($index_obj->getEgn()) || !empty($index_obj->getSn()) || $index_obj->getSubmit() == "UNASSIGNED") {
 ?>
 	<div class="container">
 		<div class="text-center">
 			<div class="page-header">
 			<?php 
-			if ($index_obj->getOlt_id()) 
+			if (!empty($index_obj->getOlt_id())) 
 				print "<h1>OLT: " . $OLT_NAME . "</h1><h2>PON: " . $PON_NAME . "   (" . $SLOT_ID . "/" . $PORT_ID . ")</h2><br><br>"  ;
-			if ($index_obj->getName()) 
+			if (!empty($index_obj->getName())) 
 				print "<h1>Name: " . $index_obj->getName() . "</h1>";
 			?>
 			</div>
@@ -273,7 +282,6 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 					<div class="modal-content">
 						<div class="modal-header">
 							<button type="button" class="close" data-dismiss="modal">&times;</button>
-							<h4 class="modal-title">OLT</h4>
 						</div>
 						<div class="modal-body" id="modalbody">
 						</div>

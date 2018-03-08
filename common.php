@@ -18,23 +18,18 @@ print "<script src=\"./js/bootstrap.min.js\"></script>";
 $(function() {
         $("#select-olt").change(function() {
                 $("#select-pon").load("get.php?choice=" + $("#select-olt").val());
-                $("#line-profile").load("get_line_profile.php?choice=" + $("#select-olt").val());
         });
 });
-
-$(function() {
-        $("#select-olt-2").change(function() {
-                $("#select-pon-2").load("get.php?choice=" + $("#select-olt-2").val());
-        });
-});
-
-
 
 $(function() {
         $("#select-onu").change(function() {
                 $("#service-profile").load("get_service_profile.php?choice=" + $("#select-onu").val() + "&olt=" + $("#select-olt").val());
         });
 });
+
+
+
+
 
 $(function() {
 $("#selectall").click(function () {

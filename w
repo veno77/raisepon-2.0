@@ -1,0 +1,16 @@
+<?php
+snmp_set_oid_numeric_print(TRUE);
+snmp_set_quick_print(TRUE);
+snmp_set_enum_print(TRUE); 
+$session = new SNMP(SNMP::VERSION_2C, '192.168.102.97', 'public');
+$output = $session->walk("1.3.6.1.4.1.8886.18.3.1.2.2");
+
+$i=0;
+foreach ($output as $k => $v) {
+		$k = explode(".", $k);
+		$output[$k[0][$k[1][$k2]]] = $v;
+}
+
+print_r($output);
+
+>

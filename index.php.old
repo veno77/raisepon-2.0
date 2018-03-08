@@ -1,0 +1,310 @@
+<?php
+
+include ("common.php");
+include("dbconnect.php");
+include ("navigation.php");
+header('Cache-control: private', true);
+//navigation();
+$OLT_ID = $PON_ID = $name = $pon_port = $egn = $sn = $rf_state = '';
+print "<h2><center>Search ONUs</center></h2>";
+
+
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+
+	if ($_POST["SUBMIT"]) {
+        $submit = test_input($_POST["SUBMIT"]);
+	}
+	if ($submit == "LOAD") {
+
+		$OLT_ID = $_POST["olt_id"];
+		$PON_ID = $_POST["pon_id"];
+	}
+	if ($submit == "SEARCH") {
+
+		$name = test_input($_POST["name"]);
+		//check if name only contains letters and whitespace
+		if (!preg_match("/^[a-zA-Z ]*$/",$name)) {
+			$nameErr = "Only letters and white space allowed";
+		}
+
+		if ($_POST["egn"]) {
+			$egn = test_input($_POST["egn"]);
+			if (!preg_match('/^[0-9]*$/',$egn)) 
+				$egnErr = "Only numerals are allowed";
+			} 
+
+		if ($_POST["sn"]) {
+			$sn = test_input($_POST["sn"]);
+		}
+	}
+
+	if ($OLT_ID) {
+		try {
+			$rst = $db->query("SELECT NAME from OLT WHERE ID=" . $OLT_ID);
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+
+		while ($row = $rst->fetch(PDO::FETCH_ASSOC)) {
+			$OLT_NAME = $row{'NAME'};
+		}
+	}
+	
+	if ($PON_ID) {
+		try {
+		$rst = $db->query("SELECT * from PON WHERE ID=" . $PON_ID);
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+
+		while ($row = $rst->fetch(PDO::FETCH_ASSOC)) {
+			$PON_NAME = $row{'NAME'};
+		$SLOT_ID = $row{'SLOT_ID'};
+		$PORT_ID = $row{'PORT_ID'};
+		}
+	}
+}
+?>
+<div class="container">
+	<div class="row justify-content-md-center">
+		<div class="col col-lg-4"></div>
+			<div class="form-group">
+				<div class="col-8 col-md-auto">
+					<form class="form-inline" action="index.php" method="post">
+						<label for="olt_port">OLT</label>
+						<select class="form-control" id="select-olt" name="olt_id">
+						<option value="" class="rhth">Select OLT</option>
+						<?php
+						try {
+							$result = $db->query("SELECT * from OLT");
+						} catch (PDOException $e) {
+
+							exit;
+						}
+
+						while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+										print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+						}
+						?>
+						</select>
+						<select class="form-control" id="select-pon" name="pon_id">
+						<option value="">PON PORT</option></select>
+						<button class="btn btn-info" type="submit" name="SUBMIT" value="LOAD">LOAD</button>
+					</form>
+				</div>
+			</div>
+		<div class="col col-lg-4"></div>
+	</div>
+	<div class="row justify-content-md-center">
+		<div class="col col-lg-2"></div>
+		<div class="form-group">
+			<div class="col-12 col-md-auto">
+				<form class="form-inline" action="index.php" method="post">
+					<label for="name">Name</label>
+					<input type="text" name="name"  size="30"  class="form-control" placeholder="Name"  aria-describedby="sizing-addon1">
+					<label for="egn">EGN</label>
+					<input type="text" name="egn"  maxlength="10" size="12" class="form-control" placeholder="EGN" aria-describedby="sizing-addon1">
+					<label for="sn">ONU SN</label>
+					<input type="text" name="sn"  maxlength="17" size="17" class="form-control" placeholder="SN" aria-describedby="sizing-addon1">
+					<button class="btn btn-info"  type="submit" name="SUBMIT" value="SEARCH">SEARCH</button>
+				</form>
+			</div>
+		<div class="col col-lg-2"></div>
+		</div>
+	</div>
+</div>
+<?php
+
+if ($PON_ID || $name || $egn || $sn) {
+	$where = "PON.ID='" . $PON_ID ."' and OLT.ID='" . $OLT_ID . "'";
+
+if ($submit == "SEARCH") {
+	if($name)
+		$where = "CUSTOMERS.NAME LIKE '%$name%'";
+	if($egn)
+		$where = "CUSTOMERS.EGN = '$egn'";
+	if($sn) 
+	                $where = "CUSTOMERS.SN = '$sn'";
+}
+
+try {
+	$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, ONU.NAME as ONU_NAME, ONU.RF as RF, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE as TYPE, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON_ONU_ID from CUSTOMERS LEFT JOIN ONU on CUSTOMERS.ONU_MODEL=ONU.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID WHERE " . $where ." order by PON_ONU_ID");
+} catch (PDOException $e) {
+    echo "Connection Failed:" . $e->getMessage() . "\n";
+	exit;
+} 
+print "<p><center>";
+
+?>
+<div class="container">
+	<?php 
+	if ($PON_ID)
+		print '<form class="form-inline"  name="myform3" action="update.php" method="post">';
+	if ($OLT_ID) 
+		print "<h1>OLT: " . $OLT_NAME . "</h1><h2>PON: " . $PON_NAME . "   (" . $SLOT_ID . "/" . $PORT_ID . ")</h2><br><br>"  ;
+	?>
+	<div class="row justify-content-md-center">
+		<table class="table table-bordered table-condensed table-hover">
+			<thead>
+				<tr align=center style=font-weight:bold>
+					<th><input type="checkbox" id="selectall"></th>
+					<th>ONU</th>
+					<th>Name</th>
+					<th>Address</th>
+					<th>MODEL</th>
+					<th>RF</th>
+					<th>SN</th>
+					<th>OLT_PWR</th>
+					<th>STATUS</th>
+					<th>LAST ONLINE</th>
+					<th>OFFLINE REASON</th>
+					<th>SYNC</th>
+				</tr>
+			</thead>
+			<?php
+			while ($row = $result->fetch(PDO::FETCH_ASSOC)) { 
+				$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
+				$big_onu_id_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
+				$second_oid = "iso.3.6.1.4.1.8886.18.3.6.3.1.1.16." . $big_onu_id_2;
+			//	$second_oid = "1.3.6.1.4.1.8886.18.3.1.3.3.1.1." .  $big_onu_id;
+
+
+				$first_oid = "iso.3.6.1.4.1.8886.18.3.1.3.1.1.17." . $big_onu_id;
+				$third_oid = "iso.3.6.1.4.1.8886.18.3.1.3.1.1.14." . $big_onu_id;
+				$offline_reason_oid = "iso.3.6.1.4.1.8886.18.3.1.3.1.1.15." . $big_onu_id;
+				$sn_oid = "iso.3.6.1.4.1.8886.18.3.1.3.1.1.2." . $big_onu_id;
+				$onutype_oid = "iso.3.6.1.4.1.8886.18.2.1.3.1.1.3." . $big_onu_id;
+				//GET STATUS via SNMP
+				snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+				$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+				$status = $session->get($first_oid);
+				$power = '';
+				$last_online = "Never";
+				$rf_state = "";
+				if ($status == '1') {
+					$status = "<font color=green>Online</font>";
+					//GET POWER via SNMP
+					$power = $session->get($second_oid);
+					$power = round(($power-15000)/500,2);
+			//		$power = round($power/10,4);
+
+					if ($power < "-25") {
+						$power = "<font color=red>" . $power . "</font>" ;
+					} else {
+						$power = "<font color=green>" . $power . "</font>" ;
+					}
+					if ($row{'RF'} == "1") {
+						$index = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + 162;
+						$rf_status_oid = "1.3.6.1.4.1.8886.18.2.6.21.3.1.2." . $index;
+						snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+						$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+						$rf_state = $session->get($rf_status_oid);
+						if ($rf_state == "0" || $rf_state == "2") {
+							$rf_state = "<img src=\"pic/off_small.png\">" ;
+						}else if($rf_state == "1") {
+							$rf_state = "<img src=\"pic/green_small.png\">" ;
+						}
+					}
+				}else{
+						$status = "<font color=red>Offline</font>";
+					}
+
+				//LAST ONLINE
+				snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+				$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+				$last_online = $session->get($third_oid);
+				$last_online = str_replace('Hex-STRING: ', '', $last_online);
+				$loa = explode(' ', $last_online);
+				$year = $loa[0] . $loa[1];
+				$year = hexdec($year);
+				$month = hexdec($loa[2]);
+				$day = hexdec($loa[3]);
+				$hour = hexdec($loa[4]);
+				$hour = str_pad($hour, 2, '0', STR_PAD_LEFT);
+				$minute = hexdec($loa[5]);
+				$minute = str_pad($minute, 2, '0', STR_PAD_LEFT);	
+				$last_online = $year . "-". $month . "-". $day . "  " . $hour . ":" . $minute ;
+				//ONU OFFLINE REASON
+				snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+				$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+				$offline_reason = $session->get($offline_reason_oid);
+				//    if ($session->getError())
+				// exit(var_dump($session->getError()));
+				if ($offline_reason == '1') {
+					$offline_reason = "unknown(1)" ;
+				} else if($offline_reason == '6') {
+					$offline_reason = "dyingGaspReceived(6)" ;
+				} else if($offline_reason == '12') {
+					$offline_reason = "backboneFiberCut(12)" ;	
+				} else if($offline_reason == '13') {
+					$offline_reason = "branchFiberCut(13)" ;
+				} else if($offline_reason == '7') {
+					$offline_reason = "emergencyStop(7)" ;
+				} else if($offline_reason == '11') {
+					$offline_reason = "duplicatedOnuId(11)" ;
+				} else if ($offline_reason == '10') {
+					$offline_reason = "rangingFlag(10)" ;
+				} else if ($offline_reason == '3') {
+							$offline_reason = "hostRequest(3)" ;
+					} else if ($offline_reason == '11') {
+							$offline_reason = "duplicatedOnuId(11)" ;
+					}
+
+
+
+
+			/*	if ($row{'STATE'} == 1) {
+					$state = "<img src=\"pic/green_small.png\">";
+				}else{
+					$state = "<img src=\"pic/off_small.png\">";
+				}
+			*/
+			//SYNC CHCECK
+				$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+				$check_sn = $session->get($sn_oid);
+					$check_sn = str_replace("52434D47","RCMG", $check_sn);
+				$db_sn = $row{'SN'};
+				if (strcasecmp($check_sn, $db_sn) == 0){
+					$sync = "<font color=green>OK</font>" ;
+				}
+				else{
+							$sync = "<font color=red>NOT OK</font>";
+				}
+
+			// PRINT TABLE
+				print "<tr align=right><td><input type=\"checkbox\" class=\"case\" name=\"check_list[]\" value=\"" . $row{'ID'} . "\"></td><td><a href=\"customers.php?edit=1&id=".$row{'ID'}."\">".$row{'PON_ONU_ID'}."</a></td><td>".$row{'NAME'}."</td><td>".$row{'ADDRESS'}."</td><td>".$row{'ONU_NAME'}."</td><td><a href=\"onu_details.php?id=" . $row{'ID'} . "\">".$rf_state."</a></td><td>" . $db_sn ."</td><td>" . $power ."</td><td align=\"center\" style=\"vertical-align:middle\"><a href=\"onu_details.php?id=" . $row{'ID'} . "\">" . $status ."</a></td><td>" . $last_online ."</td><td>" . $offline_reason ."</td><td>" . $sync ."</td></tr>";
+			}
+			?>
+		</table>
+	</div>
+	<div class="row justify-content-md-center">
+		<div class="form-group">
+			<label for="olt_port">OLT</label>
+			<select class="form-control" id="select-olt-2" name="olt_port">
+			<option value="" class="rhth">Select OLT</option>
+			<?php
+			try {
+				$result = $db->query("SELECT * from OLT");
+			} catch (PDOException $e) {
+				echo "Connection Failed:" . $e->getMessage() . "\n";
+				exit;
+			}
+
+			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+				print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+			}
+
+			?>
+			</select>
+			<select class="form-control" id="select-pon-2" name="pon_port">
+			<option value="">PON PORT</option>
+			</select>
+			<button class="btn btn-info" type="submit" name="SUBMIT" value="MOVE SELECTED">MOVE SELECTED</button>					
+		</div>
+	</div>
+</div>
+<?php
+}
+?>

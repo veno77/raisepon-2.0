@@ -7,6 +7,7 @@ class customers {
 	private $sn;
 	private $address;
 	private $egn;
+	private $ports;
 	private $old_ports;
 	private $service;
 	private $old_service;
@@ -22,6 +23,7 @@ class customers {
 	private $olt_ip_address;
 	private $pon_onu_id;
 	private $pon_type;
+	private $auto;
 	
 	function __construct() {
 		if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -29,7 +31,7 @@ class customers {
 			$this->name = !empty($_POST['name'])	? $this->test_input($_POST['name']) : null;
 			$this->sn = !empty($_POST['sn'])	? $this->test_input($_POST['sn']) : null;
 			$this->address = !empty($_POST['address'])	? $this->test_input($_POST['address']) : null;
-			$this->egn = !empty($_POST['egn']) ? $this->test_input($_POST['egn']) : 0;
+			$this->egn = !empty($_POST['egn']) ? $this->test_input($_POST['egn']) : null;
 			$this->old_ports = !empty($_POST['old_ports'])	? $this->test_input($_POST['old_ports']) : null;
 			$this->service = !empty($_POST['service']) ? $this->test_input($_POST['service']) : null;
 			$this->olt = !empty($_POST['olt']) ? $this->test_input($_POST['olt']) : null;
@@ -39,6 +41,7 @@ class customers {
 			$this->old_pon_onu_id = !empty($_POST['old_pon_onu_id']) ? $this->test_input($_POST['old_pon_onu_id']) : null;
 			$this->line_profile = !empty($_POST['line_profile']) ? $this->test_input($_POST['line_profile']) : null;
 			$this->service_profile = !empty($_POST['service_profile']) ? $this->test_input($_POST['service_profile']) : null;
+			$this->auto = !empty($_POST['auto']) ? $this->test_input($_POST['auto']) : "NO";
 			$this->submit = !empty($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
 		}
 		
@@ -95,30 +98,53 @@ class customers {
 	function getOld_pon_onu_id() {
 		return $this->old_pon_onu_id;
 	}
-
+	function getAuto() {
+		return $this->auto;
+	}
 	
 	function add_customer() {
-		// FIND FREE ID
-		try {
-			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT PON_ONU_ID from CUSTOMERS where OLT='$this->olt' and PON_PORT='$this->pon_port'");
-		} catch (PDOException $e) {
-			$error = "Connection Failed:" . $e->getMessage() . "\n";
-			return $error;
+		if (!empty($this->olt) && !empty($this->pon_port)) {
+			// FIND FREE ID
+			try {
+				$conn = db_connect::getInstance();
+				$result = $conn->db->query("SELECT PON_ONU_ID from CUSTOMERS where OLT='$this->olt' and PON_PORT='$this->pon_port'");
+			} catch (PDOException $e) {
+				$error = "Connection Failed:" . $e->getMessage() . "\n";
+				return $error;
+			}
+			
+			
+			$arr2 = array();
+			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+				array_push($arr2, $row{'PON_ONU_ID'});
+			}
+			//CHECK PON TYPE
+			try {
+				$conn = db_connect::getInstance();
+				$result = $conn->db->query("SELECT CARDS_MODEL.PON_TYPE from CARDS_MODEL LEFT JOIN PON on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where PON.ID='$this->pon_port'");
+			} catch (PDOException $e) {
+				$error = "Connection Failed:" . $e->getMessage() . "\n";
+				return $error;
+			}
+			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+				$this->pon_type = $row["PON_TYPE"];
+			}
+			
+			
+			if ($this->pon_type == "EPON")
+				$arr1 = range(1,64);
+			if ($this->pon_type == "GPON")
+				$arr1 = range(1,128);
+			$arr3 = array_diff($arr1,$arr2);
+			$arr3 = array_filter($arr3);
+			if (empty($arr3)) {
+				$error = "Not Free ONU IDs";
+				return $error;
+			}
+			$pon_onu_id = array_values($arr3)[0];
+		} else {
+			$pon_onu_id = "NULL";
 		}
-		$arr2 = array();
-		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-        	array_push($arr2, $row{'PON_ONU_ID'});
-		}
-		$arr1 = range(1,128);
-		$arr3 = array_diff($arr1,$arr2);
-		$arr3 = array_filter($arr3);
-		if (empty($arr3)) {
-			$error = "Not Free ONU IDs";
-			return $error;
-		}
-		$pon_onu_id = array_values($arr3)[0];
-		
 		// CHECK Serial Number for duplicates
 		try {
 			$conn = db_connect::getInstance();
@@ -134,57 +160,107 @@ class customers {
 			}
         }
 		//ADD CUSTOMER IN DATABASE
+		if (!empty($this->egn)) {
+			$egn = "'" . $this->egn . "'";
+		}else{
+			$egn = "NULL";
+		}
+		if (!empty($this->service)) {
+			$service = "'" . $this->service . "'";
+		}else{
+			$service = "NULL";
+		}
+		if (!empty($this->olt)) {
+			$olt = "'" . $this->olt . "'";
+		}else{
+			$olt = "NULL";
+		}
+		if (!empty($this->pon_port)) {
+			$pon_port = "'" . $this->pon_port . "'";
+		}else{
+			$pon_port = "NULL";
+		}
+
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("INSERT INTO CUSTOMERS (NAME, ADDRESS, EGN, OLT, PON_PORT, PON_ONU_ID, SERVICE, SN) VALUES ('$this->name', '$this->address', '$this->egn', '$this->olt', '$this->pon_port', '$pon_onu_id', '$this->service', '$this->sn')");
+			$result = $conn->db->query("INSERT INTO CUSTOMERS (NAME, ADDRESS, EGN, OLT, PON_PORT, PON_ONU_ID, SERVICE, SN, AUTO) VALUES ('$this->name', '$this->address', $egn, $olt, $pon_port, $pon_onu_id, $service, '$this->sn', '$this->auto')");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
 		}
+
 		//ADD_ONU_VIA_SNMP
-		$error = $this->add_onu_via_snmp($this->sn);
-		if (!empty($error)) {
-			return $error;
-		}
-		//CREATE RRD
-		//TRAFFIC RRD
-		$error = $this->onu_traffic_rrd($this->olt_ip_address, $this->big_onu_id);
-		if (!empty($error)) {
-			return $error;
-		}
-		//ONU ETH PORTS RRD
-		$error = $this->onu_eth_ports_rrd($this->ports, $this->olt_ip_address, $this->big_onu_id);
-		if (!empty($error)) {
-			return $error;
-		}
+		if (!empty($this->olt) && !empty($this->pon_port)) {
+			$error = $this->add_onu_via_snmp($this->sn);
+			if (!empty($error)) {
+				return $error;
+			}
 		
-		// ONU POWER RRD
-		$error = $this->onu_power_rrd($this->olt_ip_address, $this->big_onu_id); 
-		if (!empty($error)) {
-			return $error;
+			//CREATE RRD
+			//TRAFFIC RRD
+			$error = $this->onu_traffic_rrd($this->olt_ip_address, $this->big_onu_id);
+			if (!empty($error)) {
+				return $error;
+			}
+			//ONU ETH PORTS RRD
+			$error = $this->onu_eth_ports_rrd($this->ports, $this->olt_ip_address, $this->big_onu_id);
+			if (!empty($error)) {
+				return $error;
+			}
+			
+			// ONU POWER RRD
+			$error = $this->onu_power_rrd($this->olt_ip_address, $this->big_onu_id); 
+			if (!empty($error)) {
+				return $error;
+			}
 		}
 	}
 	 
 	
 	function edit_customer() {
 		if ($this->olt == $this->old_olt && $this->pon_port == $this->old_pon_port) {
-			$pon_id = $this->old_pon_onu_id ;
+			$pon_onu_id = $this->old_pon_onu_id ;
 		} else {
 			// FIND FREE ONU_ID
-			try {
-				$conn = db_connect::getInstance();
-				$result = $conn->db->query("SELECT PON_ONU_ID from CUSTOMERS where OLT='$this->olt' and PON_PORT='$this->pon_port'");
-        	} catch (PDOException $e) {
-        		$error = "Connection Failed:" . $e->getMessage() . "\n";
-        		return $error;
-        	}
-        	$arr2 = array();
-        	while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-        	array_push($arr2, $row{'PON_ONU_ID'});
-        	}
-        	$arr1 = range(1,128);
-        	$arr3 = array_diff($arr1,$arr2);
-        	$pon_id = array_values($arr3)[0];
+			if (!empty($this->olt) && !empty($this->pon_port)) {
+				try {
+					$conn = db_connect::getInstance();
+					$result = $conn->db->query("SELECT PON_ONU_ID from CUSTOMERS where OLT='$this->olt' and PON_PORT='$this->pon_port'");
+				} catch (PDOException $e) {
+					$error = "Connection Failed:" . $e->getMessage() . "\n";
+					return $error;
+				}
+				$arr2 = array();
+				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+				array_push($arr2, $row{'PON_ONU_ID'});
+				}
+				
+				try {
+					$conn = db_connect::getInstance();
+					$result = $conn->db->query("SELECT CARDS_MODEL.PON_TYPE from CARDS_MODEL LEFT JOIN PON on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where PON.ID='$this->pon_port'");
+				} catch (PDOException $e) {
+					$error = "Connection Failed:" . $e->getMessage() . "\n";
+					return $error;
+				}
+				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+					$this->pon_type = $row["PON_TYPE"];
+				}
+			
+			
+				if ($this->pon_type == "EPON")
+					$arr1 = range(1,64);
+				if ($this->pon_type == "GPON")
+					$arr1 = range(1,128);
+				$arr3 = array_diff($arr1,$arr2);
+        		$arr3 = array_filter($arr3);
+				if (empty($arr3)) {
+					$error = "Not Free ONU IDs";
+					return $error;
+				}
+				$pon_onu_id = array_values($arr3)[0];
+			} else {
+				$pon_onu_id = "NULL";
+			}
 		}
 		
 		// CHECK Serial Number for duplicates
@@ -201,53 +277,75 @@ class customers {
 			return $error;
 		}
 		// UPDATE CUSTOMER	
+		
+		if (!empty($this->egn)) {
+			$egn = "'" . $this->egn . "'";
+		}else{
+			$egn = "NULL";
+		}
+		if (!empty($this->service)) {
+			$service = "'" . $this->service . "'";
+		}else{
+			$service = "NULL";
+		}
+		if (!empty($this->olt)) {
+			$olt = "'" . $this->olt . "'";
+		}else{
+			$olt = "NULL";
+		}
+		if (!empty($this->pon_port)) {
+			$pon_port = "'" . $this->pon_port . "'";
+		}else{
+			$pon_port = "NULL";
+		}
+			
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("UPDATE CUSTOMERS SET NAME = '$this->name', ADDRESS = '$this->address', EGN = '$this->egn', OLT = '$this->olt', PON_PORT = '$this->pon_port', PON_ONU_ID = '$pon_id', SN = '$this->sn', SERVICE = '$this->service' where ID = '$this->customers_id'");
+			$result = $conn->db->query("UPDATE CUSTOMERS SET NAME = '$this->name', ADDRESS = '$this->address', EGN = $egn, OLT = $olt, PON_PORT = $pon_port, PON_ONU_ID = $pon_onu_id, SN = '$this->sn', SERVICE = $service, AUTO = '$this->auto' where ID = '$this->customers_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
-			return $error;
-		}
+			return $error;	
+	}
 
 		//DELETE OLD ONU in OLT VIA SNMP
-		$error = $this->delete_onu_via_snmp();
-		if (!empty($error)) {
-			return $error;
-		}
-		sleep(1);
-		//ADD_ONU_VIA_SNMP
-		$error = $this->add_onu_via_snmp($this->sn);
-		if (!empty($error)) {
-			return $error;
-		}
-		
-		//RENAME OLD TRAFFIC RRD FILES
-		if ($this->olt != $this->old_olt || $this->pon_port != $this->old_pon_port) {
-			$traffic = array("traffic", "unicast", "broadcast", "multicast", "power");
-			foreach ($traffic as $tr) {
-				$old_rrd_file = dirname(dirname(__FILE__)) . "/rrd/" . $old_olt_ip_address . "_" . $this->old_big_onu_id . "_" . $tr . ".rrd";
-				$new_rrd_file = dirname(__FILE__) . "/rrd/" . $this->olt_ip_address . "_" . $this->big_onu_id . "_" . $tr . ".rrd";
-				rename($old_rrd_file, $new_rrd_file);
-			}
-		}
-		//ONU ETH PORTS RRD
-		if ($this->ports != $this->old_ports) {
-			for ($i=1; $i <= $this->old_ports; $i++) {
-				$old_rrd_file = dirname(__FILE__) . "/rrd/" . $old_olt_ip_address . "_" . $this->old_big_onu_id . "_ethernet_" . $i . ".rrd";
-				unlink($old_rrd_file);
-			}
-			
-			$error = $this->onu_eth_ports_rrd($this->ports, $this->olt_ip_address, $this->big_onu_id);
+		if (!empty($this->old_olt) && !empty($this->old_pon_port)) {
+			$error = $this->delete_onu_via_snmp();
 			if (!empty($error)) {
 				return $error;
 			}
+			
+			//UNLINK OLD RRD
+			array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->old_olt_ip_address . "_" . $this->old_big_onu_id . "*"));
 		}
-        // ONU POWER RRD
-		$error = $this->onu_power_rrd($this->olt_ip_address, $this->big_onu_id); 
-		if (!empty($error)) {
-			return $error;
-		}
-
+		sleep(1);
+		//ADD_ONU_VIA_SNMP
+		if (!empty($this->olt) && !empty($this->pon_port)) {
+			$error = $this->add_onu_via_snmp($this->sn);
+			if (!empty($error)) {
+				return $error;
+			}
+			
+			//CREATE RRD
+			//TRAFFIC RRD
+			$error = $this->onu_traffic_rrd($this->olt_ip_address, $this->big_onu_id);
+			if (!empty($error)) {
+				return $error;
+			}
+			
+			//ONU ETH PORTS RRD		
+			if (!empty($this->ports)) {
+				$error = $this->onu_eth_ports_rrd($this->ports, $this->olt_ip_address, $this->big_onu_id);
+				if (!empty($error)) {
+					return $error;
+				}
+			}
+			
+			// ONU POWER RRD
+			$error = $this->onu_power_rrd($this->olt_ip_address, $this->big_onu_id); 
+			if (!empty($error)) {
+				return $error;
+			}
+		} 
 	}
 	
 	function delete_customer() {
@@ -280,7 +378,7 @@ class customers {
 			return $error;
 		}
 		//DELETE RRD FILES
-		array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->olt_ip_address . "_" . $this->big_onu_id . "*"));
+		array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->old_olt_ip_address . "_" . $this->old_big_onu_id . "*"));
 
 	}
 	
@@ -301,7 +399,7 @@ class customers {
 	function get_data_customer() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, ADDRESS, EGN, PON_ONU_ID, OLT, PON_PORT, SN, SERVICE, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where CUSTOMERS.ID='$this->customers_id'");
+			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, ADDRESS, EGN, PON_ONU_ID, OLT, PON_PORT, SN, SERVICE, AUTO, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where CUSTOMERS.ID='$this->customers_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -317,6 +415,7 @@ class customers {
 			$this->sn = $row["SN"];
 			$this->old_service = $row["SERVICE"];
 			$this->old_ports = $row["PORTS"];
+			$this->auto = $row["AUTO"];
 		}	
 		
 		
@@ -395,9 +494,6 @@ class customers {
 		$all_olt_illegal = array();
 		foreach ($rows as $row) {
 			$snmp_obj = new snmp_oid();
-			$illegal_onu_mac_address_oid = $snmp_obj->get_pon_oid("illegal_onu_mac_address_oid", "EPON");
-			$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "EPON");
-			
 			snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
 			snmp_set_quick_print(TRUE);
 			snmp_set_enum_print(TRUE);
@@ -405,35 +501,71 @@ class customers {
 			$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
 			$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
 			if ($status) {
+				//EPON
+				$illegal_onu_mac_address_oid = $snmp_obj->get_pon_oid("illegal_onu_mac_address_oid", "EPON");
+				$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "EPON");
 				$output = $session->walk($illegal_onu_mac_address_oid);
-				$one_olt = array();
-				foreach ($output as $mac_oid => $mac_address) {
-					$mac_address_arr = explode(" ", $mac_address);
-					$new_mac_addr_arr = array();
-					foreach ($mac_address_arr as $mac_addr) {
-						$mac_addr = hexdec($mac_addr);
-						array_push($new_mac_addr_arr, $mac_addr);
+				if ($output) {
+					$one_olt = array();
+					foreach ($output as $mac_oid => $mac_address) {
+						$mac_address_arr = explode(" ", $mac_address);
+						$new_mac_addr_arr = array();
+						foreach ($mac_address_arr as $mac_addr) {
+							$mac_addr = hexdec($mac_addr);
+							array_push($new_mac_addr_arr, $mac_addr);
+						}
+						array_pop($new_mac_addr_arr);
+						$mac_address_bin = implode(".", $new_mac_addr_arr);
+						$search = array(" ", "\"");
+						$mac_address = str_replace($search, "", $mac_address);
+						$pon_interface = str_replace(".", "", str_replace($mac_address_bin, "", str_replace($illegal_onu_mac_address_oid, "", $mac_oid)));
+						$pon_port = bindec(substr(decbin($pon_interface), -6));
+						$slot = bindec(substr(decbin($pon_interface), 0, -6));
+						$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"]);
+						$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $mac_address_bin));
+						$year = hexdec(substr($time, 0, 4));
+						$month = str_pad(hexdec(substr($time, 4,2)), 2, "0", STR_PAD_LEFT);
+						$day = str_pad(hexdec(substr($time, 6,2)), 2, "0", STR_PAD_LEFT);
+						$hour = str_pad(hexdec(substr($time, 8,2)), 2, "0", STR_PAD_LEFT);
+						$minute = str_pad(hexdec(substr($time, 10,2)), 2, "0", STR_PAD_LEFT);
+						$seconds = str_pad(hexdec(substr($time, 12,2)), 2, "0", STR_PAD_LEFT);
+						$time = $year . "-" . $month . "-" . $day . "," . $hour . ":" . $minute . ":" . $seconds;
+						
+						array_push($one_olt, array($mac_address, $slot, $pon_port, $time));
 					}
-					array_pop($new_mac_addr_arr);
-					$mac_address_bin = implode(".", $new_mac_addr_arr);
-					$search = array(" ", "\"");
-					$mac_address = str_replace($search, "", $mac_address);
-					$pon_interface = str_replace(".", "", str_replace($mac_address_bin, "", str_replace($illegal_onu_mac_address_oid, "", $mac_oid)));
-					$pon_port = bindec(substr(decbin($pon_interface), -6));
-					$slot = bindec(substr(decbin($pon_interface), 0, -6));
-					$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"]);
-					$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $mac_address_bin));
-					$year = hexdec(substr($time, 0, 4));
-					$month = str_pad(hexdec(substr($time, 4,2)), 2, "0", STR_PAD_LEFT);
-					$day = str_pad(hexdec(substr($time, 6,2)), 2, "0", STR_PAD_LEFT);
-					$hour = str_pad(hexdec(substr($time, 8,2)), 2, "0", STR_PAD_LEFT);
-					$minute = str_pad(hexdec(substr($time, 10,2)), 2, "0", STR_PAD_LEFT);
-					$seconds = str_pad(hexdec(substr($time, 12,2)), 2, "0", STR_PAD_LEFT);
-					$time = $year . "-" . $month . "-" . $day . "," . $hour . ":" . $minute . ":" . $seconds;
-					
-					array_push($one_olt, array($mac_address, $slot, $pon_port, $time));
+					$all_olt_illegal[$row["ID"]] = $one_olt;				
 				}
-				$all_olt_illegal[$row["ID"]] = $one_olt;
+				//GPON
+				$illegal_onu_sn_oid = $snmp_obj->get_pon_oid("illegal_onu_sn_oid", "GPON");
+				$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "GPON");
+				snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+				snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
+				snmp_set_quick_print(TRUE);
+				snmp_set_enum_print(TRUE);
+				$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
+				$output = $session->walk($illegal_onu_sn_oid);
+				if ($output) {
+					$one_olt = array();
+					foreach ($output as $sn_oid => $sn_value) {
+						$sn = preg_replace("/[^A-Za-z0-9 ]/", '', $sn_value);
+						$sn_array = str_split($sn_value);
+						$new_sn_array = array();
+						foreach ($sn_array as $sn_arr) {
+							$sn_arr = ord($sn_arr);
+							array_push($new_sn_array, $sn_arr);
+						}
+						$sn_array = implode(".", $new_sn_array);
+						$pon_interface = str_replace(".", "", str_replace($sn_array, "", str_replace($illegal_onu_sn_oid, "", $sn_oid)));
+						$pon_port = bindec(substr(decbin($pon_interface), -6));
+						$slot = bindec(substr(decbin($pon_interface), 0, -6));
+						//$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array));
+						snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+						$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
+						$time = $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array);
+						array_push($one_olt, array($sn, $slot, $pon_port, $time));
+					}
+					$all_olt_illegal[$row["ID"]] = $one_olt;				
+				}
 			}	
 		}
 		
@@ -462,7 +594,7 @@ class customers {
 			return $error;
 		}
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-					$this->olt_ip_address = $row["IP_ADDRESS"];
+					$this->old_olt_ip_address = $row["IP_ADDRESS"];
 					$olt_rw = $row["RW"];
 		}
 		try {
@@ -477,10 +609,10 @@ class customers {
 			$slot_id = $row["SLOT_ID"];
 			$pon_type = $row["PON_TYPE"];
 		}
-		$this->big_onu_id = type2id($slot_id, $pon_interface, $this->old_pon_onu_id);
+		$this->old_big_onu_id = type2id($slot_id, $pon_interface, $this->old_pon_onu_id);
 		$snmp_obj = new snmp_oid();
-		$destroy_oid = $snmp_obj->get_pon_oid("row_status_oid", $pon_type) . "." . $this->big_onu_id;
-        $session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
+		$destroy_oid = $snmp_obj->get_pon_oid("row_status_oid", $pon_type) . "." . $this->old_big_onu_id;
+        $session = new SNMP(SNMP::VERSION_2C, $this->old_olt_ip_address, $olt_rw);
 		$session->set($destroy_oid,'i', '6');
 	    if ($session->getError()) {
 			$error = var_dump($session->getError());
@@ -488,6 +620,9 @@ class customers {
 		}
 		$session->close();
 	}
+	
+	
+	
 	private function add_onu_via_snmp($sn) {
 		// PREPARE SNMPSET TO ADD ONU
         try {
@@ -524,11 +659,22 @@ class customers {
 
 		//EXECUTE SNMPSET TO ADD ONU
 		$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
-		if ($this->pon_type == "GPON")
-		$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $row_status_oid), array('s', 'i', 'i', 'i'), array($this->sn, $line_profile_id, $service_profile_id, '4')); 
-		if ($this->pon_type = "EPON") {
-		$sn = "0x" . $this->sn;	
-		$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $dtype_oid, $row_status_oid, $status_oid), array('x', 'i', 'i', 'i', 'i', 'i'), array($sn, $line_profile_id, $service_profile_id, '0', '4', '1')); 
+		if ($this->pon_type == "GPON") {
+			if (!empty($service_profile_id)) {
+				$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $row_status_oid), array('s', 'i', 'i', 'i'), array($this->sn, $line_profile_id, $service_profile_id, '4')); 
+			} else {
+				$session->set(array($sn_oid, $row_status_oid), array('s', 'i'), array($this->sn, '4'));
+			}
+		}
+		if ($this->pon_type == "EPON") {
+			$sn = "0x" . $this->sn;	
+			if (!empty($service_profile_id)) {
+				$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $dtype_oid, $row_status_oid, $status_oid), array('x', 'i', 'i', 'i', 'i', 'i'), array($sn, $line_profile_id, $service_profile_id, '0', '4', '1')); 
+				echo "array($sn_oid, $line_profile_oid, $service_profile_oid, $dtype_oid, $row_status_oid, $status_oid), array('x', 'i', 'i', 'i', 'i', 'i'), array($sn, $line_profile_id, $service_profile_id, '0', '4', '1')";
+			} else {
+				$session->set(array($sn_oid, $dtype_oid, $row_status_oid, $status_oid), array('x', 'i', 'i', 'i'), array($sn, '0', '4', '1')); 
+			}
+
 		}
 		if ($session->getError()) {
 			try {
