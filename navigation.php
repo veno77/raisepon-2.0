@@ -1,5 +1,5 @@
-<nav class="navbar navbar-inverse">
-        <div class="container">
+<nav class="navbar navbar-inverse navbar-fixed-top">
+	<div class="container-fluid" style="display: flex;justify-content: center;">
           <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
 				<span class="sr-only">Toggle navigation</span>
@@ -37,14 +37,13 @@
 				</ul>
 			</li>
 				<?php if ($user_class == "9") { ?>
-				<li><a href="accounts.php">Accounts</a></li>
-				<?php } ?>
-			  
+					<li><a href="accounts.php">Accounts</a></li>
+				<?php } ?>			  
             </ul>
 			<a href="logout.php"><button class="btn navbar-btn">Logout</button></a>
-          </div><!--/.nav-collapse -->
-		  <?php } ?>
-        </div>
-      </nav>
+		</div><!--/.nav-collapse -->
+		<?php } ?>
+	</div>
+</nav>
 	  
 		
