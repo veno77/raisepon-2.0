@@ -670,7 +670,6 @@ class customers {
 			$sn = "0x" . $this->sn;	
 			if (!empty($service_profile_id)) {
 				$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $dtype_oid, $row_status_oid, $status_oid), array('x', 'i', 'i', 'i', 'i', 'i'), array($sn, $line_profile_id, $service_profile_id, '0', '4', '1')); 
-				echo "array($sn_oid, $line_profile_oid, $service_profile_oid, $dtype_oid, $row_status_oid, $status_oid), array('x', 'i', 'i', 'i', 'i', 'i'), array($sn, $line_profile_id, $service_profile_id, '0', '4', '1')";
 			} else {
 				$session->set(array($sn_oid, $dtype_oid, $row_status_oid, $status_oid), array('x', 'i', 'i', 'i'), array($sn, '0', '4', '1')); 
 			}
@@ -698,7 +697,7 @@ class customers {
 	function onu_traffic_rrd($olt_ip_address, $big_onu_id) {
 		$traffic = array("traffic", "unicast", "broadcast", "multicast");
 		foreach ($traffic as $tr) {
-			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_" . $tr . ".rrd";
+			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_" . $tr . ".rrd";
 			$opts = array( "--step", "300", "--start", "0",
 			   "DS:input:DERIVE:600:0:U",
 			   "DS:output:DERIVE:600:0:U",
@@ -724,7 +723,7 @@ class customers {
 	function onu_eth_ports_rrd($ports, $olt_ip_address, $big_onu_id) {
 		//ETHERNET PORTS RRD
 		for ($i=1; $i <= $ports; $i++) {
-			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_ethernet_" . $i . ".rrd";
+			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_ethernet_" . $i . ".rrd";
 			$opts = array( "--step", "300", "--start", "0",
 			   "DS:input:DERIVE:600:0:U",
 			   "DS:output:DERIVE:600:0:U",
@@ -749,7 +748,7 @@ class customers {
 	}
 	
 	function onu_power_rrd($olt_ip_address, $big_onu_id) {
-		$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power.rrd";
+		$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_power.rrd";
 		$opts = array( "--step", "300", "--start", "0",
 		   "DS:input:GAUGE:600:U:U",
 		   "DS:output:GAUGE:600:U:U",
