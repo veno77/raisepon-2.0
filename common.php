@@ -1,7 +1,8 @@
 <?php
+session_cache_limiter('private_no_expire');
 session_start();
 if (!isset($_SESSION["id"]) && false == strpos($_SERVER['REQUEST_URI'], 'login.php')) {
-header("Location: login.php");
+	header("Location: login.php");
 }
 //header('Content-Type: text/html; charset=utf-8');
 print "<link rel=\"stylesheet\" href=\"./css/bootstrap.min.css\">";
@@ -55,6 +56,19 @@ function getPage(customer_id, type) {
 	jQuery.ajax({
 		url: "onu_info.php",
 		data: {customer_id: customer_id, type: type},
+		type: "POST",
+		success:function(data){$('#output').html(data);}
+	});
+	$('#xpon').dropdown();
+	$('#tools').dropdown();
+}
+
+function getPageRF(customer_id, type) {
+	var selected = $('#rf_menu option:selected');
+	$('#output').html('<center><img src="pic/loading.gif" /></center>');
+	jQuery.ajax({
+		url: "onu_info.php",
+		data: {customer_id: customer_id, type: type, rf_val: selected.val()},
 		type: "POST",
 		success:function(data){$('#output').html(data);}
 	});

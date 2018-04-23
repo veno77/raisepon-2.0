@@ -25,7 +25,10 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	if($row{'TYPE'} == '2')
 		$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
         $olt_ip_address = $row["IP_ADDRESS"];
-        $rrd_name = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_ethernet_" . $port . ".rrd";
+		$sn = $row["SN"];
+		$olt_name = $row["OLT_NAME"];
+		$customer_name = $row["NAME"];
+        $rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $port . ".rrd";
 
   $opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=B/s", "--title=Daily Traffic Ethernet Port $port",
                  "DEF:inoctets=$rrd_name:input:AVERAGE",
@@ -78,9 +81,9 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
                  "COMMENT: ",
                  "GPRINT:outbits:MAX:Max Out\: %6.2lf %sBps\\r"
                );
-  $rrd_traffic_url = $olt_ip_address . "_" . $big_onu_id . "_ethernet_" . $port . ".gif"; 
-  $rrd_traffic_url_week = $olt_ip_address . "_" . $big_onu_id . "_ethernet_" . $port . "week.gif";
-  $rrd_traffic_url_month = $olt_ip_address . "_" . $big_onu_id . "_ethernet_" . $port . "month.gif";
+  $rrd_traffic_url = $sn . "_ethernet_" . $port . ".gif"; 
+  $rrd_traffic_url_week = $sn . "_ethernet_" . $port . "week.gif";
+  $rrd_traffic_url_month = $sn . "_ethernet_" . $port . "month.gif";
   $rrd_traffic = dirname(__FILE__) . "/rrd/" . $rrd_traffic_url;
   $rrd_traffic_week = dirname(__FILE__) . "/rrd/" . $rrd_traffic_url_week;
   $rrd_traffic_month = dirname(__FILE__) . "/rrd/" . $rrd_traffic_url_month;
@@ -95,7 +98,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
     echo "rrd_graph() ERROR: $err\n";
   }
 }
-print "<center><h2>RRD Traffic Graphs for ONU: $olt_ip_address :: $big_onu_id</h2> ";
+print "<center><h3>RRD Traffic Graphs for $customer_name @ OLT:$olt_name : ONU_SN: $sn</h3> ";
 print "<p><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p>";
 print "<p><img src=\"rrd/" . $rrd_traffic_url_week . "\"></img></p>";
 print "<p><img src=\"rrd/" . $rrd_traffic_url_month . "\"></img></p>";

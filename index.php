@@ -146,6 +146,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 								} else {
 									$power = "<font color=green>" . $power . "</font>" ;
 								}
+								/*
 								if ($row{'RF'} == "1") {
 									$index = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + 162;
 									$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid") . "." . $index;
@@ -158,6 +159,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 										$rf_state = "<img src=\"pic/green_small.png\">" ;
 									}
 								}
+								*/
 							}else{
 								$status = "<font color=red>Offline</font>";
 								}
@@ -253,6 +255,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 					</table>
 				</div>
 			</div>
+<!--
 			<div class="row justify-content-md-center">
 				<div class="text-center">
 					<div class="form-group">
@@ -273,6 +276,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 					</div>
 				</div>
 			</div>
+-->
 		</form>
 	</div>
 	<div class="container">

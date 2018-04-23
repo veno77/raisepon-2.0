@@ -4,15 +4,18 @@ include ("common.php");
 include ("classes/snmp_class.php");
 $snmp_obj = new snmp_oid();
 try {
-	$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICE_PROFILE.PORTS, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID");
+	$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICE_PROFILE.PORTS, SERVICE_PROFILE.HGU, SERVICE_PROFILE.RF, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID");
 } catch (PDOException $e) {
 	echo "Connection Failed:" . $e->getMessage() . "\n";
 	exit;
 }
 
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+	$pon_type = $row{'PON_TYPE'};
+	$hgu = $row{'HGU'};
  	$catv_input_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + 160;	
-//	$rf = $row{'RF'};
+	$rf = $row{'RF'};
+	$sn = $row["SN"];
 	$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
 	$big_onu_id_2 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
 	if ($row{'PON_TYPE'} == "GPON") {
@@ -22,11 +25,11 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		$index_2 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
 	}
 	$olt_ip_address = $row["IP_ADDRESS"];	
-	$rrd_traffic = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_traffic.rrd";
-	$rrd_unicast = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_unicast.rrd";
-	$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_broadcast.rrd";
-	$rrd_multicast = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_multicast.rrd";
-	$rrd_power = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power.rrd";
+	$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd";
+	$rrd_unicast = dirname(__FILE__) . "/rrd/" . $sn . "_unicast.rrd";
+	$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $sn . "_broadcast.rrd";
+	$rrd_multicast = dirname(__FILE__) . "/rrd/" . $sn . "_multicast.rrd";
+	$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.rrd";
 	$total_input_traffic = 0;
 	$total_output_traffic = 0;
 	$multicast_in = 0;
@@ -51,15 +54,17 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	//OLT RX Power
 	$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 	// RF Power
-	//	$rf_input_power_oid = "1.3.6.1.4.1.8886.18.2.6.21.2.1.2." . $catv_input_id;
+	$rf_input_power_oid = $snmp_obj->get_pon_oid("onu_rf_rx_power_oid", $row{'PON_TYPE'}) . "." . $catv_input_id;
 	//Ethernet Ports of ONU
 	$octets_in_ethernet = $snmp_obj->get_pon_oid("uni_octets_in_ethernet_oid", $row{'PON_TYPE'}) . ".";
 	$octets_out_ethernet = $snmp_obj->get_pon_oid("uni_octets_out_ethernet_oid", $row{'PON_TYPE'}) . ".";
 		
 	//GET STATUS via SNMP
 	snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+//	if(isset($row{'IP_ADDRESS'})) {
 	$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
 	$status = $session->get($status_oid);
+	
 	if ($status == "1") {
     	$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
 /*		$ret = rrd_update($rrd_traffic, array("N:$total_input_traffic:$total_output_traffic"));
@@ -123,8 +128,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			
 			
 		}
-        $rf = "0";
-		if ($rf == "1") {
+   
+		if ($rf == "Yes") {
 			$rf_input_power = $session->get($rf_input_power_oid);
 			$rf_input_power = round($rf_input_power/10,4);
 			$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:$rf_input_power"));
@@ -136,18 +141,20 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			$err = rrd_error();
 			echo "ERROR occurred: $err\n";
 		}
-		for ($i=1; $i <= $row{'PORTS'}; $i++) {
-			$ethernet_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + $i;
-			$octets_ethernet = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_ethernet_" . $i . ".rrd";
-			$octets_in_ethernet_id = $octets_in_ethernet . $ethernet_id;
-			$octets_out_ethernet_id = $octets_out_ethernet . $ethernet_id;
-			$octets_in_ethernet_val = $session->get($octets_in_ethernet_id);
-			$octets_out_ethernet_val = $session->get($octets_out_ethernet_id);
-			$ret = rrd_update($octets_ethernet, array("N:$octets_in_ethernet_val:$octets_out_ethernet_val"));
-			if( $ret == 0 )
-			{
-				$err = rrd_error();
-				echo "ERROR occurred: $err\n";
+		if ($hgu !== "Yes") {
+			for ($i=1; $i <= $row{'PORTS'}; $i++) {
+				$ethernet_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + $i;
+				$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".rrd";
+				$octets_in_ethernet_id = $octets_in_ethernet . $ethernet_id;
+				$octets_out_ethernet_id = $octets_out_ethernet . $ethernet_id;
+				$octets_in_ethernet_val = $session->get($octets_in_ethernet_id);
+				$octets_out_ethernet_val = $session->get($octets_out_ethernet_id);
+				$ret = rrd_update($octets_ethernet, array("N:$octets_in_ethernet_val:$octets_out_ethernet_val"));
+				if( $ret == 0 )
+				{
+					$err = rrd_error();
+					echo "ERROR occurred: $err\n";
+				}
 			}
 		}
 	}

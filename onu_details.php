@@ -33,6 +33,10 @@ if ($_GET) {
 		$sn = $row['SN'];
 	}
 }
+
+
+
+
 print "<div class=\"container\"><div class=\"text-center\"><div class=\"page-header\"><h2>" . $olt_name . " >> " . $name . " " . $slot_id . "/" . $port_id . "/" . $pon_onu_id . " SN::" . $sn . " Statistics</h2></div></div>";
 print "<div class=\"row justify-content-md-center\"><div class=\"col-md-4 \">";
 print "<nav class=\"navbar\"><ul class=\"nav navbar-nav\">";
@@ -42,11 +46,10 @@ print "<li" . echoActiveClassIfRequestMatches("graphs") . "><a onClick=\"getPage
 print "</ul></div></nav>";
 print "</div>";
 
+
 print "<div id=\"output\">";
 print "<script>getPage('". $customer_id . "', 'info');</script>";
 print "</div></div>";
-
-print "</center>";
 
 
 ?>

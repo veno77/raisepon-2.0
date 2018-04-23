@@ -29,7 +29,8 @@ if ($_GET) {
 			}
 			$olt_ip_address = $row["IP_ADDRESS"];
 			$sn = $row["SN"];
-			$rrd_power = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power.rrd";
+			
+			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.rrd";
 			if ($rf == "1") {
 				$opts = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
 					"DEF:inoctets=$rrd_power:input:AVERAGE",
@@ -110,12 +111,12 @@ if ($_GET) {
 					 "GPRINT:inoctets:MAX:Max\: %6.2lf dBm\\r",
 				       );
 			}
-			$rrd_power_url = $olt_ip_address . "_" . $big_onu_id . "_power.gif";
-			$rrd_power_url_week = $olt_ip_address . "_" . $big_onu_id . "_power_week.gif";
-			$rrd_power_url_month = $olt_ip_address . "_" . $big_onu_id . "_power_month.gif";
-			$rrd_power = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power.gif";
-			$rrd_power_week = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power_week.gif";
-			$rrd_power_month = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power_month.gif";
+			$rrd_power_url = $sn . "_power.gif";
+			$rrd_power_url_week = $sn . "_power_week.gif";
+			$rrd_power_url_month = $sn . "_power_month.gif";
+			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.gif";
+			$rrd_power_week = dirname(__FILE__) . "/rrd/" . $sn . "_power_week.gif";
+			$rrd_power_month = dirname(__FILE__) . "/rrd/" . $sn . "_power_month.gif";
 
 			$ret = rrd_graph($rrd_power, $opts);
 			$ret = rrd_graph($rrd_power_week, $opts2);
@@ -126,7 +127,7 @@ if ($_GET) {
 				echo "rrd_graph() ERROR: $err\n";
 			}
 		}
-		print "<center><h2>RRD Power Graphs for <font color=blue> $customer_name </font> @ OLT::$olt_name ONU::$big_onu_id_2 SN::$sn</h2> ";
+		print "<center><h3>RRD Power Graphs for <font color=blue> $customer_name </font> @ OLT::$olt_name  ONU_SN::$sn</h3> ";
 		print "<p><img src=\"rrd/" . $rrd_power_url . "\"></img></p>";
 		print "<p><img src=\"rrd/" . $rrd_power_url_week . "\"></img></p>";
 		print "<p><img src=\"rrd/" . $rrd_power_url_month . "\"></img></p>";

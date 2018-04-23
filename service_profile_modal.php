@@ -29,11 +29,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			</div>
 		</div>
 	</div>
-		<div class="row">
+	<div class="row">
 		<div class="col-md-4 col-md-offset-4">
 			<div class="form-group">
 				<label for="service_profile_id">Service_Profile_Id</label>
 				<input type="text" name="service_profile_id" class="form-control" placeholder="Service_Profile_Id" aria-describedby="sizing-addon1" id="service_profile_id" <?php if(null !== $service_profile_obj->getService_profile_id()) print "value=\"" . $service_profile_obj->getService_profile_id() . "\""; ?> >
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-md-2 col-md-offset-4">
+			<div class="form-group">
+				<label><input type="checkbox" id="hgu" name="hgu" value="Yes"<?php if($service_profile_obj->getHgu() == "Yes") print "checked"; ?>> HGU</label>
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="form-group">
+				<label><input type="checkbox" id="rf" name="rf" value="Yes"<?php if($service_profile_obj->getRf() == "Yes") print "checked"; ?>> RF</label>
 			</div>
 		</div>
 	</div>

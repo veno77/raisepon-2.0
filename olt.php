@@ -8,7 +8,7 @@ include ("classes/snmp_class.php");
 if ($user_class < "6")
 	exit();
 
-$olt_obj = new olt();
+$olt_obj = new olt(); 
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
@@ -76,6 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<th>Status</th>
 						<th>Temp</th>
 						<th>CPU</th>
+						<th>Uptime</th>
 						<th>Config</th>
 						<th>Edit</th>
 					  </tr>
@@ -91,6 +92,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						$temp = '';
 						$save = '';
 						$cpu = '';
+						$sysuptime = '';
 						if ($status) {
 							$status = "<font color=green>Online</font>";
 							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
@@ -106,6 +108,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							}else{
 								$cpu = $cpu . "%";
 							}
+							$sysuptime = $session->get($snmp_obj->get_pon_oid("sys_uptime_oid", "OLT"));
+							$sysuptime_days = round($sysuptime/(100*3600*24),0);
+							$sysuptime_hours = $sysuptime/(100*3600)%24;
+							$sysuptime_minutes = $sysuptime/(100*60)%60;
+							$sysuptime = $sysuptime_days . " day(s) " . $sysuptime_hours . " hour(s) " . $sysuptime_minutes . " minutes";
 							$save = '<form action="save.php" method="post"><input type="hidden" name="ip_address" value="' . $row{'IP_ADDRESS'} .'"><input type="hidden" name="rw" value="' . $row{'RW'} .'"><button type="submit" class="btn btn-default" name="SUBMIT" value="SAVE">SAVE</button></form>';
 						}else{
 							$status = "<font color=red>Offline</font>";
@@ -122,6 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<td><?php echo $status; ?></td>
 							<td><?php echo $temp; ?></td>
 							<td><?php echo $cpu; ?></td>
+							<td><?php echo $sysuptime; ?></td>
 							<td><?php echo $save; ?></td>
 							<td><button type="button" class="btn btn-default" onClick="getOlt('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
 						</tr>
@@ -131,7 +139,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					</tbody>
 				</table>
 			</div>
-		</div>
+		</div> 
 	</div>
 </div>
 <div class="container">

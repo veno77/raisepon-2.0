@@ -14,8 +14,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	if ($_POST["type"]) {
                 $type = test_input($_POST["type"]);
         }
-
-        if ($_POST["type"] == "Reboot") {
+	if (isset($_POST["rf_val"])) {
+                $rf_val = test_input($_POST["rf_val"]);
+        }
+	if ($_POST["type"] == "Reboot") {
 		try {
 			$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS)as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.ID = '$customer_id'");
 		} catch (PDOException $e) {
@@ -39,12 +41,48 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$reboot_oid = $snmp_obj->get_pon_oid("onu_reboot_oid", $pon_type) . "." . $index;
 		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $rw);
+		
 		$reboot = $session->set($reboot_oid, 'i', '1');
 		if ($session->getError())
 				return(var_dump($session->getError()));
-        echo "<center><div class=\"bg-success  text-white\">Onu Rebooted Succesfully</center></div>";
+		echo "<center><div class=\"bg-success  text-white\">Onu Rebooted Succesfully</center></div>";
 
-        }
+	}
+		
+	if ($_POST["type"] == "SET_RF") {
+		try {
+			$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS)as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.ID = '$customer_id'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			$ip_address = $row['IP_ADDRESS'];
+			$port_id = $row['PORT_ID'];
+			$slot_id = $row['SLOT_ID'];
+			$pon_onu_id = $row['PON_ONU_ID'];
+			$olt_name = $row['OLT_NAME'];
+			$ro = $row['RO'];
+			$rw = $row['RW'];
+			$olt_type = $row['TYPE'];
+			$name = $row['NAME'];
+			$pon_type = $row['PON_TYPE'];
+		}
+
+		if ($pon_type == "EPON")
+		$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
+		if ($pon_type == "GPON")
+		$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		
+	
+		$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
+		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $rw);
+		$set_rf = $session->set($onu_rf_status_oid, 'i', $rf_val);
+		if ($session->getError())
+				return(var_dump($session->getError()));
+
+		$type = "ports";
+	}
 
 
 	if ($type == "info"){
@@ -68,33 +106,47 @@ where CUSTOMERS.ID = '$customer_id'");
 		}
 		$index = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id;
 		$index2 = 10000000 * $slot_id + 100000 * $port_id + 1000 * $pon_onu_id + 1;
-		$index3 = type2id($slot_id, $port_id, $pon_onu_id);
-											
-	//	$version_oid = $snmp_obj->get_pon_oid("onu_version_oid", $row{'PON_TYPE'}) . "." . $index;
+		$index_type2id = type2id($slot_id, $port_id, $pon_onu_id);
+		if ($pon_type == "EPON")
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
+		if ($pon_type == "GPON")
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		//	$version_oid = $snmp_obj->get_pon_oid("onu_version_oid", $row{'PON_TYPE'}) . "." . $index;
 	//	$firmware_oid = "1.3.6.1.4.1.8886.18.2.6.1.1.1.7." . $index;
 		$device_type_oid = $snmp_obj->get_pon_oid("onu_device_type_oid", $pon_type) . "." . $index;
 		$hw_revision_oid = $snmp_obj->get_pon_oid("onu_hw_revision_oid", $pon_type) . "." . $index;
 		$match_state_oid = $snmp_obj->get_pon_oid("onu_match_state_oid", $pon_type) . "." . $index;
 		$onu_sysuptime_oid = $snmp_obj->get_pon_oid("onu_sysuptime_oid", $pon_type) . "." . $index;
-		$onu_register_distance_oid = "1.3.6.1.4.1.8886.18.3.1.3.1.1.16." . $index3;
-		$line_profile_id_oid = $snmp_obj->get_pon_oid("line_profile_oid", $pon_type) . "." . $index3;
-		$line_profile_name_oid = $snmp_obj->get_pon_oid("line_profile_name_oid", $pon_type) . "." . $index3;
-		$service_profile_id_oid = $snmp_obj->get_pon_oid("service_profile_oid", $pon_type) . "." . $index3;
-		$service_profile_name_oid = $snmp_obj->get_pon_oid("service_profile_name_oid", $pon_type) . "." . $index3;
+		$onu_register_distance_oid = "1.3.6.1.4.1.8886.18.3.1.3.1.1.16." . $index_type2id;
+		$line_profile_id_oid = $snmp_obj->get_pon_oid("line_profile_oid", $pon_type) . "." . $index_type2id;
+		$line_profile_name_oid = $snmp_obj->get_pon_oid("line_profile_name_oid", $pon_type) . "." . $index_type2id;
+		$service_profile_id_oid = $snmp_obj->get_pon_oid("service_profile_oid", $pon_type) . "." . $index_type2id;
+		$service_profile_name_oid = $snmp_obj->get_pon_oid("service_profile_name_oid", $pon_type) . "." . $index_type2id;
 		$raisecomSWFileVersion1_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.2." . $index . ".0.1" ;
 		$raisecomSWFileVersion2_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.2." . $index . ".0.2" ;
 		$raisecomSWFileCommit1_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.3." . $index . ".0.1" ;
 		$raisecomSWFileCommit2_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.3." . $index . ".0.2" ;
 		$raisecomSWFileActivate1_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.4." . $index . ".0.1" ;
 		$raisecomSWFileActivate2_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.4." . $index . ".0.2" ;
-		$onu_active_state_oid = $snmp_obj->get_pon_oid("status_oid", $pon_type) . "." . $index3;
+		$onu_active_state_oid = $snmp_obj->get_pon_oid("status_oid", $pon_type) . "." . $index_type2id;
+		$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $pon_type) . "." . $index_type2id;
+		$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
 		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 		$device_type = $session->get($device_type_oid);
 		$device_type = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $device_type);
         $hw_revision = $session->get($hw_revision_oid);
 		$match_state = $session->get($match_state_oid);
-	
+		$olt_rx_power = $session->get($olt_rx_power_oid);
+		$olt_rx_power = round($olt_rx_power/10,4) . " dBm";
+		/*
+		$onu_rf_status = $session->get($onu_rf_status_oid);
+		if ($onu_rf_status == "1") {
+			$onu_rf_status = "enabled" ;
+		}
+		if ($onu_rf_status == "2") {
+			$onu_rf_status = "disabled" ;
+		}
+		*/
 		if ($pon_type == "GPON") {	
 			if ($match_state == "1") {
 				$match_state = " match(1) ";
@@ -116,8 +168,6 @@ where CUSTOMERS.ID = '$customer_id'");
 			$service_profile_name = str_replace('Hex-STRING: ', '', $service_profile_name);
 			$service_profile_name = str_replace(' ', '', $service_profile_name);
 			$onu_register_distance = $session->get($onu_register_distance_oid);
-			
-			
 			$onu_sysuptime = $session->get($onu_sysuptime_oid);
 			$onu_sysuptime_days = round($onu_sysuptime/(100*3600*24),0);
 			$onu_sysuptime_hours = $onu_sysuptime/(100*3600)%24;
@@ -205,7 +255,10 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<tr><th>Service Profile Name:</th><td>" . $service_profile_name . "</td></tr>";
 		print "<tr><th>Onu Rx Power:</th><td>" . $onu_rx_power . "</td></tr>";
 		print "<tr><th>Onu Tx Power:</th><td>" . $onu_tx_power . "</td></tr>";
+		print "<tr><th>OLT Rx Power:</th><td>" . $olt_rx_power . "</td></tr>";
 		print "<tr><th>Onu Pon Temperature:</th><td>" . $onu_pon_temp_value . "</td></tr>";
+		
+		// print "<tr><th>RF State:</th><td>" . $onu_rf_status . "</td></tr>";
 		if ($pon_type == "GPON") {	
 			print "<tr><th>Onu Distance:</th><td>" . $onu_register_distance . " m.</td></tr>";
 			print "<tr><th>Onu SysUptime:</th><td>" . $onu_sysuptime . "</td></tr>";
@@ -228,7 +281,7 @@ where CUSTOMERS.ID = '$customer_id'");
 
         if ($type == "ports"){
 		 try {
-                        $result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, SERVICES.ID, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.ID = '$customer_id'");
+                        $result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, SERVICES.ID, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS, SERVICE_PROFILE.HGU, SERVICE_PROFILE.RF from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.ID = '$customer_id'");
                 } catch (PDOException $e) {
                         echo "Connection Failed:" . $e->getMessage() . "\n";
                         exit;
@@ -245,187 +298,241 @@ where CUSTOMERS.ID = '$customer_id'");
 			$olt_type = $row['TYPE'];
 			$name = $row['NAME'];
 			$pon_type = $row['PON_TYPE'];
+			$hgu = $row['HGU'];
+			$rf = $row['RF'];
 		}
 		$index = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000;
-		?>
-		<div class="table-responsive">
-			<table class="table table-bordered table-condensed table-hover">
-				<thead>
-					<tr>
-						<th>UNI</th>
-						<th>Admin</th>
-						<th>Link</th>
-						<th>Flow Control</th>
-						<th>Speed/Duplex</th>
-					<?php if ($pon_type == "GPON") { ?>
-						<th>Native Vlan</th>
-						<th>DS_Policy_ID</th>
-						<th>US_Policy_ID</th>
+		if ($pon_type !== "GPON" || $hgu !== "Yes") {
+			?>
+			<div class="table-responsive">
+				<table class="table table-bordered table-condensed table-hover">
+					<thead>
+						<tr>
+							<th>UNI</th>
+							<th>Admin</th>
+							<th>Link</th>
+							<th>Flow Control</th>
+							<th>Speed/Duplex</th>
+						<?php if ($pon_type == "GPON") { ?>
+							<th>Native Vlan</th>
+							<th>DS_Policy_ID</th>
+							<th>US_Policy_ID</th>
+							<?php } ?>
+						<?php if ($pon_type == "EPON") { ?>
+							<th>Isolation</th>
 						<?php } ?>
-					<?php if ($pon_type == "EPON") { ?>
-						<th>Isolation</th>
-					<?php } ?>
 
-					</tr>
-				</thead>
-		<?php
-		for ($i = 1; $i <= $ports ; $i++) {
-			$gindex = $index + $i;
-			$port_link_oid = $snmp_obj->get_pon_oid("uni_port_link_oid", $pon_type) . "." . $gindex;
-			$port_admin_oid = $snmp_obj->get_pon_oid("uni_port_admin_oid", $pon_type) . "." . $gindex;
-			$port_autong_oid = $snmp_obj->get_pon_oid("uni_port_autong_oid", $pon_type) . "." . $gindex;
-			$port_flowctrl_oid = $snmp_obj->get_pon_oid("uni_port_flowctrl_oid", $pon_type) . "." . $gindex;
-			$port_speed_duplex_oid = $snmp_obj->get_pon_oid("uni_port_speed_duplex_oid", $pon_type) . "." . $gindex;
-		
-			if ($pon_type == "GPON") {
-				snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-				$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
-				$EthPortNativeVlan_oid = $snmp_obj->get_pon_oid("uni_port_nativevlan_oid", $pon_type) . "." . $gindex;
-				$rcGponOnuEthPortDSPolicingProfileId_oid = "1.3.6.1.4.1.8886.18.3.6.5.1.1.19." . $gindex;
-				$rcGponOnuEthPortUSPolicingProfileId_oid = "1.3.6.1.4.1.8886.18.3.6.5.1.1.18." . $gindex;
-				$EthPortNativeVlan = $session->get($EthPortNativeVlan_oid);
-				$rcGponOnuEthPortUSPolicingProfileId = $session->get($rcGponOnuEthPortUSPolicingProfileId_oid);
-				$rcGponOnuEthPortDSPolicingProfileId = $session->get($rcGponOnuEthPortDSPolicingProfileId_oid);
-				$mac_address_perport_oid = "1.3.6.1.4.1.8886.18.3.6.12.1.1.1." . $gindex;
-				$mac_address_perport_number_oid = "1.3.6.1.4.1.8886.18.3.6.12.1.1.2." . $gindex;
-				$mac_address_perport_number = $session->get($mac_address_perport_number_oid);
-				snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-				$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
-				$mac_address_perport = $session->get($mac_address_perport_oid);
-				$mac_address_perport = str_replace('Hex-STRING: ', '', $mac_address_perport);
-				$mac_address_perport = str_replace(' ', '', $mac_address_perport);
-				$mac_address_perport = str_replace('"', '', $mac_address_perport);
-				$mac_address_perport = str_replace(array("\n\r", "\n", "\r"), '', $mac_address_perport);
-				$mac_address_perport = str_split($mac_address_perport, 12);
-				$mac_address_boza = "";
-				foreach ($mac_address_perport as $mac_address) {
-					$mac_address_boza = $mac_address_boza . implode('.', str_split($mac_address,4)) . "<br>";
+						</tr>
+					</thead>
+			<?php
+			for ($i = 1; $i <= $ports ; $i++) {
+				$gindex = $index + $i;
+				$port_link_oid = $snmp_obj->get_pon_oid("uni_port_link_oid", $pon_type) . "." . $gindex;
+				$port_admin_oid = $snmp_obj->get_pon_oid("uni_port_admin_oid", $pon_type) . "." . $gindex;
+				$port_autong_oid = $snmp_obj->get_pon_oid("uni_port_autong_oid", $pon_type) . "." . $gindex;
+				$port_flowctrl_oid = $snmp_obj->get_pon_oid("uni_port_flowctrl_oid", $pon_type) . "." . $gindex;
+				$port_speed_duplex_oid = $snmp_obj->get_pon_oid("uni_port_speed_duplex_oid", $pon_type) . "." . $gindex;
+			
+				if ($pon_type == "GPON") {
+					snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+					$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
+					$EthPortNativeVlan_oid = $snmp_obj->get_pon_oid("uni_port_nativevlan_oid", $pon_type) . "." . $gindex;
+					$rcGponOnuEthPortDSPolicingProfileId_oid = "1.3.6.1.4.1.8886.18.3.6.5.1.1.19." . $gindex;
+					$rcGponOnuEthPortUSPolicingProfileId_oid = "1.3.6.1.4.1.8886.18.3.6.5.1.1.18." . $gindex;
+					$EthPortNativeVlan = $session->get($EthPortNativeVlan_oid);
+					$rcGponOnuEthPortUSPolicingProfileId = $session->get($rcGponOnuEthPortUSPolicingProfileId_oid);
+					$rcGponOnuEthPortDSPolicingProfileId = $session->get($rcGponOnuEthPortDSPolicingProfileId_oid);
+					$mac_address_perport_oid = "1.3.6.1.4.1.8886.18.3.6.12.1.1.1." . $gindex;
+					$mac_address_perport_number_oid = "1.3.6.1.4.1.8886.18.3.6.12.1.1.2." . $gindex;
+					$mac_address_perport_number = $session->get($mac_address_perport_number_oid);
+					snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+					$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
+					$mac_address_perport = $session->get($mac_address_perport_oid);
+					$mac_address_perport = str_replace('Hex-STRING: ', '', $mac_address_perport);
+					$mac_address_perport = str_replace(' ', '', $mac_address_perport);
+					$mac_address_perport = str_replace('"', '', $mac_address_perport);
+					$mac_address_perport = str_replace(array("\n\r", "\n", "\r"), '', $mac_address_perport);
+					$mac_address_perport = str_split($mac_address_perport, 12);
+					$mac_address_boza = "";
+					foreach ($mac_address_perport as $mac_address) {
+						$mac_address_boza = $mac_address_boza . implode('.', str_split($mac_address,4)) . "<br>";
+					}
+					$mac_address_table =  $mac_address_table . "<tr  align=center><td>" . $i . "</td><td>" . $mac_address_boza . "</td><td>" . $mac_address_perport_number . "</td></tr>";
+				}	
+				if ($pon_type == "EPON") {
+					snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+					$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
+					$port_isolation_oid = "1.3.6.1.4.1.8886.18.2.6.3.2.1.4." . $gindex;
+					$port_isolation = $session->get($port_isolation_oid);
 				}
-				$mac_address_table =  $mac_address_table . "<tr  align=center><td>" . $i . "</td><td>" . $mac_address_boza . "</td><td>" . $mac_address_perport_number . "</td></tr>";
-			}	
-			if ($pon_type == "EPON") {
 				snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 				$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
-				$port_isolation_oid = "1.3.6.1.4.1.8886.18.2.6.3.2.1.4." . $gindex;
-				$port_isolation = $session->get($port_isolation_oid);
+				$port_admin = $session->get($port_admin_oid);
+				$port_link = $session->get($port_link_oid);
+				$port_flowctrl = $session->get($port_flowctrl_oid);
+				$port_speed_duplex = $session->get($port_speed_duplex_oid);
+				
+
+				
+				if ($pon_type == "GPON") {
+					
+					
+				
+					if ($port_admin == '2') {
+						$port_admin = "<font color=red>Disabled</font>";
+					} else if ($port_admin == '1') {
+						$port_admin = "<font color=green>Enabled</font>";
+					} else if ($port_admin == '0') {
+						$port_admin = "Unknown";
+					}
+					
+					if ($port_speed_duplex == '0') {
+						$port_speed_duplex = "auto";
+					} else if ($port_speed_duplex == '2') {
+						$port_speed_duplex = "full_100";
+					} else if ($port_speed_duplex == '3') {
+						$port_speed_duplex = "full_1000";
+					} else if ($port_speed_duplex == '4') {
+						$port_speed_duplex = "full_auto";
+					} else if ($port_speed_duplex == '17') {
+						$port_speed_duplex = "half_10";
+					} else if ($port_speed_duplex == '18') {
+						$port_speed_duplex = "half_100";
+					} else if ($port_speed_duplex == '19') {
+						$port_speed_duplex = "half_1000";
+					} else if ($port_speed_duplex == '32') {
+						$port_speed_duplex = "auto_1000";
+					}  else if ($port_speed_duplex == '48') {
+						$port_speed_duplex = "auto_100";
+					}
+					
+					if ($port_link == '2') {
+						$port_link = "<font color=red>Down</font>";
+					} else if ($port_link == '1') {
+						$port_link = "<font color=green>Up</font>";
+					} else if ($port_link == '0') {
+						$port_link = "Unknown";
+					}
+				}
+				if ($pon_type == "EPON") {
+					if ($port_admin == '1') {
+						$port_admin = "<font color=red>Disabled</font>";
+					} else if ($port_admin == '2') {
+						$port_admin = "<font color=green>Enabled</font>";
+					} else if ($port_admin == '0') {
+						$port_admin = "Unknown";
+					}
+					
+					if ($port_speed_duplex == '1') {
+					$port_speed_duplex = "Unknown";
+					} else if ($port_speed_duplex == '2') {
+						$port_speed_duplex = "half_10";
+					} else if ($port_speed_duplex == '3') {
+						$port_speed_duplex = "full_10";
+					} else if ($port_speed_duplex == '4') {
+					$port_speed_duplex = "half_100";
+					} else if ($port_speed_duplex == '5') {
+						$port_speed_duplex = "full_100";
+					} else if ($port_speed_duplex == '6') {
+						$port_speed_duplex = "half_1000";
+					} else if ($port_speed_duplex == '7') {
+						$port_speed_duplex = "full_1000";
+					} else if ($port_speed_duplex == '99') {
+						$port_speed_duplex = "illegal";
+					}
+					
+					if ($port_link == '1') {
+						$port_link = "<font color=red>Down</font>";
+					} else if ($port_link == '2') {
+						$port_link = "<font color=green>Up</font>";
+					} else if ($port_link == '0') {
+						$port_link = "Unknown";
+					}
+					if ($port_isolation == '1') {
+						$port_isolation = "<font color=green>enabled</font>";
+					} else if ($port_isolation = '2') {
+						$port_isolation = "<font color=red>disabled</font>";
+					}	
+				}
+				
+				if ($port_flowctrl == '1') {
+					$port_flowctrl = "<font color=red>Disabled</font>";
+				} else if ($port_flowctrl == '2') {
+					$port_flowctrl = "<font color=green>Enabled</font>";
+				} else if ($port_flowctrl == '0') {
+					$port_flowctrl = "Unknown";
+				}
+				
+				print "<tr  align=center><td>" . $i . "</td><td>" . $port_admin . "</td><td>" . $port_link .  "</td><td>" . $port_flowctrl . "</td><td>" . $port_speed_duplex . "</td>";
+				if ($pon_type == "GPON") 
+					print "<td>" . $EthPortNativeVlan . "</td><td>" . $rcGponOnuEthPortDSPolicingProfileId . "</td><td>" . $rcGponOnuEthPortUSPolicingProfileId . "</td>"	;
+				if ($pon_type == "EPON")			
+					print "<td>" . $port_isolation . "</td>";
+				print "</tr>";
+					
 			}
+			
+			print "</table></div>";
+		}
+		if ($rf == "Yes") {
+			?>
+			<div class="row">
+			<div class="form-group">
+				<form class="form-horizontal" action="onu_details.php" method="post">
+				<?php 		print "<input type=\"hidden\" name=\"customer_id\" value=\"". $customer_id ."\">";
+				?>
+				<div class="col-md-5">
+					<div class="table-responsive">
+						<table class="table table-bordered table-condensed table-hover">
+							<thead>
+								<tr>
+									<th>Port</th>
+									<th>Admin</th>
+									<th>Enable/Disable</th>
+									<th>Do it!</th>
+								</tr>
+							</thead>
+			<?php
 			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 			$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
-			$port_admin = $session->get($port_admin_oid);
-			$port_link = $session->get($port_link_oid);
-			$port_flowctrl = $session->get($port_flowctrl_oid);
-			$port_speed_duplex = $session->get($port_speed_duplex_oid);
-            
-
-			
-			if ($pon_type == "GPON") {
-				
-				
-			
-				if ($port_admin == '2') {
-					$port_admin = "<font color=red>Disabled</font>";
-				} else if ($port_admin == '1') {
-					$port_admin = "<font color=green>Enabled</font>";
-				} else if ($port_admin == '0') {
-					$port_admin = "Unknown";
-				}
-				
-				if ($port_speed_duplex == '0') {
-					$port_speed_duplex = "auto";
-				} else if ($port_speed_duplex == '2') {
-					$port_speed_duplex = "full_100";
-				} else if ($port_speed_duplex == '3') {
-					$port_speed_duplex = "full_1000";
-				} else if ($port_speed_duplex == '4') {
-					$port_speed_duplex = "full_auto";
-				} else if ($port_speed_duplex == '17') {
-					$port_speed_duplex = "half_10";
-				} else if ($port_speed_duplex == '18') {
-					$port_speed_duplex = "half_100";
-				} else if ($port_speed_duplex == '19') {
-					$port_speed_duplex = "half_1000";
-				} else if ($port_speed_duplex == '32') {
-					$port_speed_duplex = "auto_1000";
-				}  else if ($port_speed_duplex == '48') {
-					$port_speed_duplex = "auto_100";
-                }
-				
-				if ($port_link == '2') {
-					$port_link = "<font color=red>Down</font>";
-				} else if ($port_link == '1') {
-					$port_link = "<font color=green>Up</font>";
-				} else if ($port_link == '0') {
-					$port_link = "Unknown";
-				}
+			if ($pon_type == "EPON")
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
+			if ($pon_type == "GPON")
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;						
+			$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
+			$onu_rf_status = $session->get($onu_rf_status_oid);
+			if ($onu_rf_status == "1") {
+				$onu_rf_status = "<font color=green>Enabled</font>" ;
 			}
-			if ($pon_type == "EPON") {
-				if ($port_admin == '1') {
-					$port_admin = "<font color=red>Disabled</font>";
-				} else if ($port_admin == '2') {
-					$port_admin = "<font color=green>Enabled</font>";
-				} else if ($port_admin == '0') {
-					$port_admin = "Unknown";
-				}
-				
-				if ($port_speed_duplex == '1') {
-				$port_speed_duplex = "Unknown";
-				} else if ($port_speed_duplex == '2') {
-					$port_speed_duplex = "half_10";
-				} else if ($port_speed_duplex == '3') {
-					$port_speed_duplex = "full_10";
-				} else if ($port_speed_duplex == '4') {
-				$port_speed_duplex = "half_100";
-				} else if ($port_speed_duplex == '5') {
-					$port_speed_duplex = "full_100";
-				} else if ($port_speed_duplex == '6') {
-					$port_speed_duplex = "half_1000";
-				} else if ($port_speed_duplex == '7') {
-					$port_speed_duplex = "full_1000";
-				} else if ($port_speed_duplex == '99') {
-					$port_speed_duplex = "illegal";
-				}
-				
-				if ($port_link == '1') {
-					$port_link = "<font color=red>Down</font>";
-				} else if ($port_link == '2') {
-					$port_link = "<font color=green>Up</font>";
-				} else if ($port_link == '0') {
-					$port_link = "Unknown";
-				}
-				if ($port_isolation == '1') {
-					$port_isolation = "<font color=green>enabled</font>";
-				} else if ($port_isolation = '2') {
-					$port_isolation = "<font color=red>disabled</font>";
-				}	
+			if ($onu_rf_status == "2") {
+				$onu_rf_status = "<font color=red>Disabled</font>" ;
 			}
+			print "<tr  align=center><td>RF</td><td>" . $onu_rf_status . "</td>" ; 
 			
-			if ($port_flowctrl == '1') {
-				$port_flowctrl = "<font color=red>Disabled</font>";
-			} else if ($port_flowctrl == '2') {
-				$port_flowctrl = "<font color=green>Enabled</font>";
-			} else if ($port_flowctrl == '0') {
-				$port_flowctrl = "Unknown";
-			}
+			?>
 			
-			print "<tr  align=center><td>" . $i . "</td><td>" . $port_admin . "</td><td>" . $port_link .  "</td><td>" . $port_flowctrl . "</td><td>" . $port_speed_duplex . "</td>";
-			if ($pon_type == "GPON") 
-				print "<td>" . $EthPortNativeVlan . "</td><td>" . $rcGponOnuEthPortDSPolicingProfileId . "</td><td>" . $rcGponOnuEthPortUSPolicingProfileId . "</td>"	;
-			if ($pon_type == "EPON")			
-				print "<td>" . $port_isolation . "</td>";
-			print "</tr>";
-            
+						
+								<td>
+								
+									<select class="form-control" id="rf_menu" name="rf_menu" >								
+										<option value="1" >Enable</option>		
+										<option value="2" >Disable</option>											
+									</select>
+								</td>
+								<td>
+						<?php print	"<button class=\"btn btn-info\" type=\"button\" onClick=\"getPageRF('" . $customer_id . "', 'SET_RF');\">SET</button>"; ?>
+								</td>
+							
+					</tr>
+			<?php
 			
-			
-			
-			
-			
+			print "</table></form></div></div></div></div>";
 		}
-		print "</table></div>";
-		if ($pon_type == "GPON") {
-			print "<p>MAC ADDRESS TABLE</p>";
-			print "<center><div class=\"table-responsive\"><table class=\"table table-bordered table-condensed table-hover\"><thead><tr><th>UNI</th><th>MAC_ADDRESS</th><th>Count</th></tr></thead>";
+		if ($pon_type == "GPON" && $hgu !="Yes") {
+			print "<div class=\"row\"><div class=\"col-md-6\"><p>MAC ADDRESS TABLE</p>";
+			print "<div class=\"table-responsive\"><table class=\"table table-bordered table-condensed table-hover\"><thead><tr><th>UNI</th><th>MAC_ADDRESS</th><th>Count</th></tr></thead>";
 			print $mac_address_table;
-			print "</table></div>";
+			print "</table></div></div>"; 
 		}
 		
 		print "<BR><BR><form action=\"onu_details.php\" method=\"post\">";
@@ -436,7 +543,7 @@ where CUSTOMERS.ID = '$customer_id'");
 
 	if ($type == "graphs"){
 		try {
-				$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, SERVICES.ID, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where CUSTOMERS.ID = '$customer_id'");
+				$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, SERVICES.ID, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS, SERVICE_PROFILE.HGU, SERVICE_PROFILE.RF from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where CUSTOMERS.ID = '$customer_id'");
 			} catch (PDOException $e) {
 				echo "Connection Failed:" . $e->getMessage() . "\n";
 				exit;
@@ -448,8 +555,11 @@ where CUSTOMERS.ID = '$customer_id'");
 			$sn = $row["SN"];
 			$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
 			$olt_ip_address = $row["IP_ADDRESS"];
-			$rrd_name = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_traffic.rrd";
-			$rrd_power = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power.rrd";
+			$rf = $row["RF"];
+			$hgu = $row["HGU"];
+			
+			$rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd";
+			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.rrd";
 
 			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=B/s", "--title=Daily Traffic",
 			"DEF:inoctets=$rrd_name:input:AVERAGE",
@@ -470,7 +580,7 @@ where CUSTOMERS.ID = '$customer_id'");
 			);
 			$pkts = array("unicast", "broadcast", "multicast");
 			foreach ($pkts as $tr) {
-				$$tr = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_" . $tr . ".rrd";
+				$$tr = dirname(__FILE__) . "/rrd/" . $sn . "_" . $tr . ".rrd";
 					${$tr."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=Pkts/s", "--title=Daily $tr",
 					"DEF:inoctets=${$tr}:input:AVERAGE",
 					"DEF:outoctets=${$tr}:output:AVERAGE",
@@ -487,32 +597,32 @@ where CUSTOMERS.ID = '$customer_id'");
 					"GPRINT:outbits:MAX:Max Out\: %6.0lf pkts/s\\r"
 					);
 			}
-
-			for ($i=1; $i <= $row{'PORTS'}; $i++) {
-					$octets_ethernet = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_ethernet_" . $i . ".rrd";
-					${$i."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=B/s", "--title=Daily Traffic Ethernet Port $i",
-					"DEF:inoctets=$octets_ethernet:input:AVERAGE",
-					"DEF:outoctets=$octets_ethernet:output:AVERAGE",
-					"AREA:inoctets#00FF00:In traffic",
-					"LINE1:outoctets#0000FF:Out traffic\\r",
-					"CDEF:inbits=inoctets",
-					"CDEF:outbits=outoctets",
-					"GPRINT:inbits:LAST:Last In\: %6.2lf %SBps",
-					"GPRINT:inbits:AVERAGE:Avg In\: %6.2lf %SBps",
-					"COMMENT:  ",
-					"GPRINT:inbits:MAX:Max In\: %6.2lf %SBps\\r",
-					"COMMENT:\\n",
-					"GPRINT:outbits:LAST:Last Out\: %6.2lf %SBps",
-					"GPRINT:outbits:AVERAGE:Avg Out\: %6.2lf %SBps",
-					"COMMENT: ",
-					"GPRINT:outbits:MAX:Max Out\: %6.2lf %SBps\\r"
-					);
-					${$i."_url"} = $olt_ip_address . "_" . $big_onu_id . "_ethernet_" . $i . ".gif";
-					${$i."_gif"} = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_ethernet_" . $i . ".gif";
-					$ret = rrd_graph(${$i."_gif"}, ${$i."_opts"});
+			if ($hgu !== "Yes") {
+				for ($i=1; $i <= $row{'PORTS'}; $i++) {
+						$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".rrd";
+						${$i."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=B/s", "--title=Daily Traffic Ethernet Port $i",
+						"DEF:inoctets=$octets_ethernet:input:AVERAGE",
+						"DEF:outoctets=$octets_ethernet:output:AVERAGE",
+						"AREA:inoctets#00FF00:In traffic",
+						"LINE1:outoctets#0000FF:Out traffic\\r",
+						"CDEF:inbits=inoctets",
+						"CDEF:outbits=outoctets",
+						"GPRINT:inbits:LAST:Last In\: %6.2lf %SBps",
+						"GPRINT:inbits:AVERAGE:Avg In\: %6.2lf %SBps",
+						"COMMENT:  ",
+						"GPRINT:inbits:MAX:Max In\: %6.2lf %SBps\\r",
+						"COMMENT:\\n",
+						"GPRINT:outbits:LAST:Last Out\: %6.2lf %SBps",
+						"GPRINT:outbits:AVERAGE:Avg Out\: %6.2lf %SBps",
+						"COMMENT: ",
+						"GPRINT:outbits:MAX:Max Out\: %6.2lf %SBps\\r"
+						);
+						${$i."_url"} = $sn . "_ethernet_" . $i . ".gif";
+						${$i."_gif"} = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".gif";
+						$ret = rrd_graph(${$i."_gif"}, ${$i."_opts"});
+				}
 			}
-			$rf = "0";
-			if ($rf == "1") {
+			if ($rf == "Yes") {
 					$opts4 = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
 					"DEF:inoctets=$rrd_power:input:AVERAGE",
 					"DEF:outoctets=$rrd_power:output:AVERAGE",
@@ -541,16 +651,16 @@ where CUSTOMERS.ID = '$customer_id'");
 					);
 			}
 
-			$rrd_traffic_url = $olt_ip_address . "_" . $big_onu_id . "_traffic.gif";
-			$unicast_url =  $olt_ip_address . "_" . $big_onu_id . "_unicast.gif";
-			$broadcast_url =  $olt_ip_address . "_" . $big_onu_id . "_broadcast.gif";
-			$multicast_url =  $olt_ip_address . "_" . $big_onu_id . "_multicast.gif";
-			$rrd_power_url = $olt_ip_address . "_" . $big_onu_id . "_power.gif";
-			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_traffic.gif";
-			$rrd_power = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power.gif";
-			$unicast = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_unicast.gif";
-			$broadcast = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_broadcast.gif";
-			$multicast = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_multicast.gif";
+			$rrd_traffic_url = $sn . "_traffic.gif";
+			$unicast_url =  $sn . "_unicast.gif";
+			$broadcast_url =  $sn . "_broadcast.gif";
+			$multicast_url =  $sn . "_multicast.gif";
+			$rrd_power_url = $sn . "_power.gif";
+			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.gif";
+			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.gif";
+			$unicast = dirname(__FILE__) . "/rrd/" . $sn . "_unicast.gif";
+			$broadcast = dirname(__FILE__) . "/rrd/" . $sn . "_broadcast.gif";
+			$multicast = dirname(__FILE__) . "/rrd/" . $sn . "_multicast.gif";
 			$ret = rrd_graph($rrd_traffic, $opts);
 			$ret = rrd_graph($rrd_power, $opts4);
 			$ret = rrd_graph($unicast, $unicast_opts);
@@ -568,15 +678,17 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<table>";
 		print "<tr><td><p onClick=\"get_graph_traffic('". $customer_id . "');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
 		$end = "1";
-		for ($i=1; $i <= $ports; $i++) {
-			$name = ${$i."_url"};
-			print "<td><p onClick=\"graph_onu_ethernet_ports('". $customer_id . "', '" . $i . "');\"><img src=\"rrd/" . $name . "\"></img></p></td>";
-			$end++;
-			if ($end == "2") {
-				$end = "0";
-				print "</tr><tr>";
+		if ($hgu !== "Yes") {
+			for ($i=1; $i <= $ports; $i++) {
+				$name = ${$i."_url"};
+				print "<td><p onClick=\"graph_onu_ethernet_ports('". $customer_id . "', '" . $i . "');\"><img src=\"rrd/" . $name . "\"></img></p></td>";
+				$end++;
+				if ($end == "2") {
+					$end = "0";
+					print "</tr><tr>";
+				}
 			}
-        	}
+		}
 		print "</tr>";
 		print "<tr><td><p onClick=\"get_graph_packets('". $customer_id . "', 'unicast');\"><img src=\"rrd/" . $unicast_url . "\"></img></p></td>";
 		print "<td><p onClick=\"get_graph_packets('". $customer_id . "', 'broadcast');\"><img src=\"rrd/" . $broadcast_url . "\"></img></p></td></tr>";

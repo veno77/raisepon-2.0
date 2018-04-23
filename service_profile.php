@@ -74,6 +74,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<th>Name</th>
 						<th>Ports</th>
 						<th>Service Profile ID</th>
+						<th>HGU</th>
+						<th>RF</th>
 						<th>Edit</th>
 					  </tr>
 					</thead>
@@ -82,7 +84,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					// BUILD EXISTING TABLE
 					$rows = $service_profile_obj->build_table_service_profile(); 
 					foreach ($rows as $row) {
-						print "<tr><td>" . $row{'NAME'} . "</td><td>" . $row{'PORTS'} . "</td><td>" . $row{'SERVICE_PROFILE_ID'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"getService_Profile('". $row{'ID'} ."');\">EDIT</button></td></tr>";		
+						print "<tr><td>" . $row{'NAME'} . "</td><td>" . $row{'PORTS'} . "</td><td>" . $row{'SERVICE_PROFILE_ID'} . "</td><td>" . $row{'HGU'} . "</td><td>" . $row{'RF'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"getService_Profile('". $row{'ID'} ."');\">EDIT</button></td></tr>";		
 					}
 					?>
 					</tbody>
