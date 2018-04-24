@@ -110,7 +110,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								$cpu = $cpu . "%";
 							}
 							$sysuptime = $session->get($snmp_obj->get_pon_oid("sys_uptime_oid", "OLT"));
-							$sysuptime_days = round($sysuptime/(100*3600*24),0);
+							$sysuptime_days = floor($sysuptime/(100*3600*24));
 							$sysuptime_hours = $sysuptime/(100*3600)%24;
 							$sysuptime_minutes = $sysuptime/(100*60)%60;
 							$sysuptime = $sysuptime_days . " day(s) " . $sysuptime_hours . " hour(s) " . $sysuptime_minutes . " minutes";
