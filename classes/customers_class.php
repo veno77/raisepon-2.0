@@ -456,6 +456,19 @@ class customers {
 		$rows = $result->fetchAll();
 		return $rows;
 	}
+	
+	function get_Pon_port($olt, $slot, $port) {
+		
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT ID from PON WHERE OLT=" . $olt . " AND SLOT_ID=" . $slot . " AND PORT_ID=" . $port);
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		$rows = $result->fetchAll();
+		return $rows;
+	}
 	  
 	function get_Onu_models() {
 		try {

@@ -1,4 +1,5 @@
 <?php
+include ("header.php");
 include ("common.php");
 include ("classes/services_class.php");
 include ("navigation.php");

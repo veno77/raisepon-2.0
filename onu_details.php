@@ -1,10 +1,8 @@
 <?php
-
+include ("header.php");
 include ("common.php");
 include ("dbconnect.php");
 include ("navigation.php");
-
-
 
 
 if ($_GET) {
@@ -39,18 +37,20 @@ if ($_GET) {
 
 print "<div class=\"container\"><div class=\"text-center\"><div class=\"page-header\"><h2>" . $olt_name . " >> " . $name . " " . $slot_id . "/" . $port_id . "/" . $pon_onu_id . " SN::" . $sn . " Statistics</h2></div></div>";
 print "<div class=\"row justify-content-md-center\"><div class=\"col-md-4 \">";
-print "<nav class=\"navbar\"><ul class=\"nav navbar-nav\">";
-print "<li" . echoActiveClassIfRequestMatches("info") . "><a onClick=\"getPage('". $customer_id . "', 'info');\">INFO</a></li>";	
-print "<li" . echoActiveClassIfRequestMatches("ports") . "><a onClick=\"getPage('". $customer_id . "', 'ports');\">PORTS</li>";	
-print "<li" . echoActiveClassIfRequestMatches("graphs") . "><a onClick=\"getPage('". $customer_id . "', 'graphs');\">GRAPHS</li>";	
-print "</ul></div></nav>";
-print "</div>";
+print "<nav id=\"navbar2\" class=\"navbar\"><ul class=\"nav nav-tabs\">";
+
+print "<li class=\"nav-item active\"><a onClick=\"getPage('". $customer_id . "', 'info');\">INFO</a></li>";	
+print "<li class=\"nav-item\"><a onClick=\"getPage('". $customer_id . "', 'ports');\">PORTS</a></li>";	
+print "<li class=\"nav-item\"><a onClick=\"getPage('". $customer_id . "', 'graphs');\">GRAPHS</a></li>";	
+print "</ul></nav>";
+print "</div></div>";
+print "<br>";
 
 
 print "<div id=\"output\">";
-print "<script>getPage('". $customer_id . "', 'info');</script>";
+print "<body onload=\"getPage('". $customer_id . "', 'info');\">";
 print "</div></div>";
 
-
+ 
 ?>
 

@@ -1,4 +1,4 @@
-<nav id="navbar1" class="navbar navbar-inverse navbar-fixed-top">
+<nav class="navbar navbar-inverse navbar-fixed-top">
 	<div class="container-fluid" style="display: flex;justify-content: center;">
           <div class="navbar-header">
             <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">

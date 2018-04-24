@@ -1,5 +1,5 @@
 <?php
-
+include ("header.php");
 include ("common.php");
 include ("dbconnect.php");
 include ("navigation.php");

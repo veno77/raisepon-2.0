@@ -40,6 +40,7 @@ class snmp_oid {
 		"illegal_onu_sn_oid" => "1.3.6.1.4.1.8886.18.3.1.2.2.1.1",
 		"illegal_onu_login_time_oid" => "1.3.6.1.4.1.8886.18.3.1.2.2.1.5",
 		"illegal_onu_row_status_oid" => "1.3.6.1.4.1.8886.18.3.1.2.2.1.6",
+		"onu_register_distance_oid" => "1.3.6.1.4.1.8886.18.3.1.3.1.1.16"
 	);
 	
 	private $epon_oid = array(

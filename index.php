@@ -1,5 +1,6 @@
 <?php
-
+include ("header.php");
+session_cache_limiter('private_no_expire');
 include ("common.php");
 include ("navigation.php");
 include ("classes/index_class.php");
@@ -103,6 +104,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 								<!-- <th>RF</th> -->
 								<th>SN/MAC</th>
 								<th>PWR</th>
+								<th>DIST</th>
 								<th>STATUS</th>
 								<th>LAST ONLINE</th>
 								<th>OFFLINE REASON</th>
@@ -121,6 +123,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 							$onu_last_online_oid = $snmp_obj->get_pon_oid("onu_last_online_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 							$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 							$onu_sn_oid = $snmp_obj->get_pon_oid("onu_sn_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+							$onu_register_distance_oid = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 							//GET STATUS via SNMP
 							snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
@@ -130,16 +133,18 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 							$rf_state = "";
 							if ($status == '1') {
 								$status = "<font color=green>Online</font>";
-								//GET POWER via SNMP
+								//GET POWER/DISTANCE via SNMP
 								if ($row{'PON_TYPE'} == "GPON") {
 									$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_2;
 									$power = $session->get($onu_rx_power_oid);
 									$power = round(($power-15000)/500,2);
+									$onu_register_distance = $session->get($onu_register_distance_oid);
 								}
 								if ($row{'PON_TYPE'} == "EPON") {
 									$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_3;
 									$power = $session->get($onu_rx_power_oid);
 									$power = round(10*log10($power/10000),2);
+									$onu_register_distance = "";
 								}
 								if ($power < "-25") {
 									$power = "<font color=red>" . $power . "</font>" ;
@@ -236,7 +241,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 							//	print "<tr align=right><td><input type=\"checkbox\" class=\"case\" name=\"check_list[]\" value=\"" . $row{'ID'} . "\"></td><td><a href=\"customers.php?edit=1&id=".$row{'ID'}."\">".$row{'PON_ONU_ID'}."</a></td><td>".$row{'NAME'}."</td><td>".$row{'ADDRESS'}."</td><td>".$row{'ONU_NAME'}."</td><td><a href=\"onu_details.php?id=" . $row{'ID'} . "\">".$rf_state."</a></td><td>" . $db_sn ."</td><td>" . $power ."</td><td align=\"center\" style=\"vertical-align:middle\"><a href=\"onu_details.php?id=" . $row{'ID'} . "\">" . $status ."</a></td><td>" . $last_online ."</td><td>" . $offline_reason ."</td><td>" . $sync ."</td></tr>";
 						
 						?>
-						<tr>
+						<tr align=right>
 							<td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row{'ID'}; ?>"></td>
 							<td><?php echo $row{'PON_ONU_ID'}; ?></td>
 							<td><?php echo $row{'NAME'}; ?></td>
@@ -245,6 +250,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 						<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
 							<td><?php echo $db_sn; ?></td>
 							<td><?php echo $power; ?></td>
+							<td><?php if ($row{'PON_TYPE'} == "GPON") {echo $onu_register_distance . " m.";} ?></td>
 							<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $status; ?></a></td>
 							<td><?php echo $last_online; ?></td>
 							<td><?php echo $offline_reason; ?></td>
