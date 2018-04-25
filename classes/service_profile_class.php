@@ -16,8 +16,8 @@ class service_profile {
 			$this->name = isset($_POST['name'])	? $this->test_input($_POST['name']) : null;
 			$this->ports = isset($_POST['ports'])	? $this->test_input($_POST['ports']) : null;
 			$this->service_profile_id = isset($_POST['service_profile_id'])	? $this->test_input($_POST['service_profile_id']) : null;
-			$this->hgu = isset($_POST['hgu'])	? $this->test_input($_POST['hgu']) : null;
-			$this->rf = isset($_POST['rf'])	? $this->test_input($_POST['rf']) : null;
+			$this->hgu = isset($_POST['hgu'])	? $this->test_input($_POST['hgu']) : "No";
+			$this->rf = isset($_POST['rf'])	? $this->test_input($_POST['rf']) : "No";
 			$this->submit = isset($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
 		}
 		
