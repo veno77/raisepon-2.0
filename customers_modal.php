@@ -62,7 +62,9 @@ $customers_obj = new customers();
 					print "	<option value=\"\">Select</option>";
 				$rows = $customers_obj->get_Olt_model("");
 				foreach ($rows as $row) {
-					if($customers_obj->getOld_olt() == $row{'ID'}) {
+					if($customers_obj->getOld_olt() == $row{'ID'} && $customers_obj->getOlt() == null) {
+						print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
+					} else if($customers_obj->getOlt() == $row{'ID'} ) {
 						print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
 					} else {
 						print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
@@ -80,7 +82,9 @@ $customers_obj = new customers();
 				//	echo $customers_obj->getOld_olt();
 					$rows = $customers_obj->get_Pon_ports();
 					foreach ($rows as $row) {
-						if($customers_obj->getOld_pon_port() == $row{'ID'}) {
+						if($customers_obj->getOld_pon_port() == $row{'ID'} && $customers_obj->getPon_port() == null) {
+							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} ." === ". $row{'SLOT_ID'} ."/" . $row{'PORT_ID'} ."</option>";
+						}else if($customers_obj->getPon_port() == $row{'ID'}) {
 							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} ." === ". $row{'SLOT_ID'} ."/" . $row{'PORT_ID'} ."</option>";
 						} else {
 							print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} ." === ". $row{'SLOT_ID'} ."/" . $row{'PORT_ID'} ."</option>";

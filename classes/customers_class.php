@@ -347,7 +347,19 @@ class customers {
 			}
 		} 
 	}
-	
+	function check_Sn($sn) {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT ID, SN from CUSTOMERS where SN = '$sn'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			if ($row["SN"])
+			return $row["ID"];
+		}
+	}
 	function delete_customer() {
 		try {
 			$conn = db_connect::getInstance();
@@ -409,7 +421,6 @@ class customers {
 			$this->address = $row["ADDRESS"];
 			$this->egn = $row["EGN"];
 			$this->old_pon_onu_id = $row["PON_ONU_ID"];
-			$this->pon_port = $row["PON_PORT"];
 			$this->old_olt = $row["OLT"];
 			$this->old_pon_port = $row["PON_PORT"];
 			$this->sn = $row["SN"];

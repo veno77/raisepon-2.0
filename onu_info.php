@@ -273,7 +273,8 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<div class=\"form-group\"><form class=\"form-horizontal\" action=\"onu_info.php\" method=\"post\">";
 		print "<input type=\"hidden\" name=\"customer_id\" value=\"". $customer_id ."\">";
 		print "<div class=\"row justify-content-md-center\"><div class=\"col-md-4\">";
-		print "<button class=\"btn btn-info\" type=\"submit\" name='type' value='Reboot'>Reboot</button>";
+		//print "<button class=\"btn btn-info\" type=\"submit\" name='type' value='Reboot'>Reboot</button>";
+		print "<button class=\"btn btn-info\" type=\"button\" onClick=\"getPage('" . $customer_id . "', 'Reboot');\">Reboot</button>";
         print "</div></div>";
 		print "</form></div>";
 	}

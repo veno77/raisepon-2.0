@@ -99,8 +99,9 @@ if ($PON_ID) {
 			$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});	
 		$pon_snmp_id = $row{'SLOT_ID'} . "000000" . $row{'PORT_ID'} ;
 		$olt_ip_address = $row["IP_ADDRESS"];
+		$sn = $row["SN"];
 		if ($graph == "traffic") {
-        		$rrd_name = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_traffic.rrd";
+        		$rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd";
 			$rrd_pon =  dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $pon_snmp_id . "_traffic.rrd";
 
 			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=B/s", "--title=Daily Traffic",
@@ -138,8 +139,8 @@ if ($PON_ID) {
                  		 "GPRINT:outbits:MAX:Max Out\: %6.2lf %SBps\\r"
                		);
 
-			$rrd_traffic_url = $olt_ip_address . "_" . $big_onu_id . "_traffic.gif";
-			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_traffic.gif";
+			$rrd_traffic_url = $sn . "_traffic.gif";
+			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.gif";
 			$pon_traffic_url = $olt_ip_address . "_" . $pon_snmp_id . "_traffic.gif";
 			$pon_traffic = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $pon_snmp_id . "_traffic.gif";
 
@@ -159,8 +160,8 @@ if ($PON_ID) {
 			print "<p><a href=\"graph_traffic.php?id=" . $row{'ID'} . "\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></a></p>";
 		}
      		if ($graph == "unicast" || $graph == "broadcast" || $graph == "multicast") {
-                        $rrd_name = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_" . $graph . ".rrd";
-                        $rrd_pon =  dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $pon_snmp_id . "_" . $graph . ".rrd";
+                        $rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_" . $graph . ".rrd";
+                        $rrd_pon =  dirname(__FILE__) . "/rrd/" . $sn . "_" . $graph . ".rrd";
                         $opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=Pkts/s", "--title=Daily $graph",
                                  "DEF:inoctets=$rrd_name:input:AVERAGE",
                                  "DEF:outoctets=$rrd_name:output:AVERAGE",
@@ -196,8 +197,8 @@ if ($PON_ID) {
                                  "GPRINT:outbits:MAX:Max Out\: %6.0lf Pkts/s\\r"
                         );
 
-                        $rrd_traffic_url = $olt_ip_address . "_" . $big_onu_id . "_" . $graph . ".gif";
-                        $rrd_traffic = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_" . $graph . ".gif";
+                        $rrd_traffic_url = $sn . "_" . $graph . ".gif";
+                        $rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_" . $graph . ".gif";
                         $pon_traffic_url = $olt_ip_address . "_" . $pon_snmp_id . "_" . $graph . ".gif";
                         $pon_traffic = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $pon_snmp_id . "_" . $graph . ".gif";
                         $ret = rrd_graph($rrd_traffic, $opts);
@@ -218,7 +219,7 @@ if ($PON_ID) {
 
 
 		if ($graph == "power") {
-			$rrd_power = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power.rrd";
+			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.rrd";
 			$opts = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
 			 "DEF:inoctets=$rrd_power:input:AVERAGE",
 			 "DEF:outoctets=$rrd_power:output:AVERAGE",
@@ -230,8 +231,8 @@ if ($PON_ID) {
 			 "LINE2:inoctets#7FB37C:RX@ONU",
 			 "GPRINT:inoctets:LAST:Last\: %6.2lf dBm\\r",
                		);
-			$rrd_power_url = $olt_ip_address . "_" . $big_onu_id . "_power.gif";
-			$rrd_power = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $big_onu_id . "_power.gif";
+			$rrd_power_url = $sn . "_power.gif";
+			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.gif";
 			$ret = rrd_graph($rrd_power, $opts);
 
 			if( !is_array($ret) )
