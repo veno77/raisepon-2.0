@@ -49,11 +49,10 @@ function getPageRF(customer_id, type) {
 		type: "POST"
 	}).done(function(data) {
 		$('#output').html(data);
-		$('#xpon').dropdown();
-		$('#profiles').dropdown();
-		$('#tools').dropdown();
+		$('.dropdown-toggle').dropdown();
 	});
 }
+
 
 function getService(service_id) {
 	jQuery.ajax({
@@ -142,6 +141,19 @@ function getCustomer(customers_id) {
 	jQuery.ajax({
 		url: "customers_modal.php",
 		data: {customers_id: customers_id},
+		type: "POST"
+	}).done(function(data){
+		$('#modalbody').html(data);
+		$('#myModal').modal('show'); 
+		$('#xpon').dropdown();
+		$('#profiles').dropdown();
+		$('#tools').dropdown();
+	});
+}
+function editCustomer(olt, pon_port, customers_id) {
+	jQuery.ajax({
+		url: "customers_modal.php",
+		data: {olt: olt, pon_port: pon_port, customers_id: customers_id},
 		type: "POST"
 	}).done(function(data){
 		$('#modalbody').html(data);

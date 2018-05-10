@@ -54,9 +54,19 @@ class customers {
 	function getSubmit() {
 		return $this->submit;
 	}
+	
+	function setSubmit($submit) {
+		$this->submit = $submit;
+	}
+	
 	function getCustomers_id() {
 		return $this->customers_id;
 	}
+	
+	function setCustomer_id($customers_id) {
+		$this->customers_id = $customers_id;
+	}
+	
 	function getPon_type() {
 		return $this->pon_type;
 	}
@@ -86,11 +96,17 @@ class customers {
 	function getOlt() {
 		return $this->olt;
 	}
+	function setOlt($olt) {
+		$this->olt = $olt;
+	}
 	function getOld_olt() {
 		return $this->old_olt;
 	}
 	function getPon_port() {
 		return $this->pon_port;
+	}
+	function setPon_port($pon_port) {
+		$this->pon_port = $pon_port;
 	}
 	function getOld_pon_port() {
 		return $this->old_pon_port;
@@ -198,18 +214,18 @@ class customers {
 		
 			//CREATE RRD
 			//TRAFFIC RRD
-			$error = $this->onu_traffic_rrd($this->olt_ip_address, $this->big_onu_id);
+			$error = $this->onu_traffic_rrd();
 			if (!empty($error)) {
 				return $error;
 			}
 			//ONU ETH PORTS RRD
-			$error = $this->onu_eth_ports_rrd($this->ports, $this->olt_ip_address, $this->big_onu_id);
+			$error = $this->onu_eth_ports_rrd();
 			if (!empty($error)) {
 				return $error;
 			}
 			
 			// ONU POWER RRD
-			$error = $this->onu_power_rrd($this->olt_ip_address, $this->big_onu_id); 
+			$error = $this->onu_power_rrd(); 
 			if (!empty($error)) {
 				return $error;
 			}
@@ -219,10 +235,14 @@ class customers {
 	
 	function edit_customer() {
 		if ($this->olt == $this->old_olt && $this->pon_port == $this->old_pon_port) {
-			$pon_onu_id = $this->old_pon_onu_id ;
+			if (!empty($this->old_pon_onu_id)) {
+				$pon_onu_id = $this->old_pon_onu_id ;
+			}else{
+				$pon_onu_id = "NULL";
+			}
 		} else {
 			// FIND FREE ONU_ID
-			if (!empty($this->olt) && !empty($this->pon_port)) {
+			if (isset($this->olt) && isset($this->pon_port)) {
 				try {
 					$conn = db_connect::getInstance();
 					$result = $conn->db->query("SELECT PON_ONU_ID from CUSTOMERS where OLT='$this->olt' and PON_PORT='$this->pon_port'");
@@ -315,7 +335,7 @@ class customers {
 			}
 			
 			//UNLINK OLD RRD
-			array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->old_olt_ip_address . "_" . $this->old_big_onu_id . "*"));
+			array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "*"));
 		}
 		sleep(1);
 		//ADD_ONU_VIA_SNMP
@@ -327,21 +347,21 @@ class customers {
 			
 			//CREATE RRD
 			//TRAFFIC RRD
-			$error = $this->onu_traffic_rrd($this->olt_ip_address, $this->big_onu_id);
+			$error = $this->onu_traffic_rrd();
 			if (!empty($error)) {
 				return $error;
 			}
 			
 			//ONU ETH PORTS RRD		
 			if (!empty($this->ports)) {
-				$error = $this->onu_eth_ports_rrd($this->ports, $this->olt_ip_address, $this->big_onu_id);
+				$error = $this->onu_eth_ports_rrd();
 				if (!empty($error)) {
 					return $error;
 				}
 			}
 			
 			// ONU POWER RRD
-			$error = $this->onu_power_rrd($this->olt_ip_address, $this->big_onu_id); 
+			$error = $this->onu_power_rrd(); 
 			if (!empty($error)) {
 				return $error;
 			}
@@ -360,6 +380,9 @@ class customers {
 			return $row["ID"];
 		}
 	}
+
+	
+	
 	function delete_customer() {
 		try {
 			$conn = db_connect::getInstance();
@@ -390,7 +413,7 @@ class customers {
 			return $error;
 		}
 		//DELETE RRD FILES
-		array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->old_olt_ip_address . "_" . $this->old_big_onu_id . "*"));
+		array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "*"));
 
 	}
 	
@@ -427,6 +450,7 @@ class customers {
 			$this->old_service = $row["SERVICE"];
 			$this->old_ports = $row["PORTS"];
 			$this->auto = $row["AUTO"];
+			$this->service = $row["SERVICE"];
 		}	
 		
 		
@@ -480,7 +504,18 @@ class customers {
 		$rows = $result->fetchAll();
 		return $rows;
 	}
-	  
+	function check_Auto($sn) {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT ID, AUTO from CUSTOMERS where SN = '$sn'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		
+		$rows = $result->fetchAll();
+		return $rows;
+	}
 	function get_Onu_models() {
 		try {
 			$conn = db_connect::getInstance();
@@ -633,7 +668,7 @@ class customers {
 			$slot_id = $row["SLOT_ID"];
 			$pon_type = $row["PON_TYPE"];
 		}
-		$this->old_big_onu_id = type2id($slot_id, $pon_interface, $this->old_pon_onu_id);
+		$this->old_big_onu_id = $this->type2id($slot_id, $pon_interface, $this->old_pon_onu_id);
 		$snmp_obj = new snmp_oid();
 		$destroy_oid = $snmp_obj->get_pon_oid("row_status_oid", $pon_type) . "." . $this->old_big_onu_id;
         $session = new SNMP(SNMP::VERSION_2C, $this->old_olt_ip_address, $olt_rw);
@@ -672,7 +707,7 @@ class customers {
 
 		}
 		$snmp_obj = new snmp_oid();
-		$this->big_onu_id = type2id($slot_id, $port_id, $this->pon_onu_id);
+		$this->big_onu_id = $this->type2id($slot_id, $port_id, $this->pon_onu_id);
 		$sn_oid = $snmp_obj->get_pon_oid("onu_sn_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$line_profile_oid = $snmp_obj->get_pon_oid("line_profile_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$service_profile_oid = $snmp_obj->get_pon_oid("service_profile_oid", $this->pon_type) . "." . $this->big_onu_id;
@@ -718,7 +753,7 @@ class customers {
 		$session->close();
 		
 	}
-	function onu_traffic_rrd($olt_ip_address, $big_onu_id) {
+	function onu_traffic_rrd() {
 		$traffic = array("traffic", "unicast", "broadcast", "multicast");
 		foreach ($traffic as $tr) {
 			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_" . $tr . ".rrd";
@@ -744,9 +779,9 @@ class customers {
 		}
 	}
 	
-	function onu_eth_ports_rrd($ports, $olt_ip_address, $big_onu_id) {
+	function onu_eth_ports_rrd() {
 		//ETHERNET PORTS RRD
-		for ($i=1; $i <= $ports; $i++) {
+		for ($i=1; $i <= $this->ports; $i++) {
 			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_ethernet_" . $i . ".rrd";
 			$opts = array( "--step", "300", "--start", "0",
 			   "DS:input:DERIVE:600:0:U",
@@ -771,7 +806,7 @@ class customers {
 	
 	}
 	
-	function onu_power_rrd($olt_ip_address, $big_onu_id) {
+	function onu_power_rrd() {
 		$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_power.rrd";
 		$opts = array( "--step", "300", "--start", "0",
 		   "DS:input:GAUGE:600:U:U",
@@ -802,7 +837,14 @@ class customers {
         return $data;
 	}
 
-
+	function type2id($slot, $pon_port, $onu_id) {
+        $vif = "0001";
+        $slot = str_pad(decbin($slot),5, "0", STR_PAD_LEFT);
+        $pon_port = str_pad(decbin($pon_port), 6, "0", STR_PAD_LEFT);
+        $onu_id = str_pad(decbin($onu_id), 16, "0", STR_PAD_LEFT);
+        $big_onu_id = bindec($vif . $slot . "0" . $pon_port . $onu_id);
+        return $big_onu_id;
+	}
 	
 }
 
