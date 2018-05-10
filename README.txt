@@ -23,6 +23,11 @@ Add the following to your crontab:
 
 */5 * * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_rrd.php > /dev/null 2>&1
 
+Add also this if you want to use AUTO ONU registering based on Illegal ONUs found on device:
+
+
+*/5 * * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_auto.php > /dev/null 2>&1
+
 Configure your OLTs to send logs to your syslogd server. 
 Edit your sylogd.conf:
 
@@ -34,9 +39,9 @@ Default username/password admin/admin123.
 
 Usage:
 1. You need to add at least One OLT and one pon port to be able to add customers.
-2. If you are provisioning GPON/GEPON, you need to create also line-profile, service-profile and match them to Services ID in the web-interface. You need to pre-create the same profiles with same ids on the OLTs you are going to provision.
-3. Clicking on STATUS in index.html when you load the customers on selected OLT and PON will give you more information.
-4. You can use parse.php to parse existing ONUs on your OLTs. - Currently not working with 2.0.
+2. If you are provisioning GPON/GEPON, you CAN create also line-profile, service-profile and match them to Services ID in the web-interface. You need to pre-create the same profiles with same ids on the OLTs you are going to provision.
+3. Clicking on INFO in index.html when you load the customers on selected OLT and PON will give you more information.
+4. If you use AUTO assign of ONUs on certain OLT/PON port you can find created ONUs in UNASSIGNED before being automaticaly assigned by update_auto.php - executed every 5 minutes via crontab.
 
 
 The software is provided under the MIT License. Read below:
