@@ -1,10 +1,9 @@
 <?php
-header('Content-Type: text/html; charset=utf-8');
-//print "<link rel=\"stylesheet\" type=\"text/css\" href=\"style.css\">";
-print "<link rel=\"stylesheet\" href=\"./css/bootstrap.min.css\">";
-
-print "<script src=\"./jquery-3.1.1.min.js\"></script>";
-print "<script src=\"./js/bootstrap.min.js\"></script>";
+//header('Content-Type: text/html; charset=utf-8');
+//print "<link rel=\"stylesheet\" href=\"./css/bootstrap.min.css\">";
+//print "<script src=\"./js/jquery-3.3.1.min.js\"></script>";
+//print "<script src=\"./js/bootstrap.min.js\"></script>";
+include ("header.php");
 include ("navigation.php");
 /*** begin our session ***/
 session_start();
