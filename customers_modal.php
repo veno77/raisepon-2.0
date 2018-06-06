@@ -58,9 +58,9 @@ $customers_obj = new customers();
 			<label for="olt">OLT*</label>
 			<select class="form-control" id="select-olt2" name="olt" <?php if($customers_obj->getAuto() == "YES") print "disabled" ?>>
 				<?php 
-				if (null == $customers_obj->getOlt())
+				if (null == $customers_obj->getOld_olt())
 					print "	<option value=\"\">Select</option>";
-				$rows = $customers_obj->get_Olt_models();
+				$rows = $customers_obj->get_Olt_model("");
 				foreach ($rows as $row) {
 					if($customers_obj->getOld_olt() == $row{'ID'} && $customers_obj->getOlt() == null) {
 						print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
@@ -78,7 +78,7 @@ $customers_obj = new customers();
 		<div class="form-group">
 			<label for="pon_port">PON PORT*</label>
 			<select class="form-control" id="select-pon2" name="pon_port" <?php if($customers_obj->getAuto() == "YES") print "disabled" ?>>
-				<?php if (null !== $customers_obj->getCustomers_id() || null !== $customers_obj->getPon_port() || null !== $customers_obj->getOld_pon_port()) {
+				<?php if (null !== $customers_obj->getCustomers_id() || null !== $customers_obj->getOld_pon_port()) {
 				//	echo $customers_obj->getOld_olt();
 					$rows = $customers_obj->get_Pon_ports();
 					foreach ($rows as $row) {
@@ -126,11 +126,6 @@ $customers_obj = new customers();
 	<div class="col-md-4 col-md-offset-2">
 		<div class="form-group">
 			<label><input type="checkbox" id="auto" name="auto" value="YES"<?php if($customers_obj->getAuto() == "YES") print "checked" ?>> AUTO</label>
-		</div>
-	</div>
-	<div class="col-md-4">
-		<div class="form-group">
-			<label><input type="checkbox" id="state" name="state" value="YES"<?php if($customers_obj->getState() !== "NO") print "checked" ?>> ACTIVE</label> 
 		</div>
 	</div>
 </div>

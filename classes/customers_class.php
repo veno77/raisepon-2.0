@@ -24,7 +24,6 @@ class customers {
 	private $pon_onu_id;
 	private $pon_type;
 	private $auto;
-	private $state;
 	
 	function __construct() {
 		if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -43,7 +42,6 @@ class customers {
 			$this->line_profile = !empty($_POST['line_profile']) ? $this->test_input($_POST['line_profile']) : null;
 			$this->service_profile = !empty($_POST['service_profile']) ? $this->test_input($_POST['service_profile']) : null;
 			$this->auto = !empty($_POST['auto']) ? $this->test_input($_POST['auto']) : "NO";
-			$this->state = !empty($_POST['state']) ? $this->test_input($_POST['state']) : "YES";
 			$this->submit = !empty($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
 		}
 		
@@ -118,9 +116,6 @@ class customers {
 	}
 	function getAuto() {
 		return $this->auto;
-	}
-	function getState() {
-		return $this->state;
 	}
 	
 	function add_customer() {
@@ -204,7 +199,7 @@ class customers {
 
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("INSERT INTO CUSTOMERS (NAME, ADDRESS, EGN, OLT, PON_PORT, PON_ONU_ID, SERVICE, SN, AUTO, STATE) VALUES ('$this->name', '$this->address', $egn, $olt, $pon_port, $pon_onu_id, $service, '$this->sn', '$this->auto', '$this->state')");
+			$result = $conn->db->query("INSERT INTO CUSTOMERS (NAME, ADDRESS, EGN, OLT, PON_PORT, PON_ONU_ID, SERVICE, SN, AUTO) VALUES ('$this->name', '$this->address', $egn, $olt, $pon_port, $pon_onu_id, $service, '$this->sn', '$this->auto')");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -326,7 +321,7 @@ class customers {
 			
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("UPDATE CUSTOMERS SET NAME = '$this->name', ADDRESS = '$this->address', EGN = $egn, OLT = $olt, PON_PORT = $pon_port, PON_ONU_ID = $pon_onu_id, SN = '$this->sn', SERVICE = $service, AUTO = '$this->auto', STATE = '$this->state'  where ID = '$this->customers_id'");
+			$result = $conn->db->query("UPDATE CUSTOMERS SET NAME = '$this->name', ADDRESS = '$this->address', EGN = $egn, OLT = $olt, PON_PORT = $pon_port, PON_ONU_ID = $pon_onu_id, SN = '$this->sn', SERVICE = $service, AUTO = '$this->auto' where ID = '$this->customers_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;	
@@ -439,7 +434,7 @@ class customers {
 	function get_data_customer() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, ADDRESS, EGN, PON_ONU_ID, OLT, PON_PORT, SN, SERVICE, AUTO, STATE, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where CUSTOMERS.ID='$this->customers_id'");
+			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, ADDRESS, EGN, PON_ONU_ID, OLT, PON_PORT, SN, SERVICE, AUTO, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where CUSTOMERS.ID='$this->customers_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -455,7 +450,6 @@ class customers {
 			$this->old_service = $row["SERVICE"];
 			$this->old_ports = $row["PORTS"];
 			$this->auto = $row["AUTO"];
-			$this->state = $row["STATE"];
 			$this->service = $row["SERVICE"];
 		}	
 		
@@ -497,17 +491,7 @@ class customers {
 		$rows = $result->fetchAll();
 		return $rows;
 	}
-	function get_Olt_models() {
-		try {
-			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT ID, NAME from OLT ");
-		} catch (PDOException $e) {
-			$error = "Connection Failed:" . $e->getMessage() . "\n";
-			return $error;
-		}
-		$rows = $result->fetchAll();
-		return $rows;
-	}
+	
 	function get_Pon_port($olt, $slot, $port) {
 		
 		try {
@@ -547,8 +531,6 @@ class customers {
 	
 	
 	function get_Pon_ports() {
-		if (!isset($this->old_olt))
-			$this->old_olt = $this->olt;
 		try {
 			$conn = db_connect::getInstance();
 			$result = $conn->db->query("SELECT ID, NAME, SLOT_ID, PORT_ID from PON where OLT='$this->old_olt' order by SLOT_ID, PORT_ID");
@@ -731,7 +713,7 @@ class customers {
 		$service_profile_oid = $snmp_obj->get_pon_oid("service_profile_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$row_status_oid = $snmp_obj->get_pon_oid("row_status_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$dtype_oid = $snmp_obj->get_pon_oid("dtype_oid", $this->pon_type) . "." . $this->big_onu_id;
-		$state_oid = $snmp_obj->get_pon_oid("onu_active_state_oid", $this->pon_type) . "." . $this->big_onu_id;
+		$status_oid = $snmp_obj->get_pon_oid("status_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$description_oid = $snmp_obj->get_pon_oid("description_oid", $this->pon_type) . "." . $this->big_onu_id;
 
 		//EXECUTE SNMPSET TO ADD ONU
@@ -746,15 +728,9 @@ class customers {
 		if ($this->pon_type == "EPON") {
 			$sn = "0x" . $this->sn;	
 			if (!empty($service_profile_id)) {
-				if ($this->state == "YES")
-					$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $dtype_oid, $row_status_oid, $state_oid), array('x', 'i', 'i', 'i', 'i', 'i'), array($sn, $line_profile_id, $service_profile_id, '0', '4', '1')); 
-				if ($this->state == "NO")
-					$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $dtype_oid, $row_status_oid, $state_oid), array('x', 'i', 'i', 'i', 'i', 'i'), array($sn, $line_profile_id, $service_profile_id, '0', '4', '2')); 
+				$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $dtype_oid, $row_status_oid, $status_oid), array('x', 'i', 'i', 'i', 'i', 'i'), array($sn, $line_profile_id, $service_profile_id, '0', '4', '1')); 
 			} else {
-				if ($this->state == "YES")
-					$session->set(array($sn_oid, $dtype_oid, $row_status_oid, $state_oid), array('x', 'i', 'i', 'i'), array($sn, '0', '4', '1')); 
-				if ($this->state == "NO")
-					$session->set(array($sn_oid, $dtype_oid, $row_status_oid, $state_oid), array('x', 'i', 'i', 'i'), array($sn, '0', '4', '2')); 
+				$session->set(array($sn_oid, $dtype_oid, $row_status_oid, $status_oid), array('x', 'i', 'i', 'i'), array($sn, '0', '4', '1')); 
 			}
 
 		}

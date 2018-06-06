@@ -25,7 +25,7 @@ class snmp_oid {
 		"row_status_oid" => "1.3.6.1.4.1.8886.18.3.1.3.1.1.19",
 		"description_oid" => "1.3.6.1.4.1.8886.18.3.1.3.1.1.20",
 		"dtype_oid" => "1.3.6.1.4.1.8886.18.2.1.3.1.1.3",
-		"onu_active_state_oid" => "1.3.6.1.4.1.8886.18.3.1.3.1.1.18",
+		"status_oid" => "1.3.6.1.4.1.8886.18.3.6.1.1.1.7",
 		"uni_port_link_oid" => "1.3.6.1.4.1.8886.18.3.6.5.1.1.8",
 		"uni_port_admin_oid" => "1.3.6.1.4.1.8886.18.3.6.5.1.1.7",
 		"uni_port_autong_oid" => "1.3.6.1.4.1.8886.18.3.6.5.1.1.15",
@@ -63,7 +63,7 @@ class snmp_oid {
 			"service_profile_name_oid" => "1.3.6.1.4.1.8886.18.2.1.3.1.1.22",
 			"description_oid" => "1.3.6.1.4.1.8886.18.2.1.3.1.1.15",
 			"dtype_oid" => "1.3.6.1.4.1.8886.18.2.1.3.1.1.3",
-			"onu_active_state_oid" => "1.3.6.1.4.1.8886.18.2.1.3.1.1.10",
+			"status_oid" => "1.3.6.1.4.1.8886.18.2.1.3.1.1.10",
 			"onu_last_online_oid" => "1.3.6.1.4.1.8886.18.2.1.3.1.1.7",
 			"onu_offline_reason_oid" => "1.3.6.1.4.1.8886.18.2.1.3.1.1.17",
 			"uni_port_link_oid" => "1.3.6.1.4.1.8886.18.2.6.3.1.1.2",
@@ -108,21 +108,7 @@ class snmp_oid {
 		}
 	}
 		
-	function type2ponid ($slot, $pon_port) {
-        $slot = decbin($slot);
-        $pon_port = str_pad(decbin($pon_port), 6, "0", STR_PAD_LEFT);
-        $pon_id = bindec($slot . $pon_port);
-        return $pon_id;
-	}
-	
-	function type2id($slot, $pon_port, $onu_id) {
-        $vif = "0001";
-        $slot = str_pad(decbin($slot),5, "0", STR_PAD_LEFT);
-        $pon_port = str_pad(decbin($pon_port), 6, "0", STR_PAD_LEFT);
-        $onu_id = str_pad(decbin($onu_id), 16, "0", STR_PAD_LEFT);
-        $big_onu_id = bindec($vif . $slot . "0" . $pon_port . $onu_id);
-        return $big_onu_id;
-	}
+
 }
 
 
