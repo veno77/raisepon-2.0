@@ -139,6 +139,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 				$power = '';
 				$last_online = "Never";
 				$rf_state = "";
+				$onu_register_distance = "";
 				if ($status == '1') {
 					$status = "<font color=green>Online</font>";
 					//GET POWER/DISTANCE via SNMP
@@ -173,9 +174,11 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 						}
 					}
 					*/
-				}else{
+				}else if($status == '2'){
+					$status = "<font color=blue>Pending</font>";
+				}else if($status == '3'){
 					$status = "<font color=red>Offline</font>";
-					}
+				}
 
 				//LAST ONLINE
 				snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);

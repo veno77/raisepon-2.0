@@ -127,7 +127,7 @@ where CUSTOMERS.ID = '$customer_id'");
 		$raisecomSWFileCommit2_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.3." . $index . ".0.2" ;
 		$raisecomSWFileActivate1_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.4." . $index . ".0.1" ;
 		$raisecomSWFileActivate2_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.4." . $index . ".0.2" ;
-		$onu_active_state_oid = $snmp_obj->get_pon_oid("status_oid", $pon_type) . "." . $index_type2id;
+		$onu_active_state_oid = $snmp_obj->get_pon_oid("onu_active_state_oid", $pon_type) . "." . $index_type2id;
 		$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $pon_type) . "." . $index_type2id;
 		$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
 		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
@@ -193,14 +193,14 @@ where CUSTOMERS.ID = '$customer_id'");
 			$line_profile_name = str_replace('STRING: ', '', $line_profile_name);
 			$service_profile_name = $session->get($service_profile_name_oid);
 			$service_profile_name = str_replace('STRING: ', '', $service_profile_name);
-			$onu_active_state = $session->get($onu_active_state_oid);
-			if ($onu_active_state == "1") {
-				$onu_active_state = "active";
-			}elseif ($onu_active_state == "2"){
-				$onu_active_state = "suspended";
-			}
+			
 		}
-  		
+  		$onu_active_state = $session->get($onu_active_state_oid);
+		if ($onu_active_state == "1") {
+			$onu_active_state = "<font color=green>active</font>";
+		}elseif ($onu_active_state == "2"){
+			$onu_active_state = "<font color=red>suspended</font>";
+		}
         $onu_pon_temp_value = $session->get($onu_pon_temp_value);
 		$onu_pon_temp_value = round($onu_pon_temp_value/256,1) . "°C";
 		$line_profile_id = $session->get($line_profile_id_oid);
@@ -263,9 +263,7 @@ where CUSTOMERS.ID = '$customer_id'");
 			print "<tr><th>Onu Distance:</th><td>" . $onu_register_distance . " m.</td></tr>";
 			print "<tr><th>Onu SysUptime:</th><td>" . $onu_sysuptime . "</td></tr>";
 		}
-		if ($pon_type == "EPON") {	
-			print "<tr><th>Onu State:</th><td>" . $onu_active_state . "</td></tr>";
-		}
+		print "<tr><th>Onu State:</th><td>" . $onu_active_state . "</td></tr>";
 
 //		print "<tr><td>Software version:</td><td>" . $version . "</td></tr>";
 //		print "<tr><td>Firmware version:</td><td>" . $firmware . "</td></tr>";
