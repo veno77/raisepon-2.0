@@ -124,8 +124,13 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 			if (isset($row{'PON_TYPE'})) {
 				$snmp_obj = new snmp_oid();
 				$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
-				$big_onu_id_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
+				if ($row{'PON_ONU_ID'} < 100) {
+					$big_onu_id_rx_gpon = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
+				}else{
+					$big_onu_id_rx_gpon = (3<<28)+(10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * ($row{'PON_ONU_ID'}%100) + 1);
+				}
 				$big_onu_id_3 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
+				
 				$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 				$onu_last_online_oid = $snmp_obj->get_pon_oid("onu_last_online_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 				$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
@@ -139,11 +144,12 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 				$power = '';
 				$last_online = "Never";
 				$rf_state = "";
+				$onu_register_distance = "";
 				if ($status == '1') {
 					$status = "<font color=green>Online</font>";
 					//GET POWER/DISTANCE via SNMP
 					if ($row{'PON_TYPE'} == "GPON") {
-						$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_2;
+						$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_rx_gpon;
 						$power = $session->get($onu_rx_power_oid);
 						$power = round(($power-15000)/500,2);
 						$onu_register_distance = $session->get($onu_register_distance_oid);
@@ -173,9 +179,11 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 						}
 					}
 					*/
-				}else{
+				}else if($status == '2'){
+					$status = "<font color=blue>Pending</font>";
+				}else if($status == '3'){
 					$status = "<font color=red>Offline</font>";
-					}
+				}
 
 				//LAST ONLINE
 				snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);

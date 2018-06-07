@@ -19,13 +19,17 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
 	$big_onu_id_2 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
 	if ($row{'PON_TYPE'} == "GPON") {
-		$index_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
+		if ($row{'PON_ONU_ID'} < 100) {
+			$index_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
+		}else{
+			$index_2 = (3<<28)+(10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * ($row{'PON_ONU_ID'}%100) + 1);
+		}
 	}
 	if ($row{'PON_TYPE'} == "EPON") {
 		$index_2 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
 	}
 	$olt_ip_address = $row["IP_ADDRESS"];	
-	$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd";
+	$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd"; 
 	$rrd_unicast = dirname(__FILE__) . "/rrd/" . $sn . "_unicast.rrd";
 	$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $sn . "_broadcast.rrd";
 	$rrd_multicast = dirname(__FILE__) . "/rrd/" . $sn . "_multicast.rrd";
