@@ -304,7 +304,11 @@ where CUSTOMERS.ID = '$customer_id'");
 			$hgu = $row['HGU'];
 			$rf = $row['RF'];
 		}
-		$index = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000;
+		if ($pon_onu_id < 100) {
+			$index = 10000000 * $slot_id + 100000 * $port_id + 1000 * $pon_onu_id;
+		}else{
+			$index = (3<<28)+(10000000 * $slot_id + 100000 * $port_id + 1000 * ($pon_onu_id%100));
+		}
 		if ($pon_type !== "GPON" || $hgu !== "Yes") {
 			?>
 			<div class="table-responsive">
