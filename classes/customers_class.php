@@ -485,7 +485,7 @@ class customers {
 		} elseif ($olt) {
 			$where = "WHERE ID =" . $olt;
 		}else{
-			$where = ""; 
+			$where = "";
 		}
 		try {
 			$conn = db_connect::getInstance();
@@ -635,10 +635,18 @@ class customers {
 						$pon_interface = str_replace(".", "", str_replace($sn_array, "", str_replace($illegal_onu_sn_oid, "", $sn_oid)));
 						$pon_port = bindec(substr(decbin($pon_interface), -6));
 						$slot = bindec(substr(decbin($pon_interface), 0, -6));
-						//$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array));
 						snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
 						$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
-						$time = $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array);
+						//$time = $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array);
+						$search = array(" ", "\"");
+						$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array));
+						$year = hexdec(substr($time, 0, 4));
+						$month = str_pad(hexdec(substr($time, 4,2)), 2, "0", STR_PAD_LEFT);
+						$day = str_pad(hexdec(substr($time, 6,2)), 2, "0", STR_PAD_LEFT);
+						$hour = str_pad(hexdec(substr($time, 8,2)), 2, "0", STR_PAD_LEFT);
+						$minute = str_pad(hexdec(substr($time, 10,2)), 2, "0", STR_PAD_LEFT);
+						$seconds = str_pad(hexdec(substr($time, 12,2)), 2, "0", STR_PAD_LEFT);
+						$time = $year . "-" . $month . "-" . $day . "," . $hour . ":" . $minute . ":" . $seconds;
 						array_push($one_olt, array($sn, $slot, $pon_port, $time));
 					}
 					$all_olt_illegal[$row["ID"]] = $one_olt;				

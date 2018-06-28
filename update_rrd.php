@@ -51,6 +51,20 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		$multicast_in_oid = "1.3.6.1.2.1.31.1.1.1.8." . $big_onu_id;
 		$multicast_out_oid = "1.3.6.1.2.1.31.1.1.1.12." . $big_onu_id;
 	}
+	if ($row{'PON_TYPE'} == "GPON") {
+		$traffic_in_oid = "1.3.6.1.2.1.31.1.1.1.6." . $big_onu_id;
+		$traffic_out_oid = "1.3.6.1.2.1.31.1.1.1.10." . $big_onu_id;
+		//Unicast
+		$unicast_in_oid = "1.3.6.1.2.1.31.1.1.1.7." . $big_onu_id;
+		$unicast_out_oid = "1.3.6.1.2.1.31.1.1.1.11." . $big_onu_id;
+		//Broadcast
+		$broadcast_in_oid = "1.3.6.1.2.1.31.1.1.1.9." . $big_onu_id;
+		$broadcast_out_oid = "1.3.6.1.2.1.31.1.1.1.13." . $big_onu_id;
+		//Multicast
+		$multicast_in_oid = "1.3.6.1.2.1.31.1.1.1.8." . $big_onu_id;
+		$multicast_out_oid = "1.3.6.1.2.1.31.1.1.1.12." . $big_onu_id;
+	}
+	
 	$status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 	//Power
 	$recv_power_oid = $snmp_obj->get_pon_oid("onu_recv_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
