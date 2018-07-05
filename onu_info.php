@@ -160,6 +160,8 @@ where CUSTOMERS.ID = '$customer_id'");
 			
 			$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $pon_type) . "." . $index2;
 			$onu_rx_power = $session->get($onu_rx_power_oid);
+			if ($onu_rx_power > 32767)
+				$onu_rx_power = $onu_rx_power - 65535 - 1;
 			$onu_rx_power = round(($onu_rx_power-15000)/500,2) . " dBm";
 			$onu_tx_power_oid = $snmp_obj->get_pon_oid("onu_tx_power_oid", $pon_type) . "." . $index2;
 			$onu_tx_power = $session->get($onu_tx_power_oid);

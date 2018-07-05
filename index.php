@@ -151,7 +151,11 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 					if ($row{'PON_TYPE'} == "GPON") {
 						$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_rx_gpon;
 						$power = $session->get($onu_rx_power_oid);
+						if ($power > 32767)
+							$power = $power - 65535 - 1;
 						$power = round(($power-15000)/500,2);
+						
+						
 						$onu_register_distance = $session->get($onu_register_distance_oid);
 					}
 					if ($row{'PON_TYPE'} == "EPON") {

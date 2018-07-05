@@ -96,6 +96,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		$olt_rx_power = round($olt_rx_power/10,4);
 		if ($row{'PON_TYPE'} == "GPON") {
 		$recv_power = $session->get($recv_power_oid);
+		if ($recv_power > 32767)
+			$recv_power = $recv_power - 65535 - 1;
 		$recv_power = round(($recv_power-15000)/500,4);
 		$send_power = $session->get($send_power_oid);
 		$send_power = round(($send_power-15000)/500,4);
