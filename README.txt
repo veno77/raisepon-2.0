@@ -9,11 +9,10 @@ You need:
 
 Apache 2.4 or later
 PHP 5.6 or later 
-FreeBSD Ports Colection PHP 5.6 Extensions + PHP Mysql PDO
+PHP 5.6 Extensions + Mysql PDO
 Mysql 5.6 or later 
 net-snmp + php-snmp
-FreeBSD ports rrdtool + pecl-rrd
-On Debian/Ubuntu type linux you will need probably librrd-dev and php-rrd packets. 
+rrdtool + pecl-rrd
 
 Copy the files to your web folder.
 Create database "gpon" and load in it the supplied gpon.sql file. 

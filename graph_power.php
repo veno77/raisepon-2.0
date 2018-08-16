@@ -9,7 +9,7 @@ if ($_GET) {
 		exit;
 	} else {
 		try {
-		$result = $db->query("SELECT CUSTOMERS.ID,  CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON_ONU_ID from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID where CUSTOMERS.ID=$id");
+			$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, SERVICES.ID, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS, SERVICE_PROFILE.HGU, SERVICE_PROFILE.RF as RF from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where CUSTOMERS.ID = '$id'");
 		} catch (PDOException $e) {
 			echo "Connection Failed:" . $e->getMessage() . "\n";
 			exit;
@@ -31,7 +31,7 @@ if ($_GET) {
 			$sn = $row["SN"];
 			
 			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.rrd";
-			if ($rf == "1") {
+			if ($rf == "Yes") {
 				$opts = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
 					"DEF:inoctets=$rrd_power:input:AVERAGE",
 					"DEF:outoctets=$rrd_power:output:AVERAGE",
@@ -49,9 +49,9 @@ if ($_GET) {
 				       );
 				$opts2 = array( "--start", "-1w", "--vertical-label=dBm", "--title=Weekly Power",
 					"DEF:inoctets=$rrd_power:input:AVERAGE",
-                                        "DEF:outoctets=$rrd_power:output:AVERAGE",
-                                        "DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
-                                        "DEF:rf_in=$rrd_power:rfin:AVERAGE",
+                    "DEF:outoctets=$rrd_power:output:AVERAGE",
+                    "DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
+                    "DEF:rf_in=$rrd_power:rfin:AVERAGE",
 					"LINE2:rx_olt#D6213B:RX@OLT",
 					"GPRINT:rx_olt:MIN:Min\: %6.2lf dBm\\r",
 					"LINE2:outoctets#C6913B:TX@ONU",
@@ -59,21 +59,21 @@ if ($_GET) {
 					"LINE2:inoctets#7FB37C:RX@ONU",
 					"GPRINT:inoctets:MIN:Min\: %6.2lf dBm\\r",
 					"LINE2:rf_in#FFD87C:RF@ONU",
-                                        "GPRINT:rf_in:MIN:Min\: %6.2lf dBm\\r",
+                    "GPRINT:rf_in:MIN:Min\: %6.2lf dBm\\r",
 				       );
 				$opts3 = array( "--start", "-1m", "--vertical-label=dBm", "--title=Monthly Power",
 					"DEF:inoctets=$rrd_power:input:AVERAGE",
-                                        "DEF:outoctets=$rrd_power:output:AVERAGE",
-                                        "DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
-                                        "DEF:rf_in=$rrd_power:rfin:AVERAGE",
-                                        "LINE2:rx_olt#D6213B:RX@OLT",
-                                        "GPRINT:rx_olt:MIN:Min\: %6.2lf dBm\\r",
-                                        "LINE2:outoctets#C6913B:TX@ONU",
-                                        "GPRINT:outoctets:MIN:Min\: %6.2lf dBm\\r",
-                                        "LINE2:inoctets#7FB37C:RX@ONU",
-                                        "GPRINT:inoctets:MIN:Min\: %6.2lf dBm\\r",
-                                        "LINE2:rf_in#FFD87C:RF@ONU",
-                                        "GPRINT:rf_in:MIN:Min\: %6.2lf dBm\\r",
+					"DEF:outoctets=$rrd_power:output:AVERAGE",
+					"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
+					"DEF:rf_in=$rrd_power:rfin:AVERAGE",
+					"LINE2:rx_olt#D6213B:RX@OLT",
+					"GPRINT:rx_olt:MIN:Min\: %6.2lf dBm\\r",
+					"LINE2:outoctets#C6913B:TX@ONU",
+					"GPRINT:outoctets:MIN:Min\: %6.2lf dBm\\r",
+					"LINE2:inoctets#7FB37C:RX@ONU",
+					"GPRINT:inoctets:MIN:Min\: %6.2lf dBm\\r",
+					"LINE2:rf_in#FFD87C:RF@ONU",
+					"GPRINT:rf_in:MIN:Min\: %6.2lf dBm\\r",
 				       );
 
 			} else {
@@ -89,16 +89,16 @@ if ($_GET) {
 					"GPRINT:inoctets:LAST:Last\: %6.2lf dBm\\r",
 				       );
 				$opts2 = array( "--start", "-1w", "--vertical-label=dBm", "--title=Weekly Power",
-					 "DEF:inoctets=$rrd_power:input:AVERAGE",
-					 "DEF:outoctets=$rrd_power:output:AVERAGE",
-					 "DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
-					 "LINE2:rx_olt#D6213B:RX@OLT",
-					 "GPRINT:rx_olt:MAX:Max\: %6.2lf dBm\\r",
-					 "LINE2:outoctets#C6913B:TX@ONU",
-					 "GPRINT:outoctets:MAX:Max\: %6.2lf dBm\\r",
-					 "LINE2:inoctets#7FB37C:RX@ONU",
-					 "GPRINT:inoctets:MAX:Max\: %6.2lf dBm\\r",
-				);
+					"DEF:inoctets=$rrd_power:input:AVERAGE",
+					"DEF:outoctets=$rrd_power:output:AVERAGE",
+					"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
+					"LINE2:rx_olt#D6213B:RX@OLT",
+					"GPRINT:rx_olt:LAST:Last\: %6.2lf dBm\\r",
+					"LINE2:outoctets#C6913B:TX@ONU",
+					"GPRINT:outoctets:LAST:Last\: %6.2lf dBm\\r",
+					"LINE2:inoctets#7FB37C:RX@ONU",
+					"GPRINT:inoctets:LAST:Last\: %6.2lf dBm\\r",
+				       );
 				$opts3 = array( "--start", "-1m", "--vertical-label=dBm", "--title=Monthly Power",
 					 "DEF:inoctets=$rrd_power:input:AVERAGE",
 					 "DEF:outoctets=$rrd_power:output:AVERAGE",

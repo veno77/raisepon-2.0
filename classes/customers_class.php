@@ -562,7 +562,7 @@ class customers {
 	function get_Illegal_onus() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT ID, INET_NTOA(IP_ADDRESS) as IP_ADDRESS, RO from OLT");
+			$result = $conn->db->query("SELECT OLT.ID, INET_NTOA(IP_ADDRESS) as IP_ADDRESS, MODEL, RO, OLT_MODEL.TYPE as TYPE from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -578,78 +578,82 @@ class customers {
 			$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
 			$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
 			if ($status) {
-				//EPON
-				$illegal_onu_mac_address_oid = $snmp_obj->get_pon_oid("illegal_onu_mac_address_oid", "EPON");
-				$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "EPON");
-				$output = $session->walk($illegal_onu_mac_address_oid);
-				if ($output) {
-					$one_olt = array();
-					foreach ($output as $mac_oid => $mac_address) {
-						$mac_address_arr = explode(" ", $mac_address);
-						$new_mac_addr_arr = array();
-						foreach ($mac_address_arr as $mac_addr) {
-							$mac_addr = hexdec($mac_addr);
-							array_push($new_mac_addr_arr, $mac_addr);
+				if (($row{'TYPE'} == "EPON") || ($row{'TYPE'} == "XPON")) {
+					//EPON
+					$illegal_onu_mac_address_oid = $snmp_obj->get_pon_oid("illegal_onu_mac_address_oid", "EPON");
+					$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "EPON");
+					$output = $session->walk($illegal_onu_mac_address_oid);
+					if ($output) {
+						$one_olt = array();
+						foreach ($output as $mac_oid => $mac_address) {
+							$mac_address_arr = explode(" ", $mac_address);
+							$new_mac_addr_arr = array();
+							foreach ($mac_address_arr as $mac_addr) {
+								$mac_addr = hexdec($mac_addr);
+								array_push($new_mac_addr_arr, $mac_addr);
+							}
+							array_pop($new_mac_addr_arr);
+							$mac_address_bin = implode(".", $new_mac_addr_arr);
+							$search = array(" ", "\"");
+							$mac_address = str_replace($search, "", $mac_address);
+							$pon_interface = str_replace(".", "", str_replace($mac_address_bin, "", str_replace($illegal_onu_mac_address_oid, "", $mac_oid)));
+							$pon_port = bindec(substr(decbin($pon_interface), -6));
+							$slot = bindec(substr(decbin($pon_interface), 0, -6));
+							$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"]);
+							$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $mac_address_bin));
+							$year = hexdec(substr($time, 0, 4));
+							$month = str_pad(hexdec(substr($time, 4,2)), 2, "0", STR_PAD_LEFT);
+							$day = str_pad(hexdec(substr($time, 6,2)), 2, "0", STR_PAD_LEFT);
+							$hour = str_pad(hexdec(substr($time, 8,2)), 2, "0", STR_PAD_LEFT);
+							$minute = str_pad(hexdec(substr($time, 10,2)), 2, "0", STR_PAD_LEFT);
+							$seconds = str_pad(hexdec(substr($time, 12,2)), 2, "0", STR_PAD_LEFT);
+							$time = $year . "-" . $month . "-" . $day . "," . $hour . ":" . $minute . ":" . $seconds;
+							
+							array_push($one_olt, array($mac_address, $slot, $pon_port, $time));
 						}
-						array_pop($new_mac_addr_arr);
-						$mac_address_bin = implode(".", $new_mac_addr_arr);
-						$search = array(" ", "\"");
-						$mac_address = str_replace($search, "", $mac_address);
-						$pon_interface = str_replace(".", "", str_replace($mac_address_bin, "", str_replace($illegal_onu_mac_address_oid, "", $mac_oid)));
-						$pon_port = bindec(substr(decbin($pon_interface), -6));
-						$slot = bindec(substr(decbin($pon_interface), 0, -6));
-						$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"]);
-						$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $mac_address_bin));
-						$year = hexdec(substr($time, 0, 4));
-						$month = str_pad(hexdec(substr($time, 4,2)), 2, "0", STR_PAD_LEFT);
-						$day = str_pad(hexdec(substr($time, 6,2)), 2, "0", STR_PAD_LEFT);
-						$hour = str_pad(hexdec(substr($time, 8,2)), 2, "0", STR_PAD_LEFT);
-						$minute = str_pad(hexdec(substr($time, 10,2)), 2, "0", STR_PAD_LEFT);
-						$seconds = str_pad(hexdec(substr($time, 12,2)), 2, "0", STR_PAD_LEFT);
-						$time = $year . "-" . $month . "-" . $day . "," . $hour . ":" . $minute . ":" . $seconds;
-						
-						array_push($one_olt, array($mac_address, $slot, $pon_port, $time));
+						$all_olt_illegal[$row["ID"]] = $one_olt;				
 					}
-					$all_olt_illegal[$row["ID"]] = $one_olt;				
 				}
-				//GPON
-				$illegal_onu_sn_oid = $snmp_obj->get_pon_oid("illegal_onu_sn_oid", "GPON");
-				$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "GPON");
-				snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-				snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
-				snmp_set_quick_print(TRUE);
-				snmp_set_enum_print(TRUE);
-				$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
-				$output = $session->walk($illegal_onu_sn_oid);
-				if ($output) {
-					$one_olt = array();
-					foreach ($output as $sn_oid => $sn_value) {
-						$sn = preg_replace("/[^A-Za-z0-9 ]/", '', $sn_value);
-						$sn_array = str_split($sn_value);
-						$new_sn_array = array();
-						foreach ($sn_array as $sn_arr) {
-							$sn_arr = ord($sn_arr);
-							array_push($new_sn_array, $sn_arr);
+				if (($row{'TYPE'} == "GPON") || ($row{'TYPE'} == "XPON")) {
+					//GPON
+					$illegal_onu_sn_oid = $snmp_obj->get_pon_oid("illegal_onu_sn_oid", "GPON");
+					$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "GPON");
+					snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+					snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
+					snmp_set_quick_print(TRUE);
+					snmp_set_enum_print(TRUE);
+					$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
+					$output = $session->walk($illegal_onu_sn_oid);
+					if ($output) {
+						$one_olt = array();
+						foreach ($output as $sn_oid => $sn_value) {
+							$sn = preg_replace("/[^A-Za-z0-9 ]/", '', $sn_value);
+							$sn_array = str_split($sn_value);
+							$new_sn_array = array();
+							foreach ($sn_array as $sn_arr) {
+								$sn_arr = ord($sn_arr);
+								array_push($new_sn_array, $sn_arr);
+							}
+							$sn_array = implode(".", $new_sn_array);
+							$pon_interface = str_replace(".", "", str_replace($sn_array, "", str_replace($illegal_onu_sn_oid, "", $sn_oid)));
+							$pon_port = bindec(substr(decbin($pon_interface), -6));
+							$slot = bindec(substr(decbin($pon_interface), 0, -6));
+							snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+							$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
+							//$time = $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array);
+							$search = array(" ", "\"");
+							$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array));
+							$year = hexdec(substr($time, 0, 4));
+							$month = str_pad(hexdec(substr($time, 4,2)), 2, "0", STR_PAD_LEFT);
+							$day = str_pad(hexdec(substr($time, 6,2)), 2, "0", STR_PAD_LEFT);
+							$hour = str_pad(hexdec(substr($time, 8,2)), 2, "0", STR_PAD_LEFT);
+							$minute = str_pad(hexdec(substr($time, 10,2)), 2, "0", STR_PAD_LEFT);
+							$seconds = str_pad(hexdec(substr($time, 12,2)), 2, "0", STR_PAD_LEFT);
+							$time = $year . "-" . $month . "-" . $day . "," . $hour . ":" . $minute . ":" . $seconds;
+							array_push($one_olt, array($sn, $slot, $pon_port, $time));
 						}
-						$sn_array = implode(".", $new_sn_array);
-						$pon_interface = str_replace(".", "", str_replace($sn_array, "", str_replace($illegal_onu_sn_oid, "", $sn_oid)));
-						$pon_port = bindec(substr(decbin($pon_interface), -6));
-						$slot = bindec(substr(decbin($pon_interface), 0, -6));
-						snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-						$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
-						//$time = $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array);
-						$search = array(" ", "\"");
-						$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array));
-						$year = hexdec(substr($time, 0, 4));
-						$month = str_pad(hexdec(substr($time, 4,2)), 2, "0", STR_PAD_LEFT);
-						$day = str_pad(hexdec(substr($time, 6,2)), 2, "0", STR_PAD_LEFT);
-						$hour = str_pad(hexdec(substr($time, 8,2)), 2, "0", STR_PAD_LEFT);
-						$minute = str_pad(hexdec(substr($time, 10,2)), 2, "0", STR_PAD_LEFT);
-						$seconds = str_pad(hexdec(substr($time, 12,2)), 2, "0", STR_PAD_LEFT);
-						$time = $year . "-" . $month . "-" . $day . "," . $hour . ":" . $minute . ":" . $seconds;
-						array_push($one_olt, array($sn, $slot, $pon_port, $time));
+						$all_olt_illegal[$row["ID"]] = $one_olt;				
 					}
-					$all_olt_illegal[$row["ID"]] = $one_olt;				
 				}
 			}	
 		}
