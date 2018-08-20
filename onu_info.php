@@ -17,6 +17,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	if (isset($_POST["rf_val"])) {
                 $rf_val = test_input($_POST["rf_val"]);
         }
+	if (isset($_POST["uni_val"])) {
+                $uni_val = test_input($_POST["uni_val"]);
+        }	
+	if (isset($_POST["port_num"])) {
+                $port_num = test_input($_POST["port_num"]);
+        }	
 	if ($_POST["type"] == "Reboot") {
 		try {
 			$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS)as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.ID = '$customer_id'");
@@ -83,7 +89,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 		$type = "ports";
 	}
+	
+	if ($_POST["type"] == "SET_UNI") {
+		try {
+			$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS)as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.ID = '$customer_id'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			$ip_address = $row['IP_ADDRESS'];
+			$port_id = $row['PORT_ID'];
+			$slot_id = $row['SLOT_ID'];
+			$pon_onu_id = $row['PON_ONU_ID'];
+			$olt_name = $row['OLT_NAME'];
+			$ro = $row['RO'];
+			$rw = $row['RW'];
+			$olt_type = $row['TYPE'];
+			$name = $row['NAME'];
+			$pon_type = $row['PON_TYPE'];
+		}
 
+		if ($pon_type == "EPON")
+		$index_uni = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + $port_num;						
+		if ($pon_type == "GPON")
+		$index_uni = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + $port_num;		
+	
+		$uni_port_admin_set = $snmp_obj->get_pon_oid("uni_port_admin_set_oid", $pon_type) . "." . $index_uni;
+		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $rw);
+		$set_uni = $session->set($uni_port_admin_set, 'i', $uni_val);
+		if ($session->getError())
+				return(var_dump($session->getError()));
+			
+		$type = "ports";
+	}
 
 	if ($type == "info"){
 		try {
@@ -328,10 +368,11 @@ where CUSTOMERS.ID = '$customer_id'");
 							<th>US_Policy_ID</th>
 							<?php } ?>
 						<?php if ($pon_type == "EPON") { ?>
-							<th>Isolation</th>
+							<th>Isolation</th>	
 						<?php } ?>
-
-						</tr>
+							<th>Enable/Disable</th>
+							<th>Do it!</th>
+						</tr>  
 					</thead>
 			<?php
 			for ($i = 1; $i <= $ports ; $i++) {
@@ -477,8 +518,21 @@ where CUSTOMERS.ID = '$customer_id'");
 					print "<td>" . $EthPortNativeVlan . "</td><td>" . $rcGponOnuEthPortDSPolicingProfileId . "</td><td>" . $rcGponOnuEthPortUSPolicingProfileId . "</td>"	;
 				if ($pon_type == "EPON")			
 					print "<td>" . $port_isolation . "</td>";
-				print "</tr>";
+			
+					?>
 					
+						<td>
+								
+									<select class="form-control" id="uni_num_<?php echo $i; ?>" name="uni_num_<?php echo $i; ?>" >								
+										<option value="1" >Enable</option>		
+										<option value="2" >Disable</option>											
+									</select>
+								</td>
+								<td>
+						<?php print	"<button class=\"btn btn-info\" type=\"button\" onClick=\"setUniPortStatus('" . $customer_id . "', '" . $i . "','SET_UNI');\">SET</button>"; ?>
+								</td>
+			<?php
+				print "</tr>";
 			}
 			
 			print "</table></div>";

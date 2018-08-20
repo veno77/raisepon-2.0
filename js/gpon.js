@@ -53,6 +53,19 @@ function getPageRF(customer_id, type) {
 	});
 }
 
+function setUniPortStatus(customer_id, port_num, type) {
+	var boza = port_num
+	var selected = $('#uni_num_' + port_num + ' option:selected');
+	$('#output').html('<center><img src="pic/loading.gif" /></center>');
+	jQuery.ajax({
+		url: "onu_info.php",
+		data: {customer_id: customer_id, port_num: port_num, type: type, uni_val: selected.val()},
+		type: "POST"
+	}).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
+}
 
 function getService(service_id) {
 	jQuery.ajax({
