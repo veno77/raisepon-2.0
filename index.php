@@ -277,19 +277,19 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 	
 				<tr align=right>
 					<!-- <td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row{'ID'}; ?>"></td> -->
-					<td><h5><?php echo $row{'PON_ONU_ID'}; ?></h5></td>
-					<td><h5><?php echo $row{'NAME'}; ?></h5></td>
-					<td><h5><?php echo $row{'ADDRESS'}; ?></h5></td>
-					<td><?php echo $row{'SERVICE_NAME'}; ?></td>
+					<td><small><?php echo $row{'PON_ONU_ID'}; ?></small></td>
+					<td><small><?php echo $row{'NAME'}; ?></small></td>
+					<td><small><?php echo $row{'ADDRESS'}; ?></small></td>
+					<td><small><?php echo $row{'SERVICE_NAME'}; ?></small></td>
 				<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
-					<td><h5><?php echo $db_sn; ?></h5></td>
-					<td><h5><?php echo $power; ?></h5></td>
+					<td><small><?php echo $db_sn; ?></small></td>
+					<td><small><?php echo $power; ?></small></td>
 					<?php if ($row{'PON_TYPE'} == "GPON") {echo "<td>" . $onu_register_distance . " m.</td>";} ?>
-					<td><h5><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $status; ?></a></h5></td>
-					<td><h5><?php echo $last_online; ?></h5></td>
-					<td><h5><?php echo $offline_reason; ?></h5></td>
+					<td><small><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $status; ?></a></small></td>
+					<td><small><?php echo $last_online; ?></small></td>
+					<td><small><?php echo $offline_reason; ?></small></td>
 					<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><button type="button" class="btn btn-default">INFO</button></а></td>
-					<td><h5><?php echo $sync; ?></h5></td>
+					<td><small><?php echo $sync; ?></small></td>
 					<td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
 				</tr>
 			<?php }} ?>
