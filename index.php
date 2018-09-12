@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="container">
 	<div class="text-center">
 		<div class="page-header">
-			<h1>Search ONUs</h1>
+			<h2>Search ONUs</h2>
 		</div>
 	</div>
 	<div class="row justify-content-md-center">
@@ -87,9 +87,9 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 		<div class="page-header">
 		<?php 
 		if (!empty($index_obj->getOlt_id())) 
-			print "<h1>OLT: " . $OLT_NAME . "</h1><h2>PON: " . $PON_NAME . "   (" . $SLOT_ID . "/" . $PORT_ID . ")</h2><br><br>"  ;
+			print "<h2>OLT: " . $OLT_NAME . "</h2><h3>PON: " . $PON_NAME . "   (" . $SLOT_ID . "/" . $PORT_ID . ")</h3><br><br>"  ;
 		if (!empty($index_obj->getName())) 
-			print "<h1>Name: " . $index_obj->getName() . "</h1>";
+			print "<h2>Name: " . $index_obj->getName() . "</h2>";
 		?>
 		</div>
 	</div>
@@ -277,19 +277,19 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 	
 				<tr align=right>
 					<!-- <td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row{'ID'}; ?>"></td> -->
-					<td><?php echo $row{'PON_ONU_ID'}; ?></td>
-					<td><?php echo $row{'NAME'}; ?></td>
-					<td><?php echo $row{'ADDRESS'}; ?></td>
+					<td><h5><?php echo $row{'PON_ONU_ID'}; ?></h5></td>
+					<td><h5><?php echo $row{'NAME'}; ?></h5></td>
+					<td><h5><?php echo $row{'ADDRESS'}; ?></h5></td>
 					<td><?php echo $row{'SERVICE_NAME'}; ?></td>
 				<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
-					<td><?php echo $db_sn; ?></td>
-					<td><?php echo $power; ?></td>
+					<td><h5><?php echo $db_sn; ?></h5></td>
+					<td><h5><?php echo $power; ?></h5></td>
 					<?php if ($row{'PON_TYPE'} == "GPON") {echo "<td>" . $onu_register_distance . " m.</td>";} ?>
-					<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $status; ?></a></td>
-					<td><?php echo $last_online; ?></td>
-					<td><?php echo $offline_reason; ?></td>
+					<td><h5><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $status; ?></a></h5></td>
+					<td><h5><?php echo $last_online; ?></h5></td>
+					<td><h5><?php echo $offline_reason; ?></h5></td>
 					<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><button type="button" class="btn btn-default">INFO</button></а></td>
-					<td><?php echo $sync; ?></td>
+					<td><h5><?php echo $sync; ?></h5></td>
 					<td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
 				</tr>
 			<?php }} ?>
