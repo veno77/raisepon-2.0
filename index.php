@@ -110,7 +110,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 						<?php if ($PON_TYPE == "GPON") echo "<th>DIST</th>"; ?>
 						
 						<th>STATUS</th>
-						<th>LAST ONLINE</th>
+						<!--<th>LAST ONLINE</th> -->
 						<th>OFFLINE REASON</th>
 						<th>INFO</th>
 						<th>SYNC</th>
@@ -190,9 +190,9 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 				}
 
 				//LAST ONLINE
-				snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-				$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-				$last_online = $index_obj->calc_last_online($session->get($onu_last_online_oid));
+				//snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+				//$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+				//$last_online = $index_obj->calc_last_online($session->get($onu_last_online_oid));
 				//ONU OFFLINE REASON
 				snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 				$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
@@ -277,19 +277,19 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 	
 				<tr align=right>
 					<!-- <td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row{'ID'}; ?>"></td> -->
-					<td><small><?php echo $row{'PON_ONU_ID'}; ?></small></td>
-					<td><small><?php echo $row{'NAME'}; ?></small></td>
-					<td><small><?php echo $row{'ADDRESS'}; ?></small></td>
-					<td><small><?php echo $row{'SERVICE_NAME'}; ?></small></td>
+					<td><?php echo $row{'PON_ONU_ID'}; ?></td>
+					<td><?php echo $row{'NAME'}; ?></td>
+					<td><?php echo $row{'ADDRESS'}; ?></td>
+					<td><?php echo $row{'SERVICE_NAME'}; ?></td>
 				<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
-					<td><small><?php echo $db_sn; ?></small></td>
-					<td><small><?php echo $power; ?></small></td>
+					<td><?php echo $db_sn; ?></td>
+					<td><?php echo $power; ?></td>
 					<?php if ($row{'PON_TYPE'} == "GPON") {echo "<td>" . $onu_register_distance . " m.</td>";} ?>
-					<td><small><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $status; ?></a></small></td>
-					<td><small><?php echo $last_online; ?></small></td>
-					<td><small><?php echo $offline_reason; ?></small></td>
+					<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $status; ?></a></td>
+				<!--	<td><?php echo $last_online; ?></td> -->
+					<td><?php echo $offline_reason; ?></td>
 					<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><button type="button" class="btn btn-default">INFO</button></а></td>
-					<td><small><?php echo $sync; ?></small></td>
+					<td><?php echo $sync; ?></td>
 					<td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
 				</tr>
 			<?php }} ?>

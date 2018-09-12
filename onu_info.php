@@ -156,6 +156,7 @@ where CUSTOMERS.ID = '$customer_id'");
 		if ($pon_type == "GPON")
 			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		//	$version_oid = $snmp_obj->get_pon_oid("onu_version_oid", $row{'PON_TYPE'}) . "." . $index;
 	//	$firmware_oid = "1.3.6.1.4.1.8886.18.2.6.1.1.1.7." . $index;
+		$onu_last_online_oid = $snmp_obj->get_pon_oid("onu_last_online_oid", $pon_type) . "." . $index_type2id;
 		$device_type_oid = $snmp_obj->get_pon_oid("onu_device_type_oid", $pon_type) . "." . $index;
 		$hw_revision_oid = $snmp_obj->get_pon_oid("onu_hw_revision_oid", $pon_type) . "." . $index;
 		$match_state_oid = $snmp_obj->get_pon_oid("onu_match_state_oid", $pon_type) . "." . $index;
@@ -179,7 +180,21 @@ where CUSTOMERS.ID = '$customer_id'");
 		$device_type = $session->get($device_type_oid);
 		$device_type = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $device_type);
         $hw_revision = $session->get($hw_revision_oid);
-		$match_state = $session->get($match_state_oid);
+		$match_state = $session->get($match_state_oid);	
+		function calc_last_online($last_online){
+			$last_online = str_replace('Hex-STRING: ', '', $last_online);
+			$loa = explode(' ', $last_online);
+			$year = $loa[0] . $loa[1];
+			$year = hexdec($year);
+			$month = hexdec($loa[2]);
+			$day = hexdec($loa[3]);
+			$hour = hexdec($loa[4]);
+			$hour = str_pad($hour, 2, '0', STR_PAD_LEFT);
+			$minute = hexdec($loa[5]);
+			$minute = str_pad($minute, 2, '0', STR_PAD_LEFT);	
+			$last_online = $year . "-". $month . "-". $day . "  " . $hour . ":" . $minute ;
+			return $last_online;
+			}
 		$olt_rx_power = $session->get($olt_rx_power_oid);
 		$olt_rx_power = round($olt_rx_power/10,4) . " dBm";
 		/*
@@ -279,9 +294,11 @@ where CUSTOMERS.ID = '$customer_id'");
 		}else{
 				$raisecomSWFileActivate2 = "";
 		}
-/*
+
 		snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
 		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
+		$last_online = calc_last_online($session->get($onu_last_online_oid));
+/*
 		$serial_number = $session->get($serial_number_oid);
 		$serial_number = str_replace('STRING: ', '', $serial_number);
 	    $serial_number = str_replace('"', '', $serial_number);
@@ -303,6 +320,7 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<tr><th>Onu Tx Power:</th><td>" . $onu_tx_power . "</td></tr>";
 		print "<tr><th>OLT Rx Power:</th><td>" . $olt_rx_power . "</td></tr>";
 		print "<tr><th>Onu Pon Temperature:</th><td>" . $onu_pon_temp_value . "</td></tr>";
+		print "<tr><th>Last Online:</th><td>" . $last_online . "</td></tr>";
 		
 		// print "<tr><th>RF State:</th><td>" . $onu_rf_status . "</td></tr>";
 		if ($pon_type == "GPON") {	
