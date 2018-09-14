@@ -107,7 +107,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 						<!-- <th>RF</th> -->
 						<th>SN/MAC</th>
 						<th>PWR</th>
-						<?php if ($PON_TYPE == "GPON") echo "<th>DIST</th>"; ?>
+						<th>DIST</th>
 						
 						<th>STATUS</th>
 						<!--<th>LAST ONLINE</th> -->
@@ -284,7 +284,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 				<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
 					<td><?php echo $db_sn; ?></td>
 					<td><?php echo $power; ?></td>
-					<?php if ($row{'PON_TYPE'} == "GPON") {echo "<td>" . $onu_register_distance . " m.</td>";} ?>
+					<?php echo "<td>" . $onu_register_distance . " m.</td>"; ?>
 					<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $status; ?></a></td>
 				<!--	<td><?php echo $last_online; ?></td> -->
 					<td><?php echo $offline_reason; ?></td>
