@@ -82,41 +82,41 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php
 if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($index_obj->getEgn()) || !empty($index_obj->getSn()) || $index_obj->getSubmit() == "UNASSIGNED") {
 ?>
-<div class="container">
-	<div class="text-center">
-		<div class="page-header">
-		<?php 
-		if (!empty($index_obj->getOlt_id())) 
-			print "<h2>OLT: " . $OLT_NAME . "</h2><h3>PON: " . $PON_NAME . "   (" . $SLOT_ID . "/" . $PORT_ID . ")</h3><br><br>"  ;
-		if (!empty($index_obj->getName())) 
-			print "<h2>Name: " . $index_obj->getName() . "</h2>";
-		?>
+	<div class="container">
+		<div class="text-center">
+			<div class="page-header">
+			<?php 
+			if (!empty($index_obj->getOlt_id())) 
+				print "<h2>OLT: " . $OLT_NAME . "</h2><h3>PON: " . $PON_NAME . "   (" . $SLOT_ID . "/" . $PORT_ID . ")</h3><br><br>"  ;
+			if (!empty($index_obj->getName())) 
+				print "<h2>Name: " . $index_obj->getName() . "</h2>";
+			?>
+			</div>
 		</div>
-	</div>
-		<!--	<form class="form-inline"  name="myform3" action="update.php" method="post"> -->
-	<div class="row justify-content-md-center">
-		<div class="table-responsive">
-			<table class="table table-bordered table-condensed table-hover">
-				<thead>
-					<tr align=center style=font-weight:bold>
-				<!--		<th><input type="checkbox" id="selectall"></th> -->
-						<th>ONU</th>
-						<th>Name</th>
-						<th>Address</th>
-						<th>SERVICE</th>
-						<!-- <th>RF</th> -->
-						<th>SN/MAC</th>
-						<th>PWR</th>
-						<th>DIST</th>
-						
-						<th>STATUS</th>
-						<!--<th>LAST ONLINE</th> -->
-						<th>OFFLINE REASON</th>
-						<th>INFO</th>
-						<th>SYNC</th>
-						<th>EDIT</th>
-					</tr>
-				</thead>
+			<!--	<form class="form-inline"  name="myform3" action="update.php" method="post"> -->
+		<div class="row justify-content-md-center">
+			<div class="table-responsive">
+				<table class="table table-bordered table-condensed table-hover">
+					<thead>
+						<tr align=center style=font-weight:bold>
+					<!--		<th><input type="checkbox" id="selectall"></th> -->
+							<th>ONU</th>
+							<th>Name</th>
+							<th>Address</th>
+							<th>SERVICE</th>
+							<!-- <th>RF</th> -->
+							<th>SN/MAC</th>
+							<th>PWR</th>
+							<th>DIST</th>
+							
+							<th>STATUS</th>
+							<!--<th>LAST ONLINE</th> -->
+							<th>OFFLINE REASON</th>
+							<th>INFO</th>
+							<th>SYNC</th>
+							<th>EDIT</th>
+						</tr>
+					</thead>
 <?php
 	$rows = $index_obj->build_table(); 
 	if(!empty($rows)) {
@@ -277,7 +277,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 	
 				<tr align=right>
 					<!-- <td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row{'ID'}; ?>"></td> -->
-					<td><?php echo $row{'PON_ONU_ID'}; ?></td>
+					<td><?php if ($index_obj->getSubmit() == "SEARCH"){echo $row{'OLT_NAME'} . "/" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "/"	;} echo $row{'PON_ONU_ID'}; ?></td>
 					<td><?php echo $row{'NAME'}; ?></td>
 					<td><?php echo $row{'ADDRESS'}; ?></td>
 					<td><?php echo $row{'SERVICE_NAME'}; ?></td>
@@ -288,7 +288,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 					<td><?php echo $status; ?></td>
 				<!--	<td><?php echo $last_online; ?></td> -->
 					<td><?php echo $offline_reason; ?></td>
-					<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><button type="button" class="btn btn-default">INFO</button></а></td>
+					<td><?php if ($index_obj->getSubmit() != "UNASSIGNED") { echo "<a href=\"onu_details.php?id=" . $row{'ID'} . "\">";} ?><button type="button" class="btn btn-default">INFO</button></а></td>
 					<td><?php echo $sync; ?></td>
 					<td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
 				</tr>
