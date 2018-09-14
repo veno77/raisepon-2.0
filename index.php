@@ -285,7 +285,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 					<td><?php echo $db_sn; ?></td>
 					<td><?php echo $power; ?></td>
 					<?php echo "<td>" . $onu_register_distance . " m.</td>"; ?>
-					<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $status; ?></a></td>
+					<td><?php echo $status; ?></td>
 				<!--	<td><?php echo $last_online; ?></td> -->
 					<td><?php echo $offline_reason; ?></td>
 					<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><button type="button" class="btn btn-default">INFO</button></а></td>
