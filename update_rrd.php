@@ -95,12 +95,12 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		$olt_rx_power = $session->get($olt_rx_power_oid);
 		$olt_rx_power = round($olt_rx_power/10,4);
 		if ($row{'PON_TYPE'} == "GPON") {
-		$recv_power = $session->get($recv_power_oid);
-		if ($recv_power > 32767)
-			$recv_power = $recv_power - 65535 - 1;
-		$recv_power = round(($recv_power-15000)/500,4);
-		$send_power = $session->get($send_power_oid);
-		$send_power = round(($send_power-15000)/500,4);
+			$recv_power = $session->get($recv_power_oid);
+			if ($recv_power > 32767)
+				$recv_power = $recv_power - 65535 - 1;
+			$recv_power = round(($recv_power-15000)/500,4);
+			$send_power = $session->get($send_power_oid);
+			$send_power = round(($send_power-15000)/500,4);
 		}
 		if ($row{'PON_TYPE'} == "EPON") {
 			$recv_power = $session->get($recv_power_oid);
@@ -108,9 +108,6 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			$send_power = $session->get($send_power_oid);
 			$send_power = round(10*log10($send_power/10000),4);
 			$total_input_traffic = $session->get($traffic_in_oid);
-			
-			
-			
 			$total_output_traffic = $session->get($traffic_out_oid);
 			$ret = rrd_update($rrd_traffic, array("N:$total_input_traffic:$total_output_traffic"));
 			if( $ret == 0 )
@@ -180,31 +177,65 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	}
 }
 	// UPDATE OLT GRAPHS
-/*
+
 try {
-	$result = $db->query("SELECT INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, RO from OLT");
+	$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID");
 } catch (PDOException $e) {
 	echo "Connection Failed:" . $e->getMessage() . "\n";
 	exit;
 }
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-	$ip_address = $row{'IP_ADDRESS'};
-	$status_oid = "1.3.6.1.2.1.1.3.0";
-	$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-	$status = $session->get($status_oid);
+	$ip_address = $row['IP_ADDRESS'];
+	$olt_name = $row['OLT_NAME'];
+	$ro = $row['RO'];
+	$rw = $row['RW'];
+	$olt_type = $row['TYPE'];
+
+	$snmp_obj = new snmp_oid();
+	snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
+	snmp_set_quick_print(TRUE);
+	snmp_set_enum_print(TRUE);
+	snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+	$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro, 1000000);
+	$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
 	if ($status) {
-		foreach (range(1, 18) as $port_number) {
-			$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port_number . "_traffic.rrd";
-			$first_oid = "1.3.6.1.2.1.31.1.1.1.6." . $port_number;
-			$second_oid = "1.3.6.1.2.1.31.1.1.1.10." . $port_number;
+		$ethernet_port_info = array(); 
+		$dot3StatsIndex = $snmp_obj->get_pon_oid("dot3StatsIndex", "OLT");
+		$output = $session->walk($dot3StatsIndex);
+		foreach ($output as $oid => $index) {
+			$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $index . "_traffic.rrd";
 			$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-			$total_input_traffic = $session->get($first_oid);
-			$total_output_traffic = $session->get($second_oid);
-			$ret = rrd_update($rrd_name, array("N:$total_input_traffic:$total_output_traffic"));
+			$ifHCInOctets = $session->get($snmp_obj->get_pon_oid("ifHCInOctets", "OLT"). "." . $index);
+			$ifHCOutOctets = $session->get($snmp_obj->get_pon_oid("ifHCOutOctets", "OLT"). "." . $index);
+			if(!is_file($rrd_name)){
+				$opts = array( "--step", "300", "--start", "0",
+				   "DS:input:DERIVE:600:0:U",
+				   "DS:output:DERIVE:600:0:U",
+				   "RRA:AVERAGE:0.5:1:600",
+				   "RRA:AVERAGE:0.5:6:700",
+				   "RRA:AVERAGE:0.5:24:775",
+				   "RRA:AVERAGE:0.5:288:797",
+				   "RRA:MAX:0.5:1:600",
+				   "RRA:MAX:0.5:6:700",
+				   "RRA:MAX:0.5:24:775",
+				   "RRA:MAX:0.5:288:797"
+				);
+				$ret = rrd_create($rrd_name, $opts);
+
+				if( $ret == 0 )
+				{
+					$err = rrd_error();
+					return $err;
+				}
+			}
+			$ret = rrd_update($rrd_name, array("N:$ifHCInOctets:$ifHCOutOctets"));
+			if( $ret == 0 ){
+				$err = rrd_error();
+				echo "ERROR occurred: $err\n";
+			}
 		}
 	}
 }
-*/
 // UPDATE PON PORTS GRAPHS
 try {
 	$result = $db->query("SELECT PON.ID, PON.SLOT_ID, PON.PORT_ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO from PON LEFT JOIN OLT on PON.OLT=OLT.ID");

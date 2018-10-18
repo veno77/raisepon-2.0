@@ -40,6 +40,19 @@ function getPage(customer_id, type) {
 	
 }
 
+function getOltPage(olt_id, type) {
+	$('#output').html('<center><img src="pic/loading.gif" /></center>');
+	jQuery.ajax({
+		url: "olt_info.php",
+		data: {olt_id: olt_id, type: type},
+		type: "POST"
+	}).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
+	
+}
+
 function getPageRF(customer_id, type) {
 	var selected = $('#rf_menu option:selected');
 	$('#output').html('<center><img src="pic/loading.gif" /></center>');
@@ -223,6 +236,16 @@ function get_graph_packets(customer_id, type) {
         });
 }
 
+function get_graph_olt_traffic(ip_address, index, ifDescr) {
+        $('#output').html('<img src="pic/loading.gif" />');
+        jQuery.ajax({
+                url: "graph_olt_traffic.php",
+                data: {ip_address: ip_address, index: index, ifDescr: ifDescr},
+                type: "GET",
+                success:function(data){$('#output').html(data);}
+        });
+}
+
 function graph_onu_ethernet_ports(id, port) {
         $('#output').html('<img src="pic/loading.gif" />');
         jQuery.ajax({
@@ -232,8 +255,6 @@ function graph_onu_ethernet_ports(id, port) {
                 success:function(data){$('#output').html(data);}
         });
 }
-
-
 
 $(document).ready(function(){
 	$(document).on('click', '#navbar2 .nav li a', function () {

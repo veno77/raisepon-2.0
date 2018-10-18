@@ -2,7 +2,8 @@
 //session_cache_limiter('private_no_expire');
 session_start();
 if (!isset($_SESSION["id"]) && false == strpos($_SERVER['REQUEST_URI'], 'login.php')) {
-	header("Location: login.php");
+//	header("Location: login.php");
+	echo "<script>location='login.php'</script>";
 }
 
 $user_class = isset($_SESSION["type"]);

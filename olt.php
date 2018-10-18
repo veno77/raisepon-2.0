@@ -78,6 +78,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<th>Temp</th>
 						<th>CPU</th>
 						<th>Uptime</th>
+						<th>Info</th>
 						<th>Config</th>
 						<th>Edit</th>
 					  </tr>
@@ -131,6 +132,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<td><?php echo $temp; ?></td>
 							<td><?php echo $cpu; ?></td>
 							<td><?php echo $sysuptime; ?></td>
+							<td><?php echo "<a href=\"olt_details.php?id=" . $row{'ID'} . "\">"; ?><button type="button" class="btn btn-default">INFO</button></a></td>
 							<td><?php echo $save; ?></td>
 							<td><button type="button" class="btn btn-default" onClick="getOlt('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
 						</tr>

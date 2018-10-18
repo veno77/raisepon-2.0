@@ -154,8 +154,9 @@ where CUSTOMERS.ID = '$customer_id'");
 		if ($pon_type == "EPON")
 			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
 		if ($pon_type == "GPON")
-			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		//	$version_oid = $snmp_obj->get_pon_oid("onu_version_oid", $row{'PON_TYPE'}) . "." . $index;
-	//	$firmware_oid = "1.3.6.1.4.1.8886.18.2.6.1.1.1.7." . $index;
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		
+		//	$version_oid = $snmp_obj->get_pon_oid("onu_version_oid", $row{'PON_TYPE'}) . "." . $index;
+		//	$firmware_oid = "1.3.6.1.4.1.8886.18.2.6.1.1.1.7." . $index;
 		$onu_last_online_oid = $snmp_obj->get_pon_oid("onu_last_online_oid", $pon_type) . "." . $index_type2id;
 		$device_type_oid = $snmp_obj->get_pon_oid("onu_device_type_oid", $pon_type) . "." . $index;
 		$hw_revision_oid = $snmp_obj->get_pon_oid("onu_hw_revision_oid", $pon_type) . "." . $index;

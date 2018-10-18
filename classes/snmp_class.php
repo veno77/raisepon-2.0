@@ -41,7 +41,14 @@ class snmp_oid {
 		"illegal_onu_sn_oid" => "1.3.6.1.4.1.8886.18.3.1.2.2.1.1",
 		"illegal_onu_login_time_oid" => "1.3.6.1.4.1.8886.18.3.1.2.2.1.5",
 		"illegal_onu_row_status_oid" => "1.3.6.1.4.1.8886.18.3.1.2.2.1.6",
-		"onu_register_distance_oid" => "1.3.6.1.4.1.8886.18.3.1.3.1.1.16"
+		"onu_register_distance_oid" => "1.3.6.1.4.1.8886.18.3.1.3.1.1.16",
+		"rcGponPONPortIndex" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.1",
+		"rcGponPONPortAllocIdLeft" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.11",
+		"rcGponPONPortOperStatus" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.2",
+		"rcGponPONPortRegisteredONUNumber" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.3",
+		"rcGponPONPortSFPOperStatus" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.13",
+		"rcGponPONOnuRegisterDistanceMin" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.5",
+		"rcGponPONOnuRegisterDistanceMax" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.6",
 	);
 	
 	private $epon_oid = array(
@@ -81,6 +88,13 @@ class snmp_oid {
 			"olt_rx_power_oid" => "1.3.6.1.2.1.155.1.4.1.5.1.2",
 			"uni_octets_in_ethernet_oid" => "1.3.6.1.4.1.8886.18.2.6.3.3.1.6",
 			"uni_octets_out_ethernet_oid" => "1.3.6.1.4.1.8886.18.2.6.3.3.1.23",
+			"rcEponPONPortIndex" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.1",
+			"rcEponPONPortAdmin" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.2",
+			"rcEponPONPortOperStatus" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.3",
+			"rcEponPONPortRegisteredONUNumber" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.4",
+			"rcEponPONPortDescription" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.23",
+			"rcEponPONPortSFPOperStatus" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.19",
+			"rcEponPONPortCreateONUNumber" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.27",
 
 
 	
@@ -90,7 +104,22 @@ class snmp_oid {
 		"olt_status_oid" => "1.3.6.1.2.1.1.3.0",
 		"olt_temp_oid" => '1.3.6.1.4.1.8886.1.27.2.1.1.10.0',
 		"olt_cpu_oid" => '1.3.6.1.4.1.8886.18.1.7.1.1.1.4.1.0',
-		"sys_uptime_oid" => '1.3.6.1.2.1.1.3.0'
+		"sys_uptime_oid" => '1.3.6.1.2.1.1.3.0',
+		"olt_serial_number_oid" => '1.3.6.1.4.1.8886.1.27.2.1.1.3.0',
+		"olt_hw_version_oid" => '1.3.6.1.4.1.8886.1.27.2.1.1.4.0',
+		"olt_model_oid" => '1.3.6.1.4.1.8886.1.27.2.1.1.6.0',
+		"olt_slot_num_oid" => '1.3.6.1.4.1.8886.1.27.2.1.1.11.0',
+		"olt_mac_address_oid" => '1.3.6.1.4.1.8886.1.27.2.1.1.15.0',
+		"olt_reboot_oid" => '1.3.6.1.4.1.8886.1.27.3.1.1.12.1',
+		"ifDescr" => "1.3.6.1.2.1.2.2.1.2",
+		"ifAdminStatus" => "1.3.6.1.2.1.2.2.1.7",
+		"dot3StatsIndex" => "1.3.6.1.2.1.10.7.2.1.1",
+		"dot3StatsDuplexStatus" => "1.3.6.1.2.1.10.7.2.1.19",
+		"ifHighSpeed" => "1.3.6.1.2.1.31.1.1.1.15",
+		"ifOperStatus" => "1.3.6.1.2.1.2.2.1.8",
+		"ifHCInOctets" => "1.3.6.1.2.1.31.1.1.1.6",
+		"ifHCOutOctets" => "1.3.6.1.2.1.31.1.1.1.10",
+
 	);
 	
 	 
