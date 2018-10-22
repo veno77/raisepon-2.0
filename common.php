@@ -6,8 +6,8 @@ if (!isset($_SESSION["id"]) && false == strpos($_SERVER['REQUEST_URI'], 'login.p
 	echo "<script>location='login.php'</script>";
 }
 
-$user_class = isset($_SESSION["type"]);
-$cur_user_id = isset($_SESSION["id"]);
+$user_class = isset($_SESSION["type"]) ? $_SESSION["type"] : null;
+$cur_user_id = isset($_SESSION["id"]) ? $_SESSION["id"] : null;
 
 $pon_dropdown = array();
 

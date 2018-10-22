@@ -582,7 +582,7 @@ class customers {
 					//EPON
 					$illegal_onu_mac_address_oid = $snmp_obj->get_pon_oid("illegal_onu_mac_address_oid", "EPON");
 					$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "EPON");
-					$output = $session->walk($illegal_onu_mac_address_oid);
+					$output = @$session->walk($illegal_onu_mac_address_oid);
 					if ($output) {
 						$one_olt = array();
 						foreach ($output as $mac_oid => $mac_address) {
@@ -623,7 +623,7 @@ class customers {
 					snmp_set_quick_print(TRUE);
 					snmp_set_enum_print(TRUE);
 					$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
-					$output = $session->walk($illegal_onu_sn_oid);
+					$output = @$session->walk($illegal_onu_sn_oid);
 					if ($output) {
 						$one_olt = array();
 						foreach ($output as $sn_oid => $sn_value) {

@@ -5,7 +5,7 @@ include ("classes/line_profile_class.php");
 include ("navigation.php");
 
 //navigation();
-if ($user_class < "9")
+if ($user_class < "6")
 	exit();
 
 

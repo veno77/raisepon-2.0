@@ -1,136 +1,132 @@
 <?php
 include ("header.php");
 include ("common.php");
-include ("dbconnect.php");
+include ("classes/accounts_class.php");
 include ("navigation.php");
+
+//navigation();
 if ($user_class < "9")
 	exit();
-/*** begin our session ***/
 
 
-/*** set a form token ***/
-$form_token = md5( uniqid('auth', true) );
+$accounts_obj = new accounts();
 
-/*** set the session form token ***/
-$_SESSION['form_token'] = $form_token;
-?>
-
-<html>
-<body>
-<center>
-<h2>User Accounts</h2>
-<?php
-try {
-		$result = $db->query("SELECT ID, USERNAME, TYPE from ACCOUNTS");
-	} catch (PDOException $e) {
-		echo "Connection Failed:" . $e->getMessage() . "\n";
-		exit;
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+	if( $accounts_obj->getForm_token() != $_SESSION['form_token'] && $accounts_obj->getSubmit() !== "DELETE"){
+		exit('Invalid form submission');
 	}
-	print "<table border=1 cellspacing=0>";
-	print "<tr><td>ID</td><td>Username</td><td>Type</td></tr>";
-	while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-		if ($row['TYPE'] == '9')
-			$type = "Admin";
-		if ($row['TYPE'] == '6')
-			$type = "Operator";
-		if ($row['TYPE'] == '3')
-			$type = "Visitor";
-		print "<tr><td><a href=\"accounts.php?edit=1&id=".$row{'ID'}."\">" . $row['ID'] . "</a></td><td>" . $row['USERNAME'] . "</td><td>" . $type . "</td></tr>";
-	}
-	print "</table>";
-
-if ($_GET) {
-	$account_id = $_GET['id'];
-    if (!preg_match('/^[0-9]*$/', $account_id)) {
-		print "that sux";
-		exit;
-	} else {
-		try {
-			$result = $db->query("SELECT USERNAME, TYPE from ACCOUNTS where ID='$account_id'");
-        } catch (PDOException $e) {
-			echo "Connection Failed:" . $e->getMessage() . "\n";
-			exit;
-        }
-		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			$username = $row["USERNAME"];
-			$type = $row["TYPE"];
+	if ($accounts_obj->getSubmit() == "ADD") {
+		if (!empty($accounts_obj->getUsername()) && !empty($accounts_obj->getPassword()) && !empty($accounts_obj->getType())) {
+			$error = $accounts_obj->create();	
+			if (isset($error)) {
+				echo $error;	
+			}else{			
+				echo "<center><div class=\"bg-success  text-white\">Account added Succesfully</div></center>";
+			}
+		} else {
+			echo "<center><div class=\"bg-danger text-white\">ERROR: Username, Password and Type are required fields!</div></center>";
 		}
-		
-		
+
 	}
-}
 
 
-?>
+	if ($accounts_obj->getSubmit() == "EDIT") {
+		if (!empty($accounts_obj->getAccount_id()) && !empty($accounts_obj->getUsername()) && !empty($accounts_obj->getType())) {
+			$error = $accounts_obj->edit();	
+			if (isset($error)) {
+				echo $error;	
+			}else{
+				print "<center><div class=\"bg-success  text-white\">Account Edited Succesfully</div></center>";
+			}
+		} else {
+			echo "<center><div class=\"bg-danger text-white\">ERROR: Username, Password and Type are required fields! Or you are missing Account ID!</div></center>";
+		}
+	}
 
 
 
-
-
-
-<form action="adduser_submit.php" method="post">
-<p>
-<table>
-<tr><td>Username:</td>
-<td>
-<?php
-if(isset($username)) {
-	print "<input type=\"hidden\" name=\"username\" value=\"". $username ."\">";
-	print  $username ;
-} else {
-	print "<input type=\"text\" id=\"username\" name=\"username\" value=\"\" maxlength=\"20\" />";	
-}
-?>
-</td></tr>
-</p>
-<p>
-<tr><td>Password:</td>
-<td><input type="password" id="password" name="password" value="" maxlength="20" /></td>
-</p>
-</tr></table>
-<p>
-<?php
-if (isset($account_id)) 
-	print "<input type=\"hidden\" name=\"account_id\" value=\"". $account_id ."\">";
-print "<select id=\"select-role\" name=\"type\">";
-print "<option value=\"\">---</option>";
-if ($type == "9") {
-	print "<option value=\"9\" selected>Admin</option>";
-}else{
-	print "<option value=\"9\">Admin</option>";
-}
-if ($type == "6") {
-	print "<option value=\"6\" selected>Operator</option>";
-}else{
-	print "<option value=\"6\">Operator</option>";
-}
-if ($type == "3") {
-	print "<option value=\"3\" selected>Visitor</option>";
-}else{
-	print "<option value=\"3\">Visitor</option>";
-}
-print "</select>";
-?>
-</p>
-<p>
-<input type="hidden" name="form_token" value="<?php echo $form_token; ?>" />
-<?php
-if (isset($_GET["edit"])) {
-	$edit = $_GET["edit"];
-}else{
-	$edit = "";
-}
-if ($edit == "1" || isset($account_id)) {
-	print "<input type='submit' name='SUBMIT' value='EDIT'>";
-	print "&nbsp;&nbsp;&nbsp;<input type='submit' name='SUBMIT' value='DELETE'>";
-}else{
-	print "<input type='submit' name='SUBMIT' value='ADD'>";
+	if ($accounts_obj->getSubmit() == "DELETE") {
+		if (!empty($accounts_obj->getAccount_id())) {
+			$error = $accounts_obj->delete();	
+			if (isset($error)){
+				echo $error;
+			}else{
+				echo "<center><div class=\"bg-success  text-white\">Account Deleted Succesfully</div></center>";
+			}
+		} else {
+			echo  "<center><div class=\"bg-danger text-white\">ERROR: ACCOUNT ID missing!</div></center>";
+		}
+	}
+	
+	unset( $_SESSION['form_token'] );
 }
 
 ?>
 
 
-</p>
-</form>
-</body>
-</html>
+
+<div class="container">
+	<div class="text-center">
+		<div class="page-header">
+			<h2>Accounts</h2>
+		</div>
+	</div>
+	<div class=row>
+        	<div class="text-center">
+			<div class="table-responsive">
+				<table class="table table-bordered table-condensed">
+					<thead>
+					  <tr>
+						<th>ID</th>
+						<th>Username</th>
+						<th>Type</th>
+						<th>Edit</th>
+					  </tr>
+					</thead>
+					<tbody>
+					<?php 
+					// BUILD EXISTING TABLE
+					$rows = $accounts_obj->build_table(); 
+					foreach ($rows as $row) {
+						if ($row['TYPE'] == '9')
+							$type = "Admin";
+						if ($row['TYPE'] == '6')
+							$type = "Operator";
+						if ($row['TYPE'] == '3')
+							$type = "Visitor";
+						print "<tr><td>" . $row{'ID'} . "</td><td>" . $row{'USERNAME'} . "</td><td>" . $type . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"getAccount('". $row{'ID'} ."');\">EDIT</button></td></tr>";		
+					}
+					?>
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class="container">
+	<div class="row">
+		<div class="col-md-4"></div>
+			<div class="col-md-4">
+				<button type="button" class="btn btn-info" onClick="getAccount();">ADD NEW ACCOUNT</button>
+			</div>
+		</div>
+	<div class="col-md-4"></div>
+	<div class="modal fade" id="myModal" role="dialog">
+		<div class="modal-dialog"> 
+			  <!-- Modal content-->
+				<div class="modal-content">
+					<div class="modal-header">
+						<button type="button" class="close" data-dismiss="modal">&times;</button>
+						 <h4 class="modal-title">User Account</h4>
+					</div>
+					<div class="modal-body" id="modalbody">
+					</div>
+					<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+				
+

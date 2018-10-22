@@ -10,7 +10,7 @@ session_start();
 include("dbconnect.php");
 
 $id = "";
-
+$message = "";
 /*** check if the users is already logged in ***/
 if(isset( $_SESSION['id'] ))
 {

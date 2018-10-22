@@ -13,8 +13,8 @@
 		<div class="navbar-collapse collapse">
             <ul class="nav navbar-nav">
 				<li <?=echoActiveClassIfRequestMatches("index")?>><a href="index.php">Home</a></li>
-				<li <?=echoActiveClassIfRequestMatches("customers")?>><a href="customers.php">Customers</a></li>
 				<?php if ($user_class >= "6") { ?>
+				<li <?=echoActiveClassIfRequestMatches("customers")?>><a href="customers.php">Customers</a></li>
 				<li class="dropdown">
 					<a href="#" class="dropdown-toggle" data-toggle="dropdown" id="xpon" role="button" aria-haspopup="true" aria-expanded="false">xPON<span class="caret"></span></a>
 					<ul class="dropdown-menu">

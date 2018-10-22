@@ -93,7 +93,19 @@ function getService(service_id) {
 		$('#tools').dropdown();
 	});
 }
-
+function getAccount(account_id) {
+	jQuery.ajax({
+		url: "accounts_modal.php",
+		data: {account_id: account_id},
+		type: "POST"
+	}).done(function(data){
+		$('#modalbody').html(data);
+		$('#myModal').modal('show'); 
+		$('#xpon').dropdown();
+		$('#profiles').dropdown();
+		$('#tools').dropdown();
+	});
+}
 function getService_Profile(id) {
 	jQuery.ajax({
 		url: "service_profile_modal.php",
