@@ -4,6 +4,10 @@ include ("common.php");
 //include ("dbconnect.php");
 include ("navigation.php");
 include ("classes/customers_class.php");
+if ($user_class < "6")
+	exit();
+
+echo $user_class;
 
 $customers_obj = new customers();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
