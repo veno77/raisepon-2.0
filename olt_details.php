@@ -7,7 +7,7 @@ include ("navigation.php");
 
 if ($_GET) {
 	$olt_id = $_GET['id'];
-	if (!preg_match('/^[0-9]*$/', $customer_id)) {
+	if (!preg_match('/^[0-9]*$/', $olt_id)) {
 		print "that sux";
 		exit;
 	} else {
