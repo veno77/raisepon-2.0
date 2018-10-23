@@ -440,24 +440,26 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			print "<div class=\"text-center\"><div class=\"table-responsive col-lg-11\"><table class=\"table text-center \"><tr>";
 			$end = "0";
 			foreach ($output as $oid => $index) {
-				$ifDescr = $session->get($snmp_obj->get_pon_oid("ifDescr", "OLT"). "." . $index);
+				$ifDescr = str_replace("\"", "", $session->get($snmp_obj->get_pon_oid("ifDescr", "OLT"). "." . $index));
 				$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_". $index . "_traffic.rrd";
 				$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=$ifDescr",
 				"DEF:inoctets=$rrd_name:input:AVERAGE",
 				"DEF:outoctets=$rrd_name:output:AVERAGE",
-				"AREA:inoctets#00FF00:In traffic",
-				"LINE1:outoctets#0000FF:Out traffic\\r",
 				"CDEF:inbits=inoctets,8,*",
 				"CDEF:outbits=outoctets,8,*",
-				"GPRINT:inbits:LAST:Last In\: %6.2lf %Sbps",
-				"GPRINT:inbits:AVERAGE:Avg In\: %6.2lf %Sbps",
+				"AREA:inbits#00FF00:In traffic",
+				"LINE1:outbits#0000FF:Out traffic\\r",
+				"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
 				"COMMENT:  ",
-				"GPRINT:inbits:MAX:Max In\: %6.2lf %Sbps\\r",
+				"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
 				"COMMENT:\\n",
-				"GPRINT:outbits:LAST:Last Out\: %6.2lf %Sbps",
-				"GPRINT:outbits:AVERAGE:Avg Out\: %6.2lf %Sbps",
-				"COMMENT: ",
-				"GPRINT:outbits:MAX:Max Out\: %6.2lf %Sbps\\r"
+				"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
 				);
 		
 				$rrd_traffic_url = $ip_address . "_" . $index . "_traffic.gif";

@@ -1,6 +1,6 @@
 <?php
-include ("header.php");
 session_cache_limiter('private_no_expire');
+include ("header.php");
 include ("common.php");
 include ("navigation.php");
 include ("classes/index_class.php");

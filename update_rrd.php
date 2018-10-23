@@ -1,7 +1,9 @@
 <?php
 include ("dbconnect.php");
 include ("common.php");
-include ("classes/snmp_class.php");
+//include ("classes/snmp_class.php");
+include ("classes/customers_class.php");
+
 $snmp_obj = new snmp_oid();
 try {
 	$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICE_PROFILE.PORTS, SERVICE_PROFILE.HGU, SERVICE_PROFILE.RF, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID");
@@ -30,10 +32,37 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	}
 	$olt_ip_address = $row["IP_ADDRESS"];	
 	$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd"; 
+	$error = "0";
+	if(!is_file($rrd_traffic))
+		$error = "1";
 	$rrd_unicast = dirname(__FILE__) . "/rrd/" . $sn . "_unicast.rrd";
+	if(!is_file($rrd_unicast))
+		$error = "1";
 	$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $sn . "_broadcast.rrd";
+	if(!is_file($rrd_broadcast))
+		$error = "1";
 	$rrd_multicast = dirname(__FILE__) . "/rrd/" . $sn . "_multicast.rrd";
+	if(!is_file($rrd_multicast))
+		$error = "1";
+	if ($error == "1") {
+		$customers_obj = new customers();
+		$customers_obj->setSn($sn);
+		$error = $customers_obj->onu_traffic_rrd();
+		if (!empty($error)) {
+			return $error;
+		}
+	}
+	$error = "0";
 	$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.rrd";
+	if(!is_file($rrd_power)) {
+		$customers_obj = new customers();
+		$customers_obj->setSn($sn);
+		$error = $customers_obj->onu_power_rrd();
+		if (!empty($error)) {
+			return $error;
+		}
+	}
+	
 	$total_input_traffic = 0;
 	$total_output_traffic = 0;
 	$multicast_in = 0;
@@ -162,6 +191,29 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			for ($i=1; $i <= $row{'PORTS'}; $i++) {
 				$ethernet_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + $i;
 				$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".rrd";
+				if(!is_file($octets_ethernet)) {
+					$opts = array( "--step", "300", "--start", "0",
+					   "DS:input:DERIVE:600:0:U",
+					   "DS:output:DERIVE:600:0:U",
+					   "RRA:AVERAGE:0.5:1:600",
+					   "RRA:AVERAGE:0.5:6:700",
+					   "RRA:AVERAGE:0.5:24:775",
+					   "RRA:AVERAGE:0.5:288:797",
+					   "RRA:MAX:0.5:1:600",
+					   "RRA:MAX:0.5:6:700",
+					   "RRA:MAX:0.5:24:775",
+					   "RRA:MAX:0.5:288:797"
+					);
+					$ret = rrd_create($octets_ethernet, $opts);
+
+					if( $ret == 0 )
+					{
+						$err = rrd_error();
+						return $err;
+					}	
+				}
+				
+				
 				$octets_in_ethernet_id = $octets_in_ethernet . $ethernet_id;
 				$octets_out_ethernet_id = $octets_out_ethernet . $ethernet_id;
 				$octets_in_ethernet_val = $session->get($octets_in_ethernet_id);

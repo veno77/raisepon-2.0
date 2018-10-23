@@ -643,61 +643,62 @@ where CUSTOMERS.ID = '$customer_id'");
 			$rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd";
 			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.rrd";
 
-			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=B/s", "--title=Daily Traffic",
-			"DEF:inoctets=$rrd_name:input:AVERAGE",
-			"DEF:outoctets=$rrd_name:output:AVERAGE",
-			"AREA:inoctets#00FF00:In traffic",
-			"LINE1:outoctets#0000FF:Out traffic\\r",
-			"CDEF:inbits=inoctets",
-			"CDEF:outbits=outoctets",
-			"GPRINT:inbits:LAST:Last In\: %6.2lf %SBps",
-                        "GPRINT:inbits:AVERAGE:Avg In\: %6.2lf %SBps",
-                        "COMMENT:  ",
-                        "GPRINT:inbits:MAX:Max In\: %6.2lf %SBps\\r",
-                        "COMMENT:\\n",
-                        "GPRINT:outbits:LAST:Last Out\: %6.2lf %SBps",
-                        "GPRINT:outbits:AVERAGE:Avg Out\: %6.2lf %SBps",
-                        "COMMENT: ",
-                        "GPRINT:outbits:MAX:Max Out\: %6.2lf %SBps\\r"
+			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic",
+				"DEF:inoctets=$rrd_name:input:AVERAGE",
+				"DEF:outoctets=$rrd_name:output:AVERAGE",		
+				"CDEF:inbits=inoctets,8,*",
+				"CDEF:outbits=outoctets,8,*",
+				"AREA:inbits#00FF00:In traffic",
+				"LINE1:outbits#0000FF:Out traffic\\r",
+				"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
+				"COMMENT:\\n",
+				"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
 			);
 			$pkts = array("unicast", "broadcast", "multicast");
 			foreach ($pkts as $tr) {
 				$$tr = dirname(__FILE__) . "/rrd/" . $sn . "_" . $tr . ".rrd";
-					${$tr."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=Pkts/s", "--title=Daily $tr",
+					${$tr."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=pkts/s", "--title=Daily $tr",
 					"DEF:inoctets=${$tr}:input:AVERAGE",
 					"DEF:outoctets=${$tr}:output:AVERAGE",
 					"AREA:inoctets#00FF00:In",
 					"LINE1:outoctets#0000FF:Out\\r",
-					"CDEF:inbits=inoctets",
-					"CDEF:outbits=outoctets",
-					"GPRINT:inbits:LAST:Last In\: %6.0lf pkts/s",
-					"COMMENT:  ",
-					"GPRINT:inbits:MAX:Max In\: %6.0lf pkts/s\\r",
-					"COMMENT:\\n",
-					"GPRINT:outbits:LAST:Last Out\: %6.0lf pkts/s",
-					"COMMENT: ",
-					"GPRINT:outbits:MAX:Max Out\: %6.0lf pkts/s\\r"
+					"GPRINT:inoctets:MAX:IN Max\: %6.0lf pkts/s",
+					"GPRINT:inoctets:AVERAGE:Avg\: %6.0lf pkts/s",
+					"GPRINT:inoctets:LAST:Last\: %6.0lf pkts/s\\r",
+					"GPRINT:outoctets:MAX:OUT Max\: %6.0lf pkts/s",
+					"GPRINT:outoctets:AVERAGE:Avg\: %6.0lf pkts/s",
+					"GPRINT:outoctets:LAST:Last\: %6.0lf pkts/s\\r"
 					);
 			}
 			if ($hgu !== "Yes") {
 				for ($i=1; $i <= $row{'PORTS'}; $i++) {
 						$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".rrd";
-						${$i."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=B/s", "--title=Daily Traffic Ethernet Port $i",
+						${$i."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic Ethernet Port $i",
 						"DEF:inoctets=$octets_ethernet:input:AVERAGE",
 						"DEF:outoctets=$octets_ethernet:output:AVERAGE",
-						"AREA:inoctets#00FF00:In traffic",
-						"LINE1:outoctets#0000FF:Out traffic\\r",
-						"CDEF:inbits=inoctets",
-						"CDEF:outbits=outoctets",
-						"GPRINT:inbits:LAST:Last In\: %6.2lf %SBps",
-						"GPRINT:inbits:AVERAGE:Avg In\: %6.2lf %SBps",
+						"CDEF:inbits=inoctets,8,*",
+						"CDEF:outbits=outoctets,8,*",
+						"AREA:inbits#00FF00:In traffic",
+						"LINE1:outbits#0000FF:Out traffic\\r",
+						"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
 						"COMMENT:  ",
-						"GPRINT:inbits:MAX:Max In\: %6.2lf %SBps\\r",
+						"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
+						"COMMENT:  ",
+						"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
 						"COMMENT:\\n",
-						"GPRINT:outbits:LAST:Last Out\: %6.2lf %SBps",
-						"GPRINT:outbits:AVERAGE:Avg Out\: %6.2lf %SBps",
-						"COMMENT: ",
-						"GPRINT:outbits:MAX:Max Out\: %6.2lf %SBps\\r"
+						"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
+						"COMMENT:  ",
+						"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
+						"COMMENT:  ",
+						"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
 						);
 						${$i."_url"} = $sn . "_ethernet_" . $i . ".gif";
 						${$i."_gif"} = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".gif";
@@ -757,8 +758,8 @@ where CUSTOMERS.ID = '$customer_id'");
 			}
 
 		}
-		print "<table>";
-		print "<tr><td><p onClick=\"get_graph_traffic('". $customer_id . "');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
+		print "<div class=\"text-center\"><div class=\"table-responsive col-lg-11\"><table class=\"table text-center \"><tr>";
+		print "<td><p onClick=\"get_graph_traffic('". $customer_id . "');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
 		$end = "1";
 		if ($hgu !== "Yes") {
 			for ($i=1; $i <= $ports; $i++) {
@@ -776,7 +777,7 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<td><p onClick=\"get_graph_packets('". $customer_id . "', 'broadcast');\"><img src=\"rrd/" . $broadcast_url . "\"></img></p></td></tr>";
 		print "<tr><td><p onClick=\"get_graph_packets('". $customer_id . "', 'multicast');\"><img src=\"rrd/" . $multicast_url . "\"></img></p></td>";
 		print "<td><p onClick=\"get_graph_power('". $customer_id . "');\"><img src=\"rrd/" . $rrd_power_url . "\"></img></p></td></tr>";
-		print "<table>";
+		print "<table></div></div>";
         }
 
 }

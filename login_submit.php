@@ -4,9 +4,9 @@
 //print "<script src=\"./js/jquery-3.3.1.min.js\"></script>";
 //print "<script src=\"./js/bootstrap.min.js\"></script>";
 include ("header.php");
+include ("common.php");
 include ("navigation.php");
 /*** begin our session ***/
-session_start();
 include("dbconnect.php");
 
 $id = "";

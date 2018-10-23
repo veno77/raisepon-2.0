@@ -27,30 +27,31 @@ class customers {
 	private $state;
 	
 	function __construct() {
-		if ($_SERVER["REQUEST_METHOD"] == "POST") {
-			$this->customers_id = !empty($_POST['customers_id'])	? $this->test_input($_POST['customers_id']) : null;
-			$this->name = !empty($_POST['name'])	? $this->test_input($_POST['name']) : null;
-			$this->sn = !empty($_POST['sn'])	? $this->test_input($_POST['sn']) : null;
-			$this->address = !empty($_POST['address'])	? $this->test_input($_POST['address']) : null;
-			$this->egn = !empty($_POST['egn']) ? $this->test_input($_POST['egn']) : null;
-			$this->old_ports = !empty($_POST['old_ports'])	? $this->test_input($_POST['old_ports']) : null;
-			$this->service = !empty($_POST['service']) ? $this->test_input($_POST['service']) : null;
-			$this->olt = !empty($_POST['olt']) ? $this->test_input($_POST['olt']) : null;
-			$this->old_olt = !empty($_POST['old_olt']) ? $this->test_input($_POST['old_olt']) : null;
-			$this->pon_port = !empty($_POST['pon_port']) ? $this->test_input($_POST['pon_port']) : null;
-			$this->old_pon_port = !empty($_POST['old_pon_port']) ? $this->test_input($_POST['old_pon_port']) : null;
-			$this->old_pon_onu_id = !empty($_POST['old_pon_onu_id']) ? $this->test_input($_POST['old_pon_onu_id']) : null;
-			$this->line_profile = !empty($_POST['line_profile']) ? $this->test_input($_POST['line_profile']) : null;
-			$this->service_profile = !empty($_POST['service_profile']) ? $this->test_input($_POST['service_profile']) : null;
-			$this->auto = !empty($_POST['auto']) ? $this->test_input($_POST['auto']) : "NO";
-			$this->state = !empty($_POST['state']) ? $this->test_input($_POST['state']) : "YES";
-			$this->submit = !empty($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
-		}
+		if (!empty($_SERVER["REQUEST_METHOD"])) {
+			if ($_SERVER["REQUEST_METHOD"] == "POST") {
+				$this->customers_id = !empty($_POST['customers_id'])	? $this->test_input($_POST['customers_id']) : null;
+				$this->name = !empty($_POST['name'])	? $this->test_input($_POST['name']) : null;
+				$this->sn = !empty($_POST['sn'])	? $this->test_input($_POST['sn']) : null;
+				$this->address = !empty($_POST['address'])	? $this->test_input($_POST['address']) : null;
+				$this->egn = !empty($_POST['egn']) ? $this->test_input($_POST['egn']) : null;
+				$this->old_ports = !empty($_POST['old_ports'])	? $this->test_input($_POST['old_ports']) : null;
+				$this->service = !empty($_POST['service']) ? $this->test_input($_POST['service']) : null;
+				$this->olt = !empty($_POST['olt']) ? $this->test_input($_POST['olt']) : null;
+				$this->old_olt = !empty($_POST['old_olt']) ? $this->test_input($_POST['old_olt']) : null;
+				$this->pon_port = !empty($_POST['pon_port']) ? $this->test_input($_POST['pon_port']) : null;
+				$this->old_pon_port = !empty($_POST['old_pon_port']) ? $this->test_input($_POST['old_pon_port']) : null;
+				$this->old_pon_onu_id = !empty($_POST['old_pon_onu_id']) ? $this->test_input($_POST['old_pon_onu_id']) : null;
+				$this->line_profile = !empty($_POST['line_profile']) ? $this->test_input($_POST['line_profile']) : null;
+				$this->service_profile = !empty($_POST['service_profile']) ? $this->test_input($_POST['service_profile']) : null;
+				$this->auto = !empty($_POST['auto']) ? $this->test_input($_POST['auto']) : "NO";
+				$this->state = !empty($_POST['state']) ? $this->test_input($_POST['state']) : "YES";
+				$this->submit = !empty($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
+			}
 		
-		if ($_SERVER["REQUEST_METHOD"] == "GET") {
-			$this->olt_id = !empty($_GET['id'])	? $this->test_input($_GET['id']) : null;
+			if ($_SERVER["REQUEST_METHOD"] == "GET") {
+				$this->olt_id = !empty($_GET['id'])	? $this->test_input($_GET['id']) : null;
+			}
 		}
-		
 	}
 	
 	function getSubmit() {
@@ -85,7 +86,9 @@ class customers {
 	function getSn() {
 		return $this->sn;
 	}
-	
+	function setSn($sn) {
+		$this->sn = $sn;
+	}
 	function getAddress() {
 		return $this->address;
 	}
@@ -110,6 +113,7 @@ class customers {
 	function setPon_port($pon_port) {
 		$this->pon_port = $pon_port;
 	}
+	
 	function getOld_pon_port() {
 		return $this->old_pon_port;
 	}
