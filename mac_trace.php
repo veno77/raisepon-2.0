@@ -4,16 +4,32 @@ include ("common.php");
 include("dbconnect.php");
 include ("navigation.php");
 
-print "<center><form action=\"mac_trace.php\" method=\"post\">";
-print "<table><tr>";
+
 $macErr = "";
 $onu_id = $mac_address =  "";
-print "<td>MAC*:</td><td><input type=\"text\" name=\"mac_address\"  maxlength=\"17\" size=\"17\" value=\"" . $mac_address ."\"></td>";
-print "<td><input type='submit' name='SUBMIT' value='TRACE'></td>";
+?>
+<div class="container">
+	<div class="text-center">
+		<div class="page-header">
+			<h2>Search mac-address</h2>
+		</div>
+	</div>
+	<div class="row justify-content-md-center">
+		<div class="text-center">
+			<div class="form-group">
+				<form class="form-inline" action="mac_trace.php" method="post">
+					<label for="mac_address">MAC:</label>
+					<input type="text" name="mac_address"  size="15"  class="form-control" placeholder="MAC ADDRESS"  aria-describedby="sizing-addon1">
+					<button class="btn btn-basic" type="submit" name="SUBMIT" value="TRACE">TRACE</button>
+				</form>
+			</div>
+		</div>
+	</div>
+
+<?php
+
 if($macErr != "") 
 	print "<td style=\"color:red\">" . $macErr . "</td>";
-print "</tr></table>";
-print "</form><BR>";
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	if (empty($_POST["mac_address"])) {
@@ -31,7 +47,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$mac = hexdec($mac);
 		$mac_address = $mac_address . "." . $mac;
 	}
-	print $mac_address;
 	//SNMP 
 	try {
 		$result = $db->query("SELECT OLT.NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, RO, RW, TYPE from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID");
@@ -47,7 +62,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'}, 1000000);
 		$status = $session->get($status_oid);
 		if ($status) {
-			print "<h2>OLT: " . $row{'NAME'} . "::" . $ip_address . "</h2>";
+			print "<div class=\"text-center\">";
+			print "<h3>OLT: " . $row{'NAME'} . "::" . $ip_address . "</h3>";
 			$oid = "1.3.6.1.4.1.8886.18.5.2.2.1.8" . $mac_address ;
 			$oid_2 = "1.3.6.1.4.1.8886.18.5.2.2.1.2" . $mac_address ;
 			$oid_3 = "1.3.6.1.4.1.8886.18.5.2.2.1.3" . $mac_address ;
@@ -88,6 +104,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			//		$onu_port_id = $session->get($oid_6);
 			//		print "<tr><td>3. Tracing ONU " . $slot . "/" . $port . "/" . $onu_id . "</td><td>:: Found specified MAC on ONU_Ethernet_Port: " . $onu_port_id . "</td></tr>";	
 				}
+				print "</table>";
+				print "</div></div>";
 
 			}
 			

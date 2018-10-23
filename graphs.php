@@ -48,35 +48,60 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 print "<form action=\"graphs.php\" method=\"post\">";
-print "<center>OLT:<select id=\"select-olt\" name=\"olt_port\">";
-print "<option value=\"\" class=\"rhth\">Select OLT</option>";
-try {
-	$result = $db->query("SELECT * from OLT");
-} catch (PDOException $e) {
-        echo "Connection Failed:" . $e->getMessage() . "\n";
-        exit;
-}
+?>
+	<div class="row text-center">
+		<div class="col-md-2 col-md-offset-3">
+			<div class="form-group">
+				<label for="select-olt">OLT:</label>
+				<select class="form-control" id="select-olt" name="olt_port">
+					<option value="" class="rhth">OLT</option>
+					<?php 
+					try {
+							$result = $db->query("SELECT * from OLT");
+						} catch (PDOException $e) {
+							echo "Connection Failed:" . $e->getMessage() . "\n";
+							exit;
+						}
 
-while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-	print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
-}
+						while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+							print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+						}
+					?>
+				</select>
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="form-group">
+				<label for="select-pon">PON:</label>
+				<select class="form-control" id="select-pon" name="pon_port">
+					<option value="" class="rhth">PON PORT</option>
+				</select>
+			</div>
+		</div>
+		<div class="col-md-2">
+			<div class="form-group">
+				<label for="select-graph">GRAPH:</label>
+				<select class="form-control" id="select-graph" name="graph">
+					<option value="traffic"">Traffic</option>
+					<option value="unicast"">Unicast</option>
+					<option value="broadcast"">Broadcast</option>
+					<option value="multicast"">Multicast</option>
+					<option value="power"">Power</option>
+				</select>
+			</div>
+		</div>
+	</div>
+	<div class=row>
+		<div class="text-center">
+			<div class="form-group">
+				<button id="load" type="submit" name="SUBMIT" class="btn btn-basic" value="LOAD">LOAD</button>
+			</div>
+		</div>
+	</div>		
+
+<?php
 
 
-print "</select>";
-print "&nbsp;";
-print "<select id=\"select-pon\" name=\"pon_port\">";
-print "<option value=\"\">PON PORT</option>";
-print "</select>";
-print "&nbsp;";
-print "<select id=\"select-graph\" name=\"graph\">";
-print "<option value=\"traffic\">Traffic</option>";
-print "<option value=\"unicast\">Unicast</option>";
-print "<option value=\"broadcast\">Broadcast</option>";
-print "<option value=\"multicast\">Multicast</option>";
-print "<option value=\"power\">Power</option>";
-print "</select>";
-
-print "<input type=\"submit\" name=\"SUBMIT\" value=\"LOAD\">";
 print "</form>";
 
 if ($PON_ID) {
