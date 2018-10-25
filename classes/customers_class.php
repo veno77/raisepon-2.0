@@ -822,7 +822,7 @@ class customers {
 	function onu_eth_ports_rrd() {
 		//ETHERNET PORTS RRD
 		for ($i=1; $i <= $this->ports; $i++) {
-			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_ethernet_" . $i . ".rrd";
+			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_" . $i . ".rrd";
 			$opts = array( "--step", "300", "--start", "0",
 			   "DS:input:DERIVE:600:0:U",
 			   "DS:output:DERIVE:600:0:U",

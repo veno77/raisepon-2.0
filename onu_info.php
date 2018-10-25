@@ -680,8 +680,8 @@ where CUSTOMERS.ID = '$customer_id'");
 			}
 			if ($hgu !== "Yes") {
 				for ($i=1; $i <= $row{'PORTS'}; $i++) {
-						$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".rrd";
-						${$i."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic Ethernet Port $i",
+						$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".rrd";
+						${$i."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic UNI $i",
 						"DEF:inoctets=$octets_ethernet:input:AVERAGE",
 						"DEF:outoctets=$octets_ethernet:output:AVERAGE",
 						"CDEF:inbits=inoctets,8,*",
@@ -700,8 +700,8 @@ where CUSTOMERS.ID = '$customer_id'");
 						"COMMENT:  ",
 						"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
 						);
-						${$i."_url"} = $sn . "_ethernet_" . $i . ".gif";
-						${$i."_gif"} = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".gif";
+						${$i."_url"} = $sn . "_" . $i . ".gif";
+						${$i."_gif"} = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".gif";
 						$ret = rrd_graph(${$i."_gif"}, ${$i."_opts"});
 				}
 			}
@@ -759,12 +759,12 @@ where CUSTOMERS.ID = '$customer_id'");
 
 		}
 		print "<div class=\"text-center\"><div class=\"table-responsive col-lg-11\"><table class=\"table text-center \"><tr>";
-		print "<td><p onClick=\"get_graph_traffic('". $customer_id . "');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
+		print "<td><p onClick=\"graph('". $customer_id . "', 'traffic');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
 		$end = "1";
 		if ($hgu !== "Yes") {
 			for ($i=1; $i <= $ports; $i++) {
 				$name = ${$i."_url"};
-				print "<td><p onClick=\"graph_onu_ethernet_ports('". $customer_id . "', '" . $i . "');\"><img src=\"rrd/" . $name . "\"></img></p></td>";
+				print "<td><p onClick=\"graph('". $customer_id . "', '" . $i . "');\"><img src=\"rrd/" . $name . "\"></img></p></td>";
 				$end++;
 				if ($end == "2") {
 					$end = "0";
@@ -773,10 +773,10 @@ where CUSTOMERS.ID = '$customer_id'");
 			}
 		}
 		print "</tr>";
-		print "<tr><td><p onClick=\"get_graph_packets('". $customer_id . "', 'unicast');\"><img src=\"rrd/" . $unicast_url . "\"></img></p></td>";
-		print "<td><p onClick=\"get_graph_packets('". $customer_id . "', 'broadcast');\"><img src=\"rrd/" . $broadcast_url . "\"></img></p></td></tr>";
-		print "<tr><td><p onClick=\"get_graph_packets('". $customer_id . "', 'multicast');\"><img src=\"rrd/" . $multicast_url . "\"></img></p></td>";
-		print "<td><p onClick=\"get_graph_power('". $customer_id . "');\"><img src=\"rrd/" . $rrd_power_url . "\"></img></p></td></tr>";
+		print "<tr><td><p onClick=\"graph('". $customer_id . "', 'unicast');\"><img src=\"rrd/" . $unicast_url . "\"></img></p></td>";
+		print "<td><p onClick=\"graph('". $customer_id . "', 'broadcast');\"><img src=\"rrd/" . $broadcast_url . "\"></img></p></td></tr>";
+		print "<tr><td><p onClick=\"graph('". $customer_id . "', 'multicast');\"><img src=\"rrd/" . $multicast_url . "\"></img></p></td>";
+		print "<td><p onClick=\"graph('". $customer_id . "', 'power');\"><img src=\"rrd/" . $rrd_power_url . "\"></img></p></td></tr>";
 		print "<table></div></div>";
         }
 

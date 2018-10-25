@@ -190,7 +190,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		if ($hgu !== "Yes") {
 			for ($i=1; $i <= $row{'PORTS'}; $i++) {
 				$ethernet_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + $i;
-				$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".rrd";
+				$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".rrd";
 				if(!is_file($octets_ethernet)) {
 					$opts = array( "--step", "300", "--start", "0",
 					   "DS:input:DERIVE:600:0:U",
