@@ -1,5 +1,15 @@
 <?php
 
+//session_cache_limiter('private_no_expire');
+session_start();
+if (!isset($_SESSION["id"]) && false == strpos($_SERVER['REQUEST_URI'], 'login.php')) {
+//	header("Location: login.php");
+	echo "<script>location='login.php'</script>";
+}
+
+$user_class = isset($_SESSION["type"]) ? $_SESSION["type"] : null;
+$cur_user_id = isset($_SESSION["id"]) ? $_SESSION["id"] : null;
+
 $pon_dropdown = array();
 
 ini_set('display_errors','off');  
@@ -27,13 +37,6 @@ function type2ponid ($slot, $pon_port) {
         return $pon_id;
 }
 
-function echoActiveClassIfRequestMatches($requestUri)
-{
-    $current_file_name = basename($_SERVER['PHP_SELF'], ".php");
 
-	if ($current_file_name == $requestUri)
-        echo 'class="active"';
-	
-}
 
 ?>

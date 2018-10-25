@@ -48,10 +48,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				print "<center><div class=\"bg-success  text-white\">OLT Delited Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">OLT Deleted Succesfully</div></center>";
 			}
 		} else {
-			echo "<center><div class=\"bg-danger text-white\">ERROR: ONU_ID missing!</div></center>";
+			echo "<center><div class=\"bg-danger text-white\">ERROR: OLT_ID missing!</div></center>";
+		
+		}
+	}
+	
+	//SAVE OLT CONFIG
+	if ($olt_obj->getSubmit() == "SAVE") {
+		if (!empty($olt_obj->getOlt_id())) {
+		$error = $olt_obj->save_olt();
+			if (isset($error)) {
+				echo $error;	
+			}else{
+				print "<center><div class=\"bg-success  text-white\">OLT Config Saved Succesfully</div></center>";
+			}
+		} else {
+			echo "<center><div class=\"bg-danger text-white\">ERROR: OLT_ID missing!</div></center>";
 		
 		}
 	}
@@ -115,7 +130,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$sysuptime_hours = $sysuptime/(100*3600)%24;
 							$sysuptime_minutes = $sysuptime/(100*60)%60;
 							$sysuptime = $sysuptime_days . " day(s) " . $sysuptime_hours . " hour(s) " . $sysuptime_minutes . " minutes";
-							$save = '<form action="save.php" method="post"><input type="hidden" name="ip_address" value="' . $row{'IP_ADDRESS'} .'"><input type="hidden" name="rw" value="' . $row{'RW'} .'"><button type="submit" class="btn btn-default" name="SUBMIT" value="SAVE">SAVE</button></form>';
+							$save = '<form action="olt.php" method="post"><input type="hidden" name="olt_id" value="' . $row{'ID'} .'"><button type="submit" class="btn btn-default" name="SUBMIT" value="SAVE">SAVE</button></form>';
 						}else{
 							$status = "<font color=red>Offline</font>";
 						}

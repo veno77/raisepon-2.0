@@ -280,6 +280,15 @@ class olt {
 		return $rows;
 	}
 	
+	function save_olt() {
+		$this->get_data_olt();
+		$save_oid = '1.3.6.1.4.1.8886.1.2.1.1.0';
+		$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $this->snmp_community_rw, 2000000, 3);
+        $session->set($save_oid, 'i', '2');
+       	if ($session->getError()) {
+       		exit(var_dump($session->getError()));
+		}
+	}
 	function test_input($data) {
         $data = trim($data);
         $data = stripslashes($data);
