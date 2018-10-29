@@ -100,7 +100,9 @@ print "<form action=\"graphs.php\" method=\"post\">";
 			</div>
 		</div>
 	</div>		
-
+</div>
+<div class="container">
+	<div class="text-center">
 <?php
 
 
@@ -274,7 +276,7 @@ if ($PON_ID) {
 			print "</tr><tr>";
 		}
 	}
-	print "</tr></table></div></div></div></div>";
+	print "</tr></table></div></div></div></div></div>";
 }
 ?>
 
