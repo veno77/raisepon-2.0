@@ -1,6 +1,4 @@
 <?php
-
-
 print "<head>";
 print "<link rel=\"stylesheet\" href=\"./css/bootstrap.min.css\">";
 print "<script src=\"./js/jquery-3.3.1.min.js\"></script>";

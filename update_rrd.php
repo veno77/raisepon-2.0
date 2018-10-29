@@ -1,8 +1,8 @@
 <?php
 include_once("dbconnect.php");
-include_once("common.php");
 include_once("classes/snmp_class.php");
 include_once("classes/customers_class.php");
+include_once("classes/pon_class.php");
 
 $snmp_obj = new snmp_oid();
 try {
@@ -18,7 +18,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
  	$catv_input_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + 160;	
 	$rf = $row{'RF'};
 	$sn = $row["SN"];
-	$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
+	$customers_obj = new customers();
+	$big_onu_id = $customers_obj->type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
 	if ($row{'PON_TYPE'} == "GPON") {
 		if ($row{'PON_ONU_ID'} < 100) {
 			$index_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
@@ -78,27 +79,28 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	//Multicast
 	$multicast_in_oid = $snmp_obj->get_pon_oid("ifHCInMulticastPkts", "OLT") . "." . $big_onu_id;
 	$multicast_out_oid = $snmp_obj->get_pon_oid("ifHCOutMulticastPkts", "OLT") . "." . $big_onu_id;
+
 	
 	
-	$status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
-	//Power
-	$recv_power_oid = $snmp_obj->get_pon_oid("onu_recv_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
-	$send_power_oid = $snmp_obj->get_pon_oid("onu_send_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
-	//OLT RX Power
-	$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
-	// RF Power
-	$rf_input_power_oid = $snmp_obj->get_pon_oid("onu_rf_rx_power_oid", $row{'PON_TYPE'}) . "." . $catv_input_id;
-	//Ethernet Ports of ONU
-	$octets_in_ethernet = $snmp_obj->get_pon_oid("uni_octets_in_ethernet_oid", $row{'PON_TYPE'}) . ".";
-	$octets_out_ethernet = $snmp_obj->get_pon_oid("uni_octets_out_ethernet_oid", $row{'PON_TYPE'}) . ".";
-		
 	//GET STATUS via SNMP
+	$status = "0";
 	snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-//	if(isset($row{'IP_ADDRESS'})) {
-	$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-	$status = $session->get($status_oid);
-	
+	if(isset($row{'IP_ADDRESS'})) { 
+		$status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+		$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+		$status = $session->get($status_oid);
+	}
 	if ($status == "1") {
+		//Power
+		$recv_power_oid = $snmp_obj->get_pon_oid("onu_recv_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
+		$send_power_oid = $snmp_obj->get_pon_oid("onu_send_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
+		//OLT RX Power
+		$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+		// RF Power
+		$rf_input_power_oid = $snmp_obj->get_pon_oid("onu_rf_rx_power_oid", $row{'PON_TYPE'}) . "." . $catv_input_id;
+		//Ethernet Ports of ONU
+		$octets_in_ethernet = $snmp_obj->get_pon_oid("uni_octets_in_ethernet_oid", $row{'PON_TYPE'}) . ".";
+		$octets_out_ethernet = $snmp_obj->get_pon_oid("uni_octets_out_ethernet_oid", $row{'PON_TYPE'}) . ".";
     	$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
 /*		$ret = rrd_update($rrd_traffic, array("N:$total_input_traffic:$total_output_traffic"));
 		if( $ret == 0 )
@@ -291,7 +293,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
 	$status = $session->get($status_oid);
 	if (isset($status)) {
-		$port = type2ponid($row{'SLOT_ID'},$row{'PORT_ID'});	
+		$pon_obj = new pon();
+		$port = $pon_obj->type2ponid($row{'SLOT_ID'},$row{'PORT_ID'});	
 		$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_traffic.rrd";
 		$rrd_unicast = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_unicast.rrd";
 		$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_broadcast.rrd";

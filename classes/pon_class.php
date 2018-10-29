@@ -1,5 +1,5 @@
 <?php
-include("db_connect_class.php");
+include_once("db_connect_class.php");
 class pon {
 	private $pon_id;
 	private $name;
@@ -11,18 +11,20 @@ class pon {
 	private $ip_address;
 	
 	function __construct() {
-		if ($_SERVER["REQUEST_METHOD"] == "POST") {
-			$this->pon_id = isset($_POST['pon_id'])	? $this->test_input($_POST['pon_id']) : null;
-			$this->name = isset($_POST['name'])	? $this->test_input($_POST['name']) : null;
-			$this->olt = isset($_POST['olt'])	? $this->test_input($_POST['olt']) : null;
-			$this->slot_id = isset($_POST['slot_id'])	? $this->test_input($_POST['slot_id']) : null;
-			$this->port_id = isset($_POST['port_id'])	? $this->test_input($_POST['port_id']) : null;
-			$this->cards_model_id = isset($_POST['cards_model_id'])	? $this->test_input($_POST['cards_model_id']) : null;
-			$this->submit = isset($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
-		}
-		
-		if ($_SERVER["REQUEST_METHOD"] == "GET") {
-			$this->pon_id = isset($_GET['id'])	? $this->test_input($_GET['id']) : null;
+		if (!empty($_SERVER["REQUEST_METHOD"])) {
+			if ($_SERVER["REQUEST_METHOD"] == "POST") {
+				$this->pon_id = isset($_POST['pon_id'])	? $this->test_input($_POST['pon_id']) : null;
+				$this->name = isset($_POST['name'])	? $this->test_input($_POST['name']) : null;
+				$this->olt = isset($_POST['olt'])	? $this->test_input($_POST['olt']) : null;
+				$this->slot_id = isset($_POST['slot_id'])	? $this->test_input($_POST['slot_id']) : null;
+				$this->port_id = isset($_POST['port_id'])	? $this->test_input($_POST['port_id']) : null;
+				$this->cards_model_id = isset($_POST['cards_model_id'])	? $this->test_input($_POST['cards_model_id']) : null;
+				$this->submit = isset($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
+			}
+			
+			if ($_SERVER["REQUEST_METHOD"] == "GET") {
+				$this->pon_id = isset($_GET['id'])	? $this->test_input($_GET['id']) : null;
+			}
 		}
 	}
 	
