@@ -92,7 +92,7 @@ class pon {
 		//CREATE RRD
 		$traffic = array("traffic", "unicast", "broadcast", "multicast");
 		foreach ($traffic as $tr) {
-			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $ip_address . "_" . $this->slot_id . "000000" . $this->port_id . "_" . $tr . ".rrd";
+			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $ip_address . "_" . $this->type2ponid($this->slot_id,$this->port_id) . "_" . $tr . ".rrd";
 			$opts = array("--step", "300", "--start", "0",
 				"DS:input:DERIVE:600:0:U",
 				"DS:output:DERIVE:600:0:U",
@@ -165,7 +165,7 @@ class pon {
 		//DELETE RRD files
 		$traffic = array("traffic", "unicast", "broadcast", "multicast");
 		foreach ($traffic as $tr) {
-			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $ip_address . "_" . $this->slot_id . "000000" . $this->port_id . "_" . $tr . ".rrd";
+			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $ip_address . "_" . $this->type2ponid($this->slot_id,$this->port_id) . "_" . $tr . ".rrd";
 			unlink($rrd_name);
 		}
 	}
@@ -261,7 +261,13 @@ class pon {
         $data = htmlspecialchars($data);
         return $data;
 	}
-
+	
+	function type2ponid ($slot, $pon_port) {
+        $slot = decbin($slot);
+        $pon_port = str_pad(decbin($pon_port), 6, "0", STR_PAD_LEFT);
+        $pon_id = bindec($slot . $pon_port);
+        return $pon_id;
+	}
 
 	
 }

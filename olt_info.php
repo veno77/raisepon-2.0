@@ -471,7 +471,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					echo "rrd_graph() ERROR: $err\n";
 				}
 				
-				print "<td><p onClick=\"get_graph_olt_traffic('". $ip_address . "', '" . $index . "', '" . $ifDescr . "');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
+				print "<td><p onClick=\"graph_olt('". $ip_address . "', '" . $index . "', '" . $ifDescr . "');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
 				$end++;
 				if ($end == "2") {
 					$end = "0";

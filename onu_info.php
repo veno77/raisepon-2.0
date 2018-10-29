@@ -644,94 +644,94 @@ where CUSTOMERS.ID = '$customer_id'");
 			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.rrd";
 
 			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic",
-				"DEF:inoctets=$rrd_name:input:AVERAGE",
-				"DEF:outoctets=$rrd_name:output:AVERAGE",		
-				"CDEF:inbits=inoctets,8,*",
-				"CDEF:outbits=outoctets,8,*",
-				"AREA:inbits#00FF00:In traffic",
-				"LINE1:outbits#0000FF:Out traffic\\r",
-				"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
-				"COMMENT:  ",
-				"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
-				"COMMENT:  ",
-				"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
-				"COMMENT:\\n",
-				"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
-				"COMMENT:  ",
-				"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
-				"COMMENT:  ",
-				"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
+			"DEF:inoctets=$rrd_name:input:AVERAGE",
+			"DEF:outoctets=$rrd_name:output:AVERAGE",		
+			"CDEF:inbits=inoctets,8,*",
+			"CDEF:outbits=outoctets,8,*",
+			"AREA:inbits#00FF00:In traffic",
+			"LINE1:outbits#0000FF:Out traffic\\r",
+			"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
+			"COMMENT:\\n",
+			"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
 			);
 			$pkts = array("unicast", "broadcast", "multicast");
 			foreach ($pkts as $tr) {
 				$$tr = dirname(__FILE__) . "/rrd/" . $sn . "_" . $tr . ".rrd";
-					${$tr."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=pkts/s", "--title=Daily $tr",
-					"DEF:inoctets=${$tr}:input:AVERAGE",
-					"DEF:outoctets=${$tr}:output:AVERAGE",
-					"AREA:inoctets#00FF00:In",
-					"LINE1:outoctets#0000FF:Out\\r",
-					"GPRINT:inoctets:MAX:IN Max\: %6.0lf pkts/s",
-					"GPRINT:inoctets:AVERAGE:Avg\: %6.0lf pkts/s",
-					"GPRINT:inoctets:LAST:Last\: %6.0lf pkts/s\\r",
-					"GPRINT:outoctets:MAX:OUT Max\: %6.0lf pkts/s",
-					"GPRINT:outoctets:AVERAGE:Avg\: %6.0lf pkts/s",
-					"GPRINT:outoctets:LAST:Last\: %6.0lf pkts/s\\r"
-					);
+				${$tr."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=pkts/s", "--title=Daily $tr",
+				"DEF:inoctets=${$tr}:input:AVERAGE",
+				"DEF:outoctets=${$tr}:output:AVERAGE",
+				"AREA:inoctets#00FF00:In",
+				"LINE1:outoctets#0000FF:Out\\r",
+				"GPRINT:inoctets:MAX:IN Max\: %6.0lf pkts/s",
+				"GPRINT:inoctets:AVERAGE:Avg\: %6.0lf pkts/s",
+				"GPRINT:inoctets:LAST:Last\: %6.0lf pkts/s\\r",
+				"GPRINT:outoctets:MAX:OUT Max\: %6.0lf pkts/s",
+				"GPRINT:outoctets:AVERAGE:Avg\: %6.0lf pkts/s",
+				"GPRINT:outoctets:LAST:Last\: %6.0lf pkts/s\\r"
+				);
 			}
 			if ($hgu !== "Yes") {
 				for ($i=1; $i <= $row{'PORTS'}; $i++) {
-						$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".rrd";
-						${$i."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic UNI $i",
-						"DEF:inoctets=$octets_ethernet:input:AVERAGE",
-						"DEF:outoctets=$octets_ethernet:output:AVERAGE",
-						"CDEF:inbits=inoctets,8,*",
-						"CDEF:outbits=outoctets,8,*",
-						"AREA:inbits#00FF00:In traffic",
-						"LINE1:outbits#0000FF:Out traffic\\r",
-						"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
-						"COMMENT:  ",
-						"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
-						"COMMENT:  ",
-						"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
-						"COMMENT:\\n",
-						"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
-						"COMMENT:  ",
-						"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
-						"COMMENT:  ",
-						"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
-						);
-						${$i."_url"} = $sn . "_" . $i . ".gif";
-						${$i."_gif"} = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".gif";
-						$ret = rrd_graph(${$i."_gif"}, ${$i."_opts"});
+					$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".rrd";
+					${$i."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic UNI $i",
+					"DEF:inoctets=$octets_ethernet:input:AVERAGE",
+					"DEF:outoctets=$octets_ethernet:output:AVERAGE",
+					"CDEF:inbits=inoctets,8,*",
+					"CDEF:outbits=outoctets,8,*",
+					"AREA:inbits#00FF00:In traffic",
+					"LINE1:outbits#0000FF:Out traffic\\r",
+					"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
+					"COMMENT:  ",
+					"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
+					"COMMENT:  ",
+					"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
+					"COMMENT:\\n",
+					"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
+					"COMMENT:  ",
+					"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
+					"COMMENT:  ",
+					"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
+					);
+					${$i."_url"} = $sn . "_" . $i . ".gif";
+					${$i."_gif"} = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".gif";
+					$ret = rrd_graph(${$i."_gif"}, ${$i."_opts"});
 				}
 			}
 			if ($rf == "Yes") {
-					$opts4 = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
-					"DEF:inoctets=$rrd_power:input:AVERAGE",
-					"DEF:outoctets=$rrd_power:output:AVERAGE",
-					"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
-					"DEF:rf_in=$rrd_power:rfin:AVERAGE",
-					"LINE2:rx_olt#D6213B:RX@OLT",
-					"GPRINT:rx_olt:LAST:Last\: %6.2lf dBm\\r",
-					"LINE2:outoctets#C6913B:TX@ONU",
-					"GPRINT:outoctets:LAST:Last\: %6.2lf dBm\\r",
-					"LINE2:inoctets#7FB37C:RX@ONU",
-					"GPRINT:inoctets:LAST:Last\: %6.2lf dBm\\r",
-					"LINE2:rf_in#FFD87C:RF@ONU",
-					"GPRINT:rf_in:LAST:Last\: %6.2lf dBm\\r",
+				$opts4 = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
+				"DEF:inoctets=$rrd_power:input:AVERAGE",
+				"DEF:outoctets=$rrd_power:output:AVERAGE",
+				"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
+				"DEF:rf_in=$rrd_power:rfin:AVERAGE",
+				"LINE2:rx_olt#D6213B:RX@OLT",
+				"GPRINT:rx_olt:LAST:Last\: %6.2lf dBm\\r",
+				"LINE2:outoctets#C6913B:TX@ONU",
+				"GPRINT:outoctets:LAST:Last\: %6.2lf dBm\\r",
+				"LINE2:inoctets#7FB37C:RX@ONU",
+				"GPRINT:inoctets:LAST:Last\: %6.2lf dBm\\r",
+				"LINE2:rf_in#FFD87C:RF@ONU",
+				"GPRINT:rf_in:LAST:Last\: %6.2lf dBm\\r",
 					);
 			} else {
-					$opts4 = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
-					"DEF:inoctets=$rrd_power:input:AVERAGE",
-					"DEF:outoctets=$rrd_power:output:AVERAGE",
-					"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
-					"LINE2:rx_olt#D6213B:RX@OLT",
-					"GPRINT:rx_olt:LAST:Last\: %6.2lf dBm\\r",
-					"LINE2:outoctets#C6913B:TX@ONU",
-					"GPRINT:outoctets:LAST:Last\: %6.2lf dBm\\r",
-					"LINE2:inoctets#7FB37C:RX@ONU",
-					"GPRINT:inoctets:LAST:Last\: %6.2lf dBm\\r",
-					);
+				$opts4 = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
+				"DEF:inoctets=$rrd_power:input:AVERAGE",
+				"DEF:outoctets=$rrd_power:output:AVERAGE",
+				"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
+				"LINE2:rx_olt#D6213B:RX@OLT",
+				"GPRINT:rx_olt:LAST:Last\: %6.2lf dBm\\r",
+				"LINE2:outoctets#C6913B:TX@ONU",
+				"GPRINT:outoctets:LAST:Last\: %6.2lf dBm\\r",
+				"LINE2:inoctets#7FB37C:RX@ONU",
+				"GPRINT:inoctets:LAST:Last\: %6.2lf dBm\\r",
+				);
 			}
 
 			$rrd_traffic_url = $sn . "_traffic.gif";

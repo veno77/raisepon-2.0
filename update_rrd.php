@@ -1,8 +1,8 @@
 <?php
-include ("dbconnect.php");
-include ("common.php");
-//include ("classes/snmp_class.php");
-include ("classes/customers_class.php");
+include_once("dbconnect.php");
+include_once("common.php");
+include_once("classes/snmp_class.php");
+include_once("classes/customers_class.php");
 
 $snmp_obj = new snmp_oid();
 try {
@@ -19,7 +19,6 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	$rf = $row{'RF'};
 	$sn = $row["SN"];
 	$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
-	$big_onu_id_2 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
 	if ($row{'PON_TYPE'} == "GPON") {
 		if ($row{'PON_ONU_ID'} < 100) {
 			$index_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
@@ -67,32 +66,19 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	$total_output_traffic = 0;
 	$multicast_in = 0;
 	$multicast_out = 0;
-	if ($row{'PON_TYPE'} == "EPON") {
-		$traffic_in_oid = "1.3.6.1.2.1.31.1.1.1.6." . $big_onu_id;
-		$traffic_out_oid = "1.3.6.1.2.1.31.1.1.1.10." . $big_onu_id;
-		//Unicast
-		$unicast_in_oid = "1.3.6.1.2.1.31.1.1.1.7." . $big_onu_id;
-		$unicast_out_oid = "1.3.6.1.2.1.31.1.1.1.11." . $big_onu_id;
-		//Broadcast
-		$broadcast_in_oid = "1.3.6.1.2.1.31.1.1.1.9." . $big_onu_id;
-		$broadcast_out_oid = "1.3.6.1.2.1.31.1.1.1.13." . $big_onu_id;
-		//Multicast
-		$multicast_in_oid = "1.3.6.1.2.1.31.1.1.1.8." . $big_onu_id;
-		$multicast_out_oid = "1.3.6.1.2.1.31.1.1.1.12." . $big_onu_id;
-	}
-	if ($row{'PON_TYPE'} == "GPON") {
-		$traffic_in_oid = "1.3.6.1.2.1.31.1.1.1.6." . $big_onu_id;
-		$traffic_out_oid = "1.3.6.1.2.1.31.1.1.1.10." . $big_onu_id;
-		//Unicast
-		$unicast_in_oid = "1.3.6.1.2.1.31.1.1.1.7." . $big_onu_id;
-		$unicast_out_oid = "1.3.6.1.2.1.31.1.1.1.11." . $big_onu_id;
-		//Broadcast
-		$broadcast_in_oid = "1.3.6.1.2.1.31.1.1.1.9." . $big_onu_id;
-		$broadcast_out_oid = "1.3.6.1.2.1.31.1.1.1.13." . $big_onu_id;
-		//Multicast
-		$multicast_in_oid = "1.3.6.1.2.1.31.1.1.1.8." . $big_onu_id;
-		$multicast_out_oid = "1.3.6.1.2.1.31.1.1.1.12." . $big_onu_id;
-	}
+	
+	$traffic_in_oid = $snmp_obj->get_pon_oid("ifHCInOctets", "OLT") . "." . $big_onu_id;
+	$traffic_out_oid = $snmp_obj->get_pon_oid("ifHCOutOctets", "OLT") . "." . $big_onu_id;
+	//Unicast
+	$unicast_in_oid = $snmp_obj->get_pon_oid("ifHCInUcastPkts", "OLT") . "." . $big_onu_id;
+	$unicast_out_oid = $snmp_obj->get_pon_oid("ifHCOutUcastPkts", "OLT") . "." . $big_onu_id;
+	//Broadcast
+	$broadcast_in_oid = $snmp_obj->get_pon_oid("ifHCInBroadcastPkts", "OLT") . "." . $big_onu_id;
+	$broadcast_out_oid = $snmp_obj->get_pon_oid("ifHCOutBroadcastPkts", "OLT") . "." . $big_onu_id;
+	//Multicast
+	$multicast_in_oid = $snmp_obj->get_pon_oid("ifHCInMulticastPkts", "OLT") . "." . $big_onu_id;
+	$multicast_out_oid = $snmp_obj->get_pon_oid("ifHCOutMulticastPkts", "OLT") . "." . $big_onu_id;
+	
 	
 	$status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 	//Power
@@ -228,7 +214,10 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		}
 	}
 }
-	// UPDATE OLT GRAPHS
+
+
+
+// UPDATE OLT GRAPHS
 
 try {
 	$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID");
@@ -297,34 +286,88 @@ try {
 }
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	$ip_address = $row{'IP_ADDRESS'};
-	$status_oid = "1.3.6.1.2.1.1.3.0";
+	$status_oid = $snmp_obj->get_pon_oid("olt_status_oid", "OLT");
 	snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 	$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
 	$status = $session->get($status_oid);
 	if (isset($status)) {
-		$port = type2ponid($row{'SLOT_ID'},$row{'PORT_ID'});
-		$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $row{'SLOT_ID'} . "000000" . $row{'PORT_ID'} . "_traffic.rrd";
-		$rrd_unicast = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $row{'SLOT_ID'} . "000000" . $row{'PORT_ID'} . "_unicast.rrd";
-		$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $row{'SLOT_ID'} . "000000" . $row{'PORT_ID'} . "_broadcast.rrd";
-		$rrd_multicast = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $row{'SLOT_ID'} . "000000" . $row{'PORT_ID'} . "_multicast.rrd";
-		$first_oid = "1.3.6.1.2.1.31.1.1.1.6." . $port;
-		$second_oid = "1.3.6.1.2.1.31.1.1.1.10." . $port;
+		$port = type2ponid($row{'SLOT_ID'},$row{'PORT_ID'});	
+		$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_traffic.rrd";
+		$rrd_unicast = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_unicast.rrd";
+		$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_broadcast.rrd";
+		$rrd_multicast = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_multicast.rrd";
+		$ifHCInOctets = $snmp_obj->get_pon_oid("ifHCInOctets", "OLT") . "." . $port;
+		$ifHCOutOctets = $snmp_obj->get_pon_oid("ifHCOutOctets", "OLT") . "." . $port;
 		//Unicast
-		$unicast_in_oid = "1.3.6.1.2.1.2.2.1.11." . $port;
-		$unicast_out_oid = "1.3.6.1.2.1.2.2.1.17." . $port;
+		$ifHCInUcastPkts = $snmp_obj->get_pon_oid("ifHCInUcastPkts", "OLT") . "." . $port;
+		$ifHCOutUcastPkts = $snmp_obj->get_pon_oid("ifHCOutUcastPkts", "OLT") . "." . $port;
 		//Broadcast
-		$broadcast_in_oid = "1.3.6.1.2.1.31.1.1.1.3." . $port;
-		$broadcast_out_oid = "1.3.6.1.2.1.31.1.1.1.5." . $port;
+		$ifHCInBroadcastPkts = $snmp_obj->get_pon_oid("ifHCInBroadcastPkts", "OLT") . "." . $port;
+		$ifHCOutBroadcastPkts = $snmp_obj->get_pon_oid("ifHCOutBroadcastPkts", "OLT") . "." . $port;
 		//Multicast
-		$multicast_in_oid = "1.3.6.1.2.1.31.1.1.1.2." . $port;
-		$multicast_out_oid = "1.3.6.1.2.1.31.1.1.1.4." . $port;
-
+		$ifHCInMulticastPkts = $snmp_obj->get_pon_oid("ifHCInMulticastPkts", "OLT") . "." . $port;
+		$ifHCOutMulticastPkts = $snmp_obj->get_pon_oid("ifHCOutMulticastPkts", "OLT") . "." . $port;
+		$opts = array("--step", "300", "--start", "0",
+		"DS:input:DERIVE:600:0:U",
+		"DS:output:DERIVE:600:0:U",
+		"RRA:AVERAGE:0.5:1:600",
+		"RRA:AVERAGE:0.5:6:700",
+		"RRA:AVERAGE:0.5:24:775",
+		"RRA:AVERAGE:0.5:288:797",
+		"RRA:MAX:0.5:1:600",
+		"RRA:MAX:0.5:6:700",
+		"RRA:MAX:0.5:24:775",
+		"RRA:MAX:0.5:288:797"
+		);
+		
+		$opts_packets = array("--step", "300", "--start", "0",
+		"DS:input:DERIVE:600:0:U",
+		"DS:output:DERIVE:600:0:U",
+		"RRA:AVERAGE:0.5:1:600",
+		"RRA:AVERAGE:0.5:6:700",
+		"RRA:AVERAGE:0.5:24:775",
+		"RRA:AVERAGE:0.5:288:797",
+		"RRA:MAX:0.5:1:600",
+		"RRA:MAX:0.5:6:700",
+		"RRA:MAX:0.5:24:775",
+		"RRA:MAX:0.5:288:797"
+		);
+		if(!is_file($rrd_name)){
+			$ret = rrd_create($rrd_name, $opts);
+			if( $ret == 0 ){
+				$err = rrd_error();
+				return $err;
+			}	
+		}
+		if(!is_file($rrd_unicast)){
+			$ret = rrd_create($rrd_unicast, $opts_packets);
+			if( $ret == 0 ){
+				$err = rrd_error();
+				return $err;
+			}	
+		}
+		if(!is_file($rrd_broadcast)){
+			$ret = rrd_create($rrd_broadcast, $opts_packets);
+			if( $ret == 0 ){
+				$err = rrd_error();
+				return $err;
+			}	
+		}
+		if(!is_file($rrd_multicast)){
+			$ret = rrd_create($rrd_multicast, $opts_packets);
+			if( $ret == 0 ){
+				$err = rrd_error();
+				return $err;
+			}	
+		}
+		
+		
 		$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-		$total_input_traffic = $session->get($first_oid);
-		$total_output_traffic = $session->get($second_oid);
+		$total_input_traffic = $session->get($ifHCInOctets);
+		$total_output_traffic = $session->get($ifHCOutOctets);
 		$ret = rrd_update($rrd_name, array("N:$total_input_traffic:$total_output_traffic"));
-		$unicast_in = $session->get($unicast_in_oid);
-		$unicast_out = $session->get($unicast_out_oid);
+		$unicast_in = $session->get($ifHCInUcastPkts);
+		$unicast_out = $session->get($ifHCOutUcastPkts);
 		$ret = rrd_update($rrd_unicast, array("N:$unicast_in:$unicast_out"));
 		if( $ret == 0 )
 		{
@@ -332,8 +375,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			echo "ERROR occurred: $err\n";
 		}
 
-		$broadcast_in = $session->get($broadcast_in_oid);
-		$broadcast_out = $session->get($broadcast_out_oid);
+		$broadcast_in = $session->get($ifHCInBroadcastPkts);
+		$broadcast_out = $session->get($ifHCOutBroadcastPkts);
 		$ret = rrd_update($rrd_broadcast, array("N:$broadcast_in:$broadcast_out"));
 		if( $ret == 0 )
 		{
@@ -341,8 +384,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			echo "ERROR occurred: $err\n";
 		}
 		
-		$multicast_in = $session->get($multicast_in_oid);
-		$multicast_out = $session->get($multicast_out_oid);
+		$multicast_in = $session->get($ifHCInMulticastPkts);
+		$multicast_out = $session->get($ifHCOutMulticastPkts);
 		$ret = rrd_update($rrd_multicast, array("N:$multicast_in:$multicast_out"));
 		if( $ret == 0 )
 		{

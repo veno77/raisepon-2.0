@@ -1,8 +1,9 @@
 <?php
-include ("header.php");
-include ("common.php");
-include ("dbconnect.php");
-include ("navigation.php");
+session_cache_limiter('private_no_expire');
+include_once("header.php");
+include_once("common.php");
+include_once("dbconnect.php");
+include_once("navigation.php");
 
 $OLT_ID = $PON_ID = $pon_port = $traffic = $power = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -49,6 +50,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 print "<form action=\"graphs.php\" method=\"post\">";
 ?>
+<div class="container">
 	<div class="row text-center">
 		<div class="col-md-2 col-md-offset-3">
 			<div class="form-group">
@@ -82,16 +84,16 @@ print "<form action=\"graphs.php\" method=\"post\">";
 			<div class="form-group">
 				<label for="select-graph">GRAPH:</label>
 				<select class="form-control" id="select-graph" name="graph">
-					<option value="traffic"">Traffic</option>
-					<option value="unicast"">Unicast</option>
-					<option value="broadcast"">Broadcast</option>
-					<option value="multicast"">Multicast</option>
-					<option value="power"">Power</option>
+					<option value="traffic">Traffic</option>
+					<option value="unicast">Unicast</option>
+					<option value="broadcast">Broadcast</option>
+					<option value="multicast">Multicast</option>
+					<option value="power">Power</option>
 				</select>
 			</div>
 		</div>
 	</div>
-	<div class=row>
+	<div class="row">
 		<div class="text-center">
 			<div class="form-group">
 				<button id="load" type="submit" name="SUBMIT" class="btn btn-basic" value="LOAD">LOAD</button>
@@ -113,56 +115,61 @@ if ($PON_ID) {
 		echo "Connection Failed:" . $e->getMessage() . "\n";
 		exit;
 	} 
-	print "<p><center>";
-	print "<h1>OLT: " . $OLT_NAME . "</h1><h2>PON: " . $PON_NAME . "   (" . $SLOT_ID . "/" . $PORT_ID . ")</h2><br><br>"  ;
+	print "<div class=\"text-center\">";
+	print "<h1>OLT: " . $OLT_NAME . "</h1><h2>PON: " . $PON_NAME . "   (" . $SLOT_ID . "/" . $PORT_ID . ")</h2></div>"  ;
 	$i= 0;
+	print "<div id=\"output\"><div class=\"row justify-content-md-center\"><div class=\"table-responsive \"><table class=\"table text-center \"><tr>";
+	$end = "0";
 	while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-		$i++;
-		if($row{'TYPE'} == "1")
-			$big_onu_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
-		if($row{'TYPE'} == "2")
-			$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});	
-		$pon_snmp_id = $row{'SLOT_ID'} . "000000" . $row{'PORT_ID'} ;
+		$i++;	
+		$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});	
+		$pon_snmp_id = type2ponid($row{'SLOT_ID'},$row{'PORT_ID'});	
 		$olt_ip_address = $row["IP_ADDRESS"];
 		$sn = $row["SN"];
+		
+		
 		if ($graph == "traffic") {
-        		$rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd";
+        	$rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd";
 			$rrd_pon =  dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $pon_snmp_id . "_traffic.rrd";
 
-			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=B/s", "--title=Daily Traffic",
-				 "DEF:inoctets=$rrd_name:input:AVERAGE",
-				 "DEF:outoctets=$rrd_name:output:AVERAGE",
-				 "AREA:inoctets#00FF00:In traffic",
-				 "LINE1:outoctets#0000FF:Out traffic\\r",
-				 "CDEF:inbits=inoctets",
-				 "CDEF:outbits=outoctets",
-				 "GPRINT:inbits:LAST:Last In\: %6.2lf %SBps",
-				 "GPRINT:inbits:AVERAGE:Avg In\: %6.2lf %SBps",
-				 "COMMENT:  ",
-				 "GPRINT:inbits:MAX:Max In\: %6.2lf %SBps\\r",
-				 "COMMENT:\\n",
-				 "GPRINT:outbits:LAST:Last Out\: %6.2lf %SBps",
-				 "GPRINT:outbits:AVERAGE:Avg Out\: %6.2lf %SBps",
-				 "COMMENT: ",
-				 "GPRINT:outbits:MAX:Max Out\: %6.2lf %SBps\\r"
+			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic",
+			"DEF:inoctets=$rrd_name:input:AVERAGE",
+			"DEF:outoctets=$rrd_name:output:AVERAGE",		
+			"CDEF:inbits=inoctets,8,*",
+			"CDEF:outbits=outoctets,8,*",
+			"AREA:inbits#00FF00:In traffic",
+			"LINE1:outbits#0000FF:Out traffic\\r",
+			"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
+			"COMMENT:\\n",
+			"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
 			);
-			$opts_pon = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=B/s", "--title=Daily Traffic",
-				 "DEF:inoctets=$rrd_pon:input:AVERAGE",
-				 "DEF:outoctets=$rrd_pon:output:AVERAGE",
-				 "AREA:inoctets#00FF00:In traffic",
-				 "LINE1:outoctets#0000FF:Out traffic\\r",
-				 "CDEF:inbits=inoctets",
-				 "CDEF:outbits=outoctets",
-				 "GPRINT:inbits:LAST:Last In\: %6.2lf %SBps",
-				 "GPRINT:inbits:AVERAGE:Avg In\: %6.2lf %SBps",
-				 "COMMENT:  ",
-				 "GPRINT:inbits:MAX:Max In\: %6.2lf %SBps\\r",
-				 "COMMENT:\\n",
-				 "GPRINT:outbits:LAST:Last Out\: %6.2lf %SBps",
-				 "GPRINT:outbits:AVERAGE:Avg Out\: %6.2lf %SBps",
-				 "COMMENT: ",
-                 		 "GPRINT:outbits:MAX:Max Out\: %6.2lf %SBps\\r"
-               		);
+			$opts_pon = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic",
+			"DEF:inoctets=$rrd_pon:input:AVERAGE",
+			"DEF:outoctets=$rrd_pon:output:AVERAGE",
+			"CDEF:inbits=inoctets,8,*",
+			"CDEF:outbits=outoctets,8,*",
+			"AREA:inbits#00FF00:In traffic",
+			"LINE1:outbits#0000FF:Out traffic\\r",
+			"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
+			"COMMENT:\\n",
+			"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
+			"COMMENT:  ",
+			"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
+			);
 
 			$rrd_traffic_url = $sn . "_traffic.gif";
 			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.gif";
@@ -178,69 +185,61 @@ if ($PON_ID) {
 				echo "rrd_graph() ERROR: $err\n";
 			}
 			if($i == '1') {
-				print "<a href=\"graph_traffic_pon.php?id=" . $PON_ID . "\">PON:" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "</a>";
-				print "<p><a href=\"graph_traffic_pon.php?id=" . $PON_ID . "\"><img src=\"rrd/" . $pon_traffic_url . "\"></img></a></p>";
+				print "<td colspan=\"2\">PON:" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "</p>" ;
+				print "<p><p onClick=\"graph_pon('". $PON_ID . "', 'traffic');\"><img src=\"rrd/" . $pon_traffic_url . "\"></img></p></td></tr><tr>";
 			}
-			print "<a href=\"graph_traffic.php?id=" . $row{'ID'} . "\">ONU:" . $row{'PON_ONU_ID'} . "</a>";
-			print "<p><a href=\"graph_traffic.php?id=" . $row{'ID'} . "\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></a></p>";
+			print "<td><p> ONU:" . $row{'PON_ONU_ID'} . "</p>" ;
+			print "<p onClick=\"graph_onu('". $row{'ID'} . "', 'traffic');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
 		}
-     		if ($graph == "unicast" || $graph == "broadcast" || $graph == "multicast") {
-                        $rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_" . $graph . ".rrd";
-                        $rrd_pon =  dirname(__FILE__) . "/rrd/" . $sn . "_" . $graph . ".rrd";
-                        $opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=Pkts/s", "--title=Daily $graph",
-                                 "DEF:inoctets=$rrd_name:input:AVERAGE",
-                                 "DEF:outoctets=$rrd_name:output:AVERAGE",
-                                 "AREA:inoctets#00FF00:In",
-                                 "LINE1:outoctets#0000FF:Out\\r",
-                                 "CDEF:inbits=inoctets",
-                                 "CDEF:outbits=outoctets",
-                                 "GPRINT:inbits:LAST:Last In\: %6.0lf Pkts/s",
-                                 "GPRINT:inbits:AVERAGE:Avg In\: %6.0lf Pkts/s",
-                                 "COMMENT:  ",
-                                 "GPRINT:inbits:MAX:Max In\: %6.0lf Pkts/s\\r",
-                                 "COMMENT:\\n",
-                                 "GPRINT:outbits:LAST:Last Out\: %6.0lf Pkts/s",
-                                 "GPRINT:outbits:AVERAGE:Avg Out\: %6.0lf Pkts/s",
-                                 "COMMENT: ",
-                                 "GPRINT:outbits:MAX:Max Out\: %6.0lf Pkts/s\\r"
-                        );
-                        $opts_pon = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=Pkts/s", "--title=Daily $graph",
-                                 "DEF:inoctets=$rrd_pon:input:AVERAGE",
-                                 "DEF:outoctets=$rrd_pon:output:AVERAGE",
-                                 "AREA:inoctets#00FF00:In",
-                                 "LINE1:outoctets#0000FF:Out \\r",
-                                 "CDEF:inbits=inoctets",
-                                 "CDEF:outbits=outoctets",
-                                 "GPRINT:inbits:LAST:Last In\: %6.0lf Pkts/s",
-                                 "GPRINT:inbits:AVERAGE:Avg In\: %6.0lf Pkts/s",
-                                 "COMMENT:  ",
-                                 "GPRINT:inbits:MAX:Max In\: %6.0lf Pkts/s\\r",
-                                 "COMMENT:\\n",
-                                 "GPRINT:outbits:LAST:Last Out\: %6.0lf Pkts/s",
-                                 "GPRINT:outbits:AVERAGE:Avg Out\: %6.0lf Pkts/s",
-                                 "COMMENT: ",
-                                 "GPRINT:outbits:MAX:Max Out\: %6.0lf Pkts/s\\r"
-                        );
+		
+		
+		if ($graph == "unicast" || $graph == "broadcast" || $graph == "multicast") {
+			$rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_" . $graph . ".rrd";
+			$rrd_pon =  dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $pon_snmp_id . "_" . $graph . ".rrd";
+			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=pkts/s", "--title=Daily $graph",
+			"DEF:inoctets=$rrd_name:input:AVERAGE",
+			"DEF:outoctets=$rrd_name:output:AVERAGE",
+			"AREA:inoctets#00FF00:In",
+			"LINE1:outoctets#0000FF:Out\\r",
+			"GPRINT:inoctets:MAX:IN Max\: %6.0lf pkts/s",
+			"GPRINT:inoctets:AVERAGE:Avg\: %6.0lf pkts/s",
+			"GPRINT:inoctets:LAST:Last\: %6.0lf pkts/s\\r",
+			"GPRINT:outoctets:MAX:OUT Max\: %6.0lf pkts/s",
+			"GPRINT:outoctets:AVERAGE:Avg\: %6.0lf pkts/s",
+			"GPRINT:outoctets:LAST:Last\: %6.0lf pkts/s\\r"
+			);
+			$opts_pon = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=pkts/s", "--title=Daily $graph",
+			"DEF:inoctets=$rrd_pon:input:AVERAGE",
+			"DEF:outoctets=$rrd_pon:output:AVERAGE",
+			"AREA:inoctets#00FF00:In",
+			"LINE1:outoctets#0000FF:Out\\r",
+			"GPRINT:inoctets:MAX:IN Max\: %6.0lf pkts/s",
+			"GPRINT:inoctets:AVERAGE:Avg\: %6.0lf pkts/s",
+			"GPRINT:inoctets:LAST:Last\: %6.0lf pkts/s\\r",
+			"GPRINT:outoctets:MAX:OUT Max\: %6.0lf pkts/s",
+			"GPRINT:outoctets:AVERAGE:Avg\: %6.0lf pkts/s",
+			"GPRINT:outoctets:LAST:Last\: %6.0lf pkts/s\\r"
+			);
 
-                        $rrd_traffic_url = $sn . "_" . $graph . ".gif";
-                        $rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_" . $graph . ".gif";
-                        $pon_traffic_url = $olt_ip_address . "_" . $pon_snmp_id . "_" . $graph . ".gif";
-                        $pon_traffic = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $pon_snmp_id . "_" . $graph . ".gif";
-                        $ret = rrd_graph($rrd_traffic, $opts);
-                        if($i == '1')
-                                $ret = rrd_graph($pon_traffic, $opts_pon);
-                        if( !is_array($ret) )
-                        {
-                                $err = rrd_error();
-                                echo "rrd_graph() ERROR: $err\n";
-                        }
-                        if($i == '1') {
-                                print "<a href=\"graph_packets_pon.php?id=" . $PON_ID . "&type=" . $graph . "\">PON:" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "</a>";
-                                print "<p><a href=\"graph_packets_pon.php?id=" . $PON_ID . "&type=" . $graph . "\"><img src=\"rrd/" . $pon_traffic_url . "\"></img></a></p>";
-                        }
-                        print "<a href=\"graph_packets.php?id=" . $row{'ID'} . "&type=" . $graph . "\">ONU:" . $row{'PON_ONU_ID'} . "</a>";
-                        print "<p><a href=\"graph_packets.php?id=" . $row{'ID'} . "&type=" . $graph . "\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></a></p>";
-                }
+			$rrd_traffic_url = $sn . "_" . $graph . ".gif";
+			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_" . $graph . ".gif";
+			$pon_traffic_url = $olt_ip_address . "_" . $pon_snmp_id . "_" . $graph . ".gif";
+			$pon_traffic = dirname(__FILE__) . "/rrd/" . $olt_ip_address . "_" . $pon_snmp_id . "_" . $graph . ".gif";
+			$ret = rrd_graph($rrd_traffic, $opts);
+			if($i == '1')
+					$ret = rrd_graph($pon_traffic, $opts_pon);
+			if( !is_array($ret) )
+			{
+					$err = rrd_error();
+					echo "rrd_graph() ERROR: $err\n";
+			}
+			if($i == '1') {
+					print "<td colspan=\"2\">PON:" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} ;
+					print "<p onClick=\"graph_pon('". $PON_ID . "', '" . $graph . "');\"><img src=\"rrd/" . $pon_traffic_url . "\"></img></p></td></tr><tr>";
+			}
+			print "<td>ONU:" . $row{'PON_ONU_ID'};
+			print "<p onClick=\"graph_onu('". $row{'ID'} . "', '" . $graph . "');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
+		}
 
 
 		if ($graph == "power") {
@@ -265,11 +264,17 @@ if ($PON_ID) {
 				$err = rrd_error();
 				echo "rrd_graph() ERROR: $err\n";
   			}
-			print "<a href=\"graph_power.php?id=" . $row{'ID'} . "\">ONU:" . $row{'PON_ONU_ID'} . "</a>";
-			print "<p><a href=\"graph_power.php?id=" . $row{'ID'} . "\"><img src=\"rrd/" . $rrd_power_url . "\"></img></a></p>";
+			print "<td>ONU:" . $row{'PON_ONU_ID'};
+			print "<p onClick=\"graph_onu('". $row{'ID'} . "', 'power');\"><img src=\"rrd/" . $rrd_power_url . "\"></img></p></td>";
 		}
 		
+		$end++;
+		if ($end == "2") {
+			$end = "0";
+			print "</tr><tr>";
+		}
 	}
+	print "</tr></table></div></div></div></div>";
 }
 ?>
 

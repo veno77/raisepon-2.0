@@ -1,6 +1,6 @@
 <?php
-include("db_connect_class.php");
-include ("snmp_class.php");
+include_once("db_connect_class.php");
+include_once("snmp_class.php");
 class customers {
 	private $customers_id;
 	private $name;
