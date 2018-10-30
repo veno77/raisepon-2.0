@@ -1,5 +1,4 @@
 <?php
-session_cache_limiter('private_no_expire');
 include ("header.php");
 include ("common.php");
 include ("navigation.php");
@@ -22,7 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	
 	
-}
+}else{
 ?>
 <div class="container">
 	<div class="text-center">
@@ -33,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	<div class="row justify-content-md-center">
 		<div class="text-center">
 			<div class="form-group">
-				<form class="form-inline" action="index.php" method="post">
+				<form class="form-inline" id="load" method="post">
 					<div class="content">
 						<label for="olt_id">OLT</label>
 						<select class="form-control" id="select-olt" name="olt_id">
@@ -48,7 +47,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<label for="pon_id">PON</label>
 						<select class="form-control" id="select-pon" name="pon_id">
 						<option value="">PON PORT</option></select>
-						<button class="btn btn-basic" type="submit" name="SUBMIT" value="LOAD">LOAD</button>
+						<input type="hidden" name="SUBMIT" value="LOAD">
+						<button class="btn btn-basic" type="button" onClick="LoadIndex();">LOAD</button>
 					</div>
 				</form>
 			</div>
@@ -57,14 +57,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	<div class="row justify-content-md-center">
 		<div class="text-center">
 			<div class="form-group">
-				<form class="form-inline" action="index.php" method="post">
+				<form class="form-inline" id="search" method="post">
 					<label for="name">Name</label>
 					<input type="text" name="name"  size="15"  class="form-control" placeholder="Name"  aria-describedby="sizing-addon1">
 					<label for="egn">EGN</label>
 					<input type="text" name="egn"  maxlength="10" size="10" class="form-control" placeholder="EGN" aria-describedby="sizing-addon1">
 					<label for="sn">SN</label>
 					<input type="text" name="sn"  maxlength="15" size="15" class="form-control" placeholder="SN" aria-describedby="sizing-addon1">
-					<button class="btn btn-basic"  type="submit" name="SUBMIT" value="SEARCH">SEARCH</button>
+					<input type="hidden" name="SUBMIT" value="SEARCH">
+					<button class="btn btn-basic"  type="button" onClick="SearchIndex();">SEARCH</button>
 				</form>
 			</div>
 		</div>
@@ -72,18 +73,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	<div class="row justify-content-md-center">
 		<div class="text-center">
 			<div class="form-group">
-				<form class="form-inline" action="index.php" method="post">
-					<button class="btn btn-basic"  type="submit" name="SUBMIT" value="UNASSIGNED">UNASSIGNED</button>
+				<form class="form-inline" id="unassigned" method="post">
+					<input type="hidden" name="SUBMIT" value="UNASSIGNED">
+					<button class="btn btn-basic"  type="button" onClick="UnassignedIndex();">UNASSIGNED</button>
 				</form>
 			</div>
 		</div>
 	</div>
 </div>
 <?php
-if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($index_obj->getEgn()) || !empty($index_obj->getSn()) || $index_obj->getSubmit() == "UNASSIGNED") {
+}
 ?>
-	<div class="container">
-		<div class="text-center">
+<div class="container" >
+	<div id="output" class="text-center">
+		<?php
+		if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($index_obj->getEgn()) || !empty($index_obj->getSn()) || $index_obj->getSubmit() == "UNASSIGNED") {
+		?>
 			<div class="page-header">
 			<?php 
 			if (!empty($index_obj->getOlt_id())) 
@@ -117,7 +122,7 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 							<th>EDIT</th>
 						</tr>
 					</thead>
-<?php
+	<?php
 	$rows = $index_obj->build_table(); 
 	if(!empty($rows)) {
 		foreach ($rows as $row) { 
@@ -319,7 +324,6 @@ if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($
 		</div>
 	</form>
 	-->
-
 </div>
 <div class="container">
 	<div class="modal fade" id="myModal" role="dialog">

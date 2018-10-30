@@ -1,20 +1,17 @@
 <?php
-session_cache_limiter('private_no_expire');
+
 include_once("header.php");
 include_once("common.php");
 include_once("dbconnect.php");
-include_once("navigation.php");
+include_once("navigation.php"); 
 
 $OLT_ID = $PON_ID = $pon_port = $traffic = $power = '';
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
-	if ($_POST["SUBMIT"]) {
-		$submit = test_input($_POST["SUBMIT"]);
-		}
-	if ($submit == "LOAD") {
+	
 		$OLT_ID = $_POST["olt_port"];
 		$PON_ID = $_POST["pon_port"];
 		$graph = $_POST["graph"];
-	}
+	
 
 	if ($OLT_ID) {
 		try {
@@ -46,68 +43,66 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	}
 
-}
+}else{
+	print "<form id=\"graphs\">";
+	?>
+	<div class="container">
+		<div class="row text-center">
+			<div class="col-md-2 col-md-offset-3">
+				<div class="form-group">
+					<label for="select-olt">OLT:</label>
+					<select class="form-control" id="select-olt" name="olt_port">
+						<option value="" class="rhth">OLT</option>
+						<?php 
+						try {
+								$result = $db->query("SELECT * from OLT");
+							} catch (PDOException $e) {
+								echo "Connection Failed:" . $e->getMessage() . "\n";
+								exit;
+							}
 
-print "<form action=\"graphs.php\" method=\"post\">";
-?>
-<div class="container">
-	<div class="row text-center">
-		<div class="col-md-2 col-md-offset-3">
-			<div class="form-group">
-				<label for="select-olt">OLT:</label>
-				<select class="form-control" id="select-olt" name="olt_port">
-					<option value="" class="rhth">OLT</option>
-					<?php 
-					try {
-							$result = $db->query("SELECT * from OLT");
-						} catch (PDOException $e) {
-							echo "Connection Failed:" . $e->getMessage() . "\n";
-							exit;
-						}
-
-						while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-							print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
-						}
-					?>
-				</select>
+							while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+								print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+							}
+						?>
+					</select>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="form-group">
+					<label for="select-pon">PON:</label>
+					<select class="form-control" id="select-pon" name="pon_port">
+						<option value="" class="rhth">PON PORT</option>
+					</select>
+				</div>
+			</div>
+			<div class="col-md-2">
+				<div class="form-group">
+					<label for="select-graph">GRAPH:</label>
+					<select class="form-control" id="select-graph" name="graph">
+						<option value="traffic">Traffic</option>
+						<option value="unicast">Unicast</option>
+						<option value="broadcast">Broadcast</option>
+						<option value="multicast">Multicast</option>
+						<option value="power">Power</option>
+					</select>
+				</div>
 			</div>
 		</div>
-		<div class="col-md-2">
-			<div class="form-group">
-				<label for="select-pon">PON:</label>
-				<select class="form-control" id="select-pon" name="pon_port">
-					<option value="" class="rhth">PON PORT</option>
-				</select>
+		<div class="row">
+			<div class="text-center">
+				<div class="form-group">
+					<button id="load" type="button" class="btn btn-info" onClick="LoadGraphs();">LOAD</button>
+				</div>
 			</div>
-		</div>
-		<div class="col-md-2">
-			<div class="form-group">
-				<label for="select-graph">GRAPH:</label>
-				<select class="form-control" id="select-graph" name="graph">
-					<option value="traffic">Traffic</option>
-					<option value="unicast">Unicast</option>
-					<option value="broadcast">Broadcast</option>
-					<option value="multicast">Multicast</option>
-					<option value="power">Power</option>
-				</select>
-			</div>
-		</div>
+		</div>		
 	</div>
-	<div class="row">
+	<div class="container">
 		<div class="text-center">
-			<div class="form-group">
-				<button id="load" type="submit" name="SUBMIT" class="btn btn-basic" value="LOAD">LOAD</button>
-			</div>
-		</div>
-	</div>		
-</div>
-<div class="container">
-	<div class="text-center">
-<?php
-
-
-print "</form>";
-
+	<?php
+	print "</form>";
+}
+print "<div id=\"output\">";
 if ($PON_ID) {
 	$where = "PON.ID='" . $PON_ID ."' and OLT.ID='" . $OLT_ID . "'";
 
@@ -120,7 +115,7 @@ if ($PON_ID) {
 	print "<div class=\"text-center\">";
 	print "<h1>OLT: " . $OLT_NAME . "</h1><h2>PON: " . $PON_NAME . "   (" . $SLOT_ID . "/" . $PORT_ID . ")</h2></div>"  ;
 	$i= 0;
-	print "<div id=\"output\"><div class=\"row justify-content-md-center\"><div class=\"table-responsive \"><table class=\"table text-center \"><tr>";
+	print "<div class=\"row justify-content-md-center\"><div class=\"table-responsive \"><table class=\"table text-center \"><tr>";
 	$end = "0";
 	while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		$i++;	

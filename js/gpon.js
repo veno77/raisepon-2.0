@@ -248,6 +248,42 @@ function graph_pon(pon_id, type) {
         });
 }
 
+function LoadGraphs() {
+        $('#output').html('<img src="pic/loading.gif" />');
+        jQuery.ajax({
+			url: "graphs.php",
+			data: $( "#graphs" ).serialize(),
+			type: "POST",
+			success:function(data){$('#output').html(data);}
+        });
+}
+function LoadIndex() {
+        $('#output').html('<img src="pic/loading.gif" />');
+        jQuery.ajax({
+			url: "index.php",
+			data: $( "#load" ).serialize(),
+			type: "POST",
+			success:function(data){$('#output').html(data);}
+        });
+}
+function SearchIndex() {
+        $('#output').html('<img src="pic/loading.gif" />');
+        jQuery.ajax({
+			url: "index.php",
+			data: $( "#search" ).serialize(),
+			type: "POST",
+			success:function(data){$('#output').html(data);}
+        });
+}
+function UnassignedIndex() {
+        $('#output').html('<img src="pic/loading.gif" />');
+        jQuery.ajax({
+			url: "index.php",
+			data: $( "#unassigned" ).serialize(),
+			type: "POST",
+			success:function(data){$('#output').html(data);}
+        });
+}
 $(document).ready(function(){
 	$(document).on('click', '#navbar2 .nav li a', function () {
 		 $('.active').removeClass('active');
