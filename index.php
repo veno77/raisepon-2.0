@@ -111,14 +111,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<th>SERVICE</th>
 							<!-- <th>RF</th> -->
 							<th>SN/MAC</th>
-							<th>PWR</th>
-							<th>DIST</th>
+							<th>PWR<br>(db)</th>
+							<th>DIST<br>(m)</th>
 							
 							<th>STATUS</th>
 							<!--<th>LAST ONLINE</th> -->
-							<th>OFFLINE REASON</th>
+							<th>OFFLINE<br>REASON</th>
 							<th>INFO</th>
-							<th>SYNC</th>
+							<th>SYN</th>
 							<th>EDIT</th>
 						</tr>
 					</thead>
@@ -142,6 +142,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$onu_sn_oid = $snmp_obj->get_pon_oid("onu_sn_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 							if ($row{'PON_TYPE'} == "GPON")
 								$onu_register_distance_oid = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+							$dot3MpcpRoundTripTime = $snmp_obj->get_pon_oid("dot3MpcpRoundTripTime", "OLT") . "." . $big_onu_id;
 							//GET STATUS via SNMP
 							snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
@@ -167,8 +168,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 									$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_3;
 									$power = $session->get($onu_rx_power_oid);
 									$power = round(10*log10($power/10000),2);
-									$onu_register_distance = "";
+									
+									$dot3MpcpRoundTripTime = $session->get($dot3MpcpRoundTripTime);
+									if ($dot3MpcpRoundTripTime <= '46')
+										$onu_register_distance = '1';
+									if ($dot3MpcpRoundTripTime > '46')
+										$onu_register_distance = ($dot3MpcpRoundTripTime - 46)*1.6;
 								}
+								
+								
 								if ($power < "-25") {
 									$power = "<font color=red>" . $power . "</font>" ;
 								} else {
@@ -284,7 +292,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
 							<td><?php echo $db_sn; ?></td>
 							<td><?php echo $power; ?></td>
-							<?php echo "<td>" . $onu_register_distance . " m.</td>"; ?>
+							<?php echo "<td>" . $onu_register_distance . "</td>"; ?>
 							<td><?php echo $status; ?></td>
 							<!--	<td><?php echo $last_online; ?></td> -->
 							<td><?php echo $offline_reason; ?></td>

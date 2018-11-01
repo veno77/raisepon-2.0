@@ -125,6 +125,7 @@ class snmp_oid {
 		"ifHCOutMulticastPkts" => "1.3.6.1.2.1.31.1.1.1.12",
 		"ifHCInBroadcastPkts" => "1.3.6.1.2.1.31.1.1.1.9",
 		"ifHCOutBroadcastPkts" => "1.3.6.1.2.1.31.1.1.1.13",
+		"dot3MpcpRoundTripTime" => "1.3.6.1.2.1.155.1.1.1.1.10",
 	);
 	
 	 
