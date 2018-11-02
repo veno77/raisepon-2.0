@@ -292,7 +292,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
 							<td><?php echo $db_sn; ?></td>
 							<td><?php echo $power; ?></td>
-							<?php echo "<td>" . $onu_register_distance . "</td>"; ?>
+							<?php echo "<td>" . round($onu_register_distance) . "</td>"; ?>
 							<td><?php echo $status; ?></td>
 							<!--	<td><?php echo $last_online; ?></td> -->
 							<td><?php echo $offline_reason; ?></td>
