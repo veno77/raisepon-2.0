@@ -27,6 +27,9 @@ class accounts {
 	function getUsername() {
 		return $this->username;
 	}
+	function setUsername($username) {
+		$this->username = $username;
+	}
 	function getPassword() {
 		return $this->password;
 	}
@@ -117,6 +120,27 @@ class accounts {
 		}	
 		
 		
+	}
+	
+	function user_exist(){
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT ID, USERNAME, PASSWORD, TYPE from ACCOUNTS where USERNAME='$this->username'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		$num = $result->rowCount();
+		if($num>0){
+			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+				$this->account_id = $row["ID"];
+				$this->username = $row["USERNAME"];
+				$this->password = $row["PASSWORD"];
+				$this->type = $row["TYPE"];
+				return true;
+			}
+ 		return false;
+		}
 	}
 	
 	

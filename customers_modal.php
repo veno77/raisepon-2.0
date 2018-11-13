@@ -28,6 +28,7 @@ $customers_obj = new customers();
 	print "<input type=\"hidden\" name=\"old_pon_port\" value=\"". $customers_obj->getOld_pon_port() ."\">";
 	print "<input type=\"hidden\" name=\"old_pon_onu_id\" value=\"". $customers_obj->getOld_pon_onu_id() ."\">";
 	print "<input type=\"hidden\" name=\"old_ports\" value=\"". $customers_obj->getOld_ports() ."\">";
+	print "<input type=\"hidden\" name=\"state_rf\" value=\"". $customers_obj->getState_rf() ."\">";	
 }
 ?>
 <div class="row">
@@ -130,7 +131,7 @@ $customers_obj = new customers();
 	</div>
 	<div class="col-md-4">
 		<div class="form-group">
-			<label><input type="checkbox" id="state" name="state" value="YES"<?php if($customers_obj->getState() !== "NO") print "checked" ?>> ACTIVE</label> 
+			<label><input type="checkbox" id="state" name="state" value="YES"<?php if($customers_obj->getState() == "YES") print "checked" ?>> ACTIVE</label> 
 		</div>
 	</div>
 </div>

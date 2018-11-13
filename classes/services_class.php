@@ -128,7 +128,16 @@ class services {
 			$this->service_profile_name = $row["SERVICE_PROFILE_NAME"];
 
 		}	
-		
+	}
+	function get_data() {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT ID, NAME from SERVICES");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		return $result;
 		
 	}
 	

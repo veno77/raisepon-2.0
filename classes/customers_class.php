@@ -25,7 +25,8 @@ class customers {
 	private $pon_type;
 	private $auto;
 	private $state;
-	
+	private $state_rf;
+
 	function __construct() {
 		if (!empty($_SERVER["REQUEST_METHOD"])) {
 			if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -44,7 +45,8 @@ class customers {
 				$this->line_profile = !empty($_POST['line_profile']) ? $this->test_input($_POST['line_profile']) : null;
 				$this->service_profile = !empty($_POST['service_profile']) ? $this->test_input($_POST['service_profile']) : null;
 				$this->auto = !empty($_POST['auto']) ? $this->test_input($_POST['auto']) : "NO";
-				$this->state = !empty($_POST['state']) ? $this->test_input($_POST['state']) : "YES";
+				$this->state = !empty($_POST['state']) ? $this->test_input($_POST['state']) : "NO";
+				$this->state_rf = !empty($_POST['state_rf']) ? $this->test_input($_POST['state_rf']) : null;
 				$this->submit = !empty($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
 			}
 		
@@ -70,11 +72,15 @@ class customers {
 		$this->customers_id = $customers_id;
 	}
 	
+		
 	function getPon_type() {
 		return $this->pon_type;
 	}
 	function getService() {
 		return $this->service;
+	}
+	function setService($service) {
+		$this->service = $service;
 	}
 	function getOldservice() {
 		return $this->old_service;
@@ -82,7 +88,9 @@ class customers {
 	function getName() {
 		return $this->name;
 	}
-	
+	function setName($name) {
+		$this->name = $name;
+	}
 	function getSn() {
 		return $this->sn;
 	}
@@ -92,8 +100,14 @@ class customers {
 	function getAddress() {
 		return $this->address;
 	}
+	function setAddress($address) {
+		$this->address = $address;
+	}
 	function getEgn() {
 		return $this->egn;
+	}
+	function setEgn($egn) {
+		$this->egn = $egn;
 	}
 	function getOld_ports() {
 		return $this->old_ports;
@@ -123,10 +137,21 @@ class customers {
 	function getAuto() {
 		return $this->auto;
 	}
+	function setAuto($auto) {
+		$this->auto = $auto;
+	}
 	function getState() {
 		return $this->state;
 	}
-	
+	function setState($state) {
+		$this->state = $state;
+	}
+	function getState_rf() {
+		return $this->state_rf;
+	}
+	function setState_rf($state_rf) {
+		$this->state_rf = $state_rf;
+	}
 	function add_customer() {
 		if (!empty($this->olt) && !empty($this->pon_port)) {
 			// FIND FREE ID
@@ -205,10 +230,20 @@ class customers {
 		}else{
 			$pon_port = "NULL";
 		}
+		if (!empty($this->pon_port)) {
+			$pon_port = "'" . $this->pon_port . "'";
+		}else{
+			$pon_port = "NULL";
+		}
+		if (!empty($this->state_rf)) {
+			$state_rf = "'" . $this->state_rf . "'";
+		}else{
+			$state_rf = "NULL";
+		}
 
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("INSERT INTO CUSTOMERS (NAME, ADDRESS, EGN, OLT, PON_PORT, PON_ONU_ID, SERVICE, SN, AUTO, STATE) VALUES ('$this->name', '$this->address', $egn, $olt, $pon_port, $pon_onu_id, $service, '$this->sn', '$this->auto', '$this->state')");
+			$result = $conn->db->query("INSERT INTO CUSTOMERS (NAME, ADDRESS, EGN, OLT, PON_PORT, PON_ONU_ID, SERVICE, SN, AUTO, STATE, STATE_RF) VALUES ('$this->name', '$this->address', $egn, $olt, $pon_port, $pon_onu_id, $service, '$this->sn', '$this->auto', '$this->state', $state_rf)");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -327,17 +362,23 @@ class customers {
 		}else{
 			$pon_port = "NULL";
 		}
-			
+		if (!empty($this->state_rf)) {
+			$state_rf = "'" . $this->state_rf . "'";
+		}else{
+			$state_rf = "NULL";
+		}
+		
+		
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("UPDATE CUSTOMERS SET NAME = '$this->name', ADDRESS = '$this->address', EGN = $egn, OLT = $olt, PON_PORT = $pon_port, PON_ONU_ID = $pon_onu_id, SN = '$this->sn', SERVICE = $service, AUTO = '$this->auto', STATE = '$this->state'  where ID = '$this->customers_id'");
+			$result = $conn->db->query("UPDATE CUSTOMERS SET NAME = '$this->name', ADDRESS = '$this->address', EGN = $egn, OLT = $olt, PON_PORT = $pon_port, PON_ONU_ID = $pon_onu_id, SN = '$this->sn', SERVICE = $service, AUTO = '$this->auto', STATE = '$this->state', STATE_RF = $state_rf  where ID = '$this->customers_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;	
-	}
+		}
 
 		//DELETE OLD ONU in OLT VIA SNMP
-		if (!empty($this->old_olt) && !empty($this->old_pon_port)) {
+		if (!empty($this->old_olt) && !empty($this->old_pon_port)	) {
 			$error = $this->delete_onu_via_snmp();
 			if (!empty($error)) {
 				return $error;
@@ -348,6 +389,8 @@ class customers {
 		}
 		sleep(1);
 		//ADD_ONU_VIA_SNMP
+		
+		
 		if (!empty($this->olt) && !empty($this->pon_port)) {
 			$error = $this->add_onu_via_snmp($this->sn);
 			if (!empty($error)) {
@@ -376,26 +419,11 @@ class customers {
 			}
 		} 
 	}
-	function check_Sn($sn) {
-		try {
-			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT ID, SN from CUSTOMERS where SN = '$sn'");
-		} catch (PDOException $e) {
-			$error = "Connection Failed:" . $e->getMessage() . "\n";
-			return $error;
-		}
-		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			if ($row["SN"])
-			return $row["ID"];
-		}
-	}
-
-	
 	
 	function delete_customer() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT ID, NAME, ADDRESS, EGN, SN from CUSTOMERS where ID='$this->customers_id'");
+			$result = $conn->db->query("SELECT ID, NAME, ADDRESS, EGN, SN, OLT from CUSTOMERS where ID='$this->customers_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -416,7 +444,8 @@ class customers {
 			return $error;
 		}
 		//DESTROY ONU in OLT
-		//DELETE OLD ONU in OLT VIA SNMP
+		
+	
 		$error = $this->delete_onu_via_snmp();
 		if (!empty($error)) {
 			return $error;
@@ -425,6 +454,21 @@ class customers {
 		array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "*"));
 
 	}
+	
+	function check_Sn($sn) {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT ID, SN from CUSTOMERS where SN = '$sn'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			if ($row["SN"])
+			return $row["ID"];
+		}
+	}
+
 	
 	function build_table_olt() {
 		try {
@@ -441,14 +485,20 @@ class customers {
 	
 	
 	function get_data_customer() {
+		if (isset($this->customers_id)) 
+			$where = "CUSTOMERS.ID='" . $this->customers_id . "'";
+		if (isset($this->sn)) 
+			$where = "CUSTOMERS.SN='" . $this->sn . "'";
+		
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, ADDRESS, EGN, PON_ONU_ID, OLT, PON_PORT, SN, SERVICE, AUTO, STATE, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where CUSTOMERS.ID='$this->customers_id'");
+			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, ADDRESS, EGN, PON_ONU_ID, OLT, PON_PORT, SN, SERVICE, AUTO, STATE, STATE_RF, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where " . $where);
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
 		}
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			$this->customers_id = $row["ID"];
 			$this->name = $row["NAME"];
 			$this->address = $row["ADDRESS"];
 			$this->egn = $row["EGN"];
@@ -461,10 +511,23 @@ class customers {
 			$this->auto = $row["AUTO"];
 			$this->state = $row["STATE"];
 			$this->service = $row["SERVICE"];
+			$this->state_rf = $row["STATE_RF"];
 		}	
-		
+	}
+	
+	
+	function get_data() {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, ADDRESS, EGN, SN, SERVICE, AUTO, STATE, STATE_RF from CUSTOMERS");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		return $result;
 		
 	}
+	
 	function update_history($rsn, $cur_user_id) {
 		// ADD DATETIME in HISTORY
 		if ($rsn == "add") {
@@ -592,7 +655,7 @@ class customers {
 						foreach ($output as $mac_oid => $mac_address) {
 							$mac_address_arr = explode(" ", $mac_address);
 							$new_mac_addr_arr = array();
-							foreach ($mac_address_arr as $mac_addr) {
+								foreach ($mac_address_arr as $mac_addr) {
 								$mac_addr = hexdec($mac_addr);
 								array_push($new_mac_addr_arr, $mac_addr);
 							}
@@ -702,16 +765,18 @@ class customers {
 			$slot_id = $row["SLOT_ID"];
 			$pon_type = $row["PON_TYPE"];
 		}
-		$this->old_big_onu_id = $this->type2id($slot_id, $pon_interface, $this->old_pon_onu_id);
-		$snmp_obj = new snmp_oid();
-		$destroy_oid = $snmp_obj->get_pon_oid("row_status_oid", $pon_type) . "." . $this->old_big_onu_id;
-        $session = new SNMP(SNMP::VERSION_2C, $this->old_olt_ip_address, $olt_rw);
-		$session->set($destroy_oid,'i', '6');
-	    if ($session->getError()) {
-			$error = var_dump($session->getError());
-			return $error;
+		if ($pon_interface && $slot_id) {
+			$this->old_big_onu_id = $this->type2id($slot_id, $pon_interface, $this->old_pon_onu_id);
+			$snmp_obj = new snmp_oid();
+			$destroy_oid = $snmp_obj->get_pon_oid("row_status_oid", $pon_type) . "." . $this->old_big_onu_id;
+			$session = new SNMP(SNMP::VERSION_2C, $this->old_olt_ip_address, $olt_rw);
+			$session->set($destroy_oid,'i', '6');
+			if ($session->getError()) {
+				$error = var_dump($session->getError());
+				return $error;
+			}
+			$session->close();
 		}
-		$session->close();
 	}
 	
 	
@@ -720,7 +785,7 @@ class customers {
 		// PREPARE SNMPSET TO ADD ONU
         try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT CUSTOMERS.ID as C_ID, CUSTOMERS.NAME, CUSTOMERS.SN, PON_ONU_ID, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.SERVICE, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW as RW, PON.ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, LINE_PROFILE.LINE_PROFILE_ID, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS as PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.SN = '$sn'");
+			$result = $conn->db->query("SELECT CUSTOMERS.ID as C_ID, CUSTOMERS.NAME, CUSTOMERS.SN, CUSTOMERS.STATE, PON_ONU_ID, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.SERVICE, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW as RW, PON.ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, LINE_PROFILE.LINE_PROFILE_ID, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS as PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.SN = '$sn'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -738,7 +803,7 @@ class customers {
 			$this->name = $row["NAME"];
 			$this->customers_id = $row["C_ID"];
 			$this->pon_type = $row["PON_TYPE"];
-
+			$this->state = $row["STATE"];
 		}
 		$snmp_obj = new snmp_oid();
 		$this->big_onu_id = $this->type2id($slot_id, $port_id, $this->pon_onu_id);
@@ -885,7 +950,61 @@ class customers {
         $big_onu_id = bindec($vif . $slot . "0" . $pon_port . $onu_id);
         return $big_onu_id;
 	}
+	function update_rf_sql() {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("UPDATE CUSTOMERS SET STATE_RF = '$this->rf_state' where CUSTOMERS.ID = '$this->customer_id'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}	
+	}
+	function update_rf_snmp() {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.STATE_RF, OLT.ID, INET_NTOA(OLT.IP_ADDRESS)as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.ID = '$this->customers_id'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			$ip_address = $row['IP_ADDRESS'];
+			$port_id = $row['PORT_ID'];
+			$slot_id = $row['SLOT_ID'];
+			$pon_onu_id = $row['PON_ONU_ID'];
+			$olt_name = $row['OLT_NAME'];
+			$ro = $row['RO'];
+			$rw = $row['RW'];
+			$olt_type = $row['TYPE'];
+			$name = $row['NAME'];
+			$pon_type = $row['PON_TYPE'];
+			$rf_val = $row['STATE_RF'];
+		}
+		
+		if ($pon_type == "EPON")
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
+		if ($pon_type == "GPON")
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		
+		
+		$snmp_obj = new snmp_oid();
+		$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
+		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $rw);
+		$set_rf = $session->set($onu_rf_status_oid, 'i', $rf_val);
+	}
 	
+	
+	function get_changed() {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT ID, PON_ONU_ID from CUSTOMERS  where CHANGED='YES'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		$rows = $result->fetchAll();
+		return $rows;	
+	}
 }
 
 

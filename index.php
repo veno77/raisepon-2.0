@@ -5,7 +5,6 @@ include ("navigation.php");
 include ("classes/index_class.php");
 include ("classes/snmp_class.php");
 //header('Cache-control: private', true);
-
 $index_obj = new index();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	if (!empty($index_obj->getOlt_id())) {
@@ -126,6 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				$rows = $index_obj->build_table(); 
 				if(!empty($rows)) {
 					foreach ($rows as $row) { 
+						$onu_register_distance = "";
 						if (isset($row{'PON_TYPE'})) {
 							$snmp_obj = new snmp_oid();
 							$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
@@ -143,14 +143,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							if ($row{'PON_TYPE'} == "GPON")
 								$onu_register_distance_oid = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 							$dot3MpcpRoundTripTime = $snmp_obj->get_pon_oid("dot3MpcpRoundTripTime", "OLT") . "." . $big_onu_id;
-							//GET STATUS via SNMP
+							//GET ONU STATUS via SNMP
 							snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
 							$status = $session->get($onu_status_oid);
 							$power = '';
 							$last_online = "Never";
 							$rf_state = "";
-							$onu_register_distance = "";
 							if ($status == '1') {
 								$status = "<font color=green>Online</font>";
 								//GET POWER/DISTANCE via SNMP
@@ -173,8 +172,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 									if ($dot3MpcpRoundTripTime <= '46')
 										$onu_register_distance = '1';
 									if ($dot3MpcpRoundTripTime > '46')
-										$onu_register_distance = round(($dot3MpcpRoundTripTime - 46)*1.6);
-										$onu_register_distance = implode(" ", str_split((string)$onu_register_distance, "3"));
+										$onu_register_distance = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
 								}
 								
 								

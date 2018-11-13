@@ -76,17 +76,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 
 		if ($pon_type == "EPON")
-		$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
 		if ($pon_type == "GPON")
-		$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		
 	
 		$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
 		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $rw);
 		$set_rf = $session->set($onu_rf_status_oid, 'i', $rf_val);
+		
+		try {
+			$result = $db->query("UPDATE CUSTOMERS SET STATE_RF = '$rf_val' where CUSTOMERS.ID = '$customer_id'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		
 		if ($session->getError())
 				return(var_dump($session->getError()));
-
+		
 		$type = "ports";
 	}
 	
@@ -578,9 +586,9 @@ where CUSTOMERS.ID = '$customer_id'");
 			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 			$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 			if ($pon_type == "EPON")
-			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
+				$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
 			if ($pon_type == "GPON")
-			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;						
+				$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;						
 			$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
 			$onu_rf_status = $session->get($onu_rf_status_oid);
 			if ($onu_rf_status == "1") {

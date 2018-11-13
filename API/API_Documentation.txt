@@ -1,0 +1,155 @@
+All customers should be treated with AUTO = "YES" to have the backend update them succesfully. 
+
+
+1.Authenticate with api_login.php
+	Send via POST:
+	{
+		"username" : "admin",
+		"password" : "admin123"
+	}
+
+	Get response from server and assigned jwt token: 
+	{
+		"message": "Successful login.",
+		"jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJSYWlzZXBvbiIsImF1ZCI6IlJhaXNlcG9uIiwiaWF0IjoxNTQyMTA3ODg4LCJuYmYiOjE1NDIxMDc4OTgsImV4cCI6MTU0MjExMTQ5OCwiZGF0YSI6eyJpZCI6IjEiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6IjkifX0.DqYvlphdTZ8fb9up6SojGw1YWAWdePTXDXRuXwGOL1A"
+	}
+
+
+2. List services with get_services.php using the assigned token
+	{
+		"jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJSYWlzZXBvbiIsImF1ZCI6IlJhaXNlcG9uIiwiaWF0IjoxNTQyMTA3ODg4LCJuYmYiOjE1NDIxMDc4OTgsImV4cCI6MTU0MjExMTQ5OCwiZGF0YSI6eyJpZCI6IjEiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6IjkifX0.DqYvlphdTZ8fb9up6SojGw1YWAWdePTXDXRuXwGOL1A"
+	}
+	Response should look like:
+	{
+		"records": [
+			{
+				"id": "3",
+				"name": "Internet_4port"
+			},
+			{
+				"id": "7",
+				"name": "Internet_1port"
+			},
+			{
+				"id": "8",
+				"name": "HGU"
+			},
+			{
+				"id": "9",
+				"name": "HGU-no-config"
+			},
+			{
+				"id": "10",
+				"name": "1port-RF"
+			},
+			{
+				"id": "11",
+				"name": "4port+RF"
+			}
+		]
+	}
+
+3. List registered customers with get_customers.php using the assigne jwt token:
+	{
+		"jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJSYWlzZXBvbiIsImF1ZCI6IlJhaXNlcG9uIiwiaWF0IjoxNTQyMTA3ODg4LCJuYmYiOjE1NDIxMDc4OTgsImV4cCI6MTU0MjExMTQ5OCwiZGF0YSI6eyJpZCI6IjEiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6IjkifX0.DqYvlphdTZ8fb9up6SojGw1YWAWdePTXDXRuXwGOL1A"
+	}
+
+	Response will look like:
+	{
+		"records": [
+			{
+				"id": "191",
+				"name": "ISCOMHT803-W(T)",
+				"address": "",
+				"egn": null,
+				"sn": "000E5E9D1985",
+				"service": "8",
+				"auto": "NO",
+				"state": "YES",
+				"state_rf": null
+			},
+			{
+				"id": "194",
+				"name": "onu1",
+				"address": "",
+				"egn": null,
+				"sn": "E067B33BC5D1",
+				"service": "3",
+				"auto": "NO",
+				"state": "YES",
+				"state_rf": null
+			},
+			{
+				"id": "205",
+				"name": "ht803g-U",
+				"address": "",
+				"egn": null,
+				"sn": "RCMG1850272C",
+				"service": "8",
+				"auto": "YES",
+				"state": "YES",
+				"state_rf": null
+			},
+		 ]
+	}
+
+4. List specific customer by id or sn using get_customers_one.php. Send via POST:
+	{
+	"sn": "C850E98CE604",
+	    "jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJSYWlzZXBvbiIsImF1ZCI6IlJhaXNlcG9uIiwiaWF0IjoxNTQyMTA3ODg4LCJuYmYiOjE1NDIxMDc4OTgsImV4cCI6MTU0MjExMTQ5OCwiZGF0YSI6eyJpZCI6IjEiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6IjkifX0.DqYvlphdTZ8fb9up6SojGw1YWAWdePTXDXRuXwGOL1A"
+	}
+	
+	Return will be like:
+	{
+		"id": "262",
+		"name": "HT803G-1GC",
+		"address": "",
+		"egn": null,
+		"sn": "C850E98CE604",
+		"service": "10",
+		"auto": "YES",
+		"state": "YES",
+		"state_rf": "2"
+	}
+
+5. Create customer using create_customer.php:
+	{
+		"sn" : "C850E98CE607",
+		"name" : "Boza S Kosmi",
+		"auto" : "YES",
+		"state" : "YES",
+		"service" : "3",
+		"state_rf" : "2",
+		"jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJSYWlzZXBvbiIsImF1ZCI6IlJhaXNlcG9uIiwiaWF0IjoxNTQyMTA3ODg4LCJuYmYiOjE1NDIxMDc4OTgsImV4cCI6MTU0MjExMTQ5OCwiZGF0YSI6eyJpZCI6IjEiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6IjkifX0.DqYvlphdTZ8fb9up6SojGw1YWAWdePTXDXRuXwGOL1A"
+	}
+
+	Response if everything is ok:
+	
+	{
+		"message": "Customer was created."
+	}
+
+6. Update customer using update_customer.php, for example change rf_state to "1" (enabled):
+	{
+		"sn" : "C850E98CE607",
+		"state_rf" : "1",
+		"jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJSYWlzZXBvbiIsImF1ZCI6IlJhaXNlcG9uIiwiaWF0IjoxNTQyMTA3ODg4LCJuYmYiOjE1NDIxMDc4OTgsImV4cCI6MTU0MjExMTQ5OCwiZGF0YSI6eyJpZCI6IjEiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6IjkifX0.DqYvlphdTZ8fb9up6SojGw1YWAWdePTXDXRuXwGOL1A"
+	}
+
+	Response if everything is ok:
+	{
+		"message": "Customer was updated."
+	}
+
+7. Delete customer with delete_customer.php
+	{
+		"sn" : "C850E98CE607",
+		"jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJSYWlzZXBvbiIsImF1ZCI6IlJhaXNlcG9uIiwiaWF0IjoxNTQyMTA3ODg4LCJuYmYiOjE1NDIxMDc4OTgsImV4cCI6MTU0MjExMTQ5OCwiZGF0YSI6eyJpZCI6IjEiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6IjkifX0.DqYvlphdTZ8fb9up6SojGw1YWAWdePTXDXRuXwGOL1A"
+	}
+	Response if everything is ok:
+	{
+		"message": "Customer was deleted."
+	}
+	
+
+For any questions write me at: vtvelkov@gmail.com 
