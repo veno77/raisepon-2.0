@@ -25,41 +25,52 @@ if($jwt){
     // if decode succeed, show user details
     try {
         // decode jwt
-        $decoded = JWT::decode($jwt, $key, array('HS256'));		
-		$customer = new customers();
-		if(!empty($data->id) || !empty($data->sn)){
-			// set customer property values
-			if (isset($data->id))
-				$customer->setCustomer_id($data->id);
-			if (isset($data->sn))
-				$customer->setSn($data->sn);
-			
-			$customer->get_data_customer();
-			
-			$error = $customer->delete_customer();
-		 
-			if (empty($error)) {
-			   // set response code - 200 ok
-				http_response_code(200);
-		 
-				// tell the user
+		$decoded = (array)JWT::decode($jwt, $key, array('HS256'));
+		$type = $decoded["data"]->type;
+		if ($type >= "6") {	
+			$customer = new customers();
+			if(!empty($data->id) || !empty($data->sn)){
+				// set customer property values
+				if (isset($data->id))
+					$customer->setCustomer_id($data->id);
+				if (isset($data->sn))
+					$customer->setSn($data->sn);
 				
-				echo json_encode(array("message" => "Customer was deleted."));
+				$customer->get_data_customer();
+				
+				$error = $customer->delete_customer();
+			 
+				if (empty($error)) {
+				   // set response code - 200 ok
+					http_response_code(200);
+			 
+					// tell the user
+					
+					echo json_encode(array("message" => "Customer was deleted."));
+				}else{
+			 
+					// set response code - 503 service unavailable
+					http_response_code(503);
+			 
+					// tell the user
+					echo json_encode(array("message" => "Unable to delete customer. $error"));
+				}
 			}else{
-		 
-				// set response code - 503 service unavailable
-				http_response_code(503);
-		 
+			 
+				// set response code - 400 bad request
+				http_response_code(400);
+			 
 				// tell the user
-				echo json_encode(array("message" => "Unable to delete customer. $error"));
+				echo json_encode(array("message" => "Unable to delete customer. Data is incomplete."));
 			}
 		}else{
-		 
-			// set response code - 400 bad request
-			http_response_code(400);
-		 
-			// tell the user
-			echo json_encode(array("message" => "Unable to delete customer. Data is incomplete."));
+			// set response code
+			http_response_code(401);
+	 
+			// show error message
+			echo json_encode(array(
+				"message" => "Access denied. Not enough privilege.",
+			));
 		}
 	}
 	catch (Exception $e){

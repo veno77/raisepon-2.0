@@ -25,46 +25,57 @@ if($jwt){
     // if decode succeed, show user details
     try {
         // decode jwt
-        $decoded = JWT::decode($jwt, $key, array('HS256'));		
-		
-		//start get_customers
-		$customer = new customers();
-		$stmt = $customer->get_data();
-		$num = $stmt->rowCount();
+        $decoded = (array)JWT::decode($jwt, $key, array('HS256'));
+		$type = $decoded["data"]->type;
+		if ($type >= "3") {
+			
+			//start get_customers
+			$customer = new customers();
+			$stmt = $customer->get_data();
+			$num = $stmt->rowCount();
 
-		if($num>0){
-			$customers_arr=array();
-			$customers_arr["customers"]=array();
-			while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-				extract($row);
-				$customer_item=array(
-					"id" => $ID,
-					"name" => $NAME,
-					"address" => $ADDRESS,
-					"egn" => $EGN,
-					"sn" => $SN,
-					"service" => $SERVICE,
-					"auto" => $AUTO,
-					"state" => $STATE,
-					"state_rf" => $STATE_RF
+			if($num>0){
+				$customers_arr=array();
+				$customers_arr["customers"]=array();
+				while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+					extract($row);
+					$customer_item=array(
+						"id" => $ID,
+						"name" => $NAME,
+						"address" => $ADDRESS,
+						"egn" => $EGN,
+						"sn" => $SN,
+						"service" => $SERVICE,
+						"auto" => $AUTO,
+						"state" => $STATE,
+						"state_rf" => $STATE_RF
+					);
+			 
+					array_push($customers_arr["customers"], $customer_item);
+				}
+				// set response code - 200 OK
+				http_response_code(200);
+			 
+				// show products data in json format
+				echo json_encode($customers_arr);
+			}else{
+			 
+				// set response code - 404 Not found
+				http_response_code(404);
+			 
+				// tell the user no products found
+				echo json_encode(
+					array("message" => "No products found.")
 				);
-		 
-				array_push($customers_arr["customers"], $customer_item);
 			}
-			// set response code - 200 OK
-			http_response_code(200);
-		 
-			// show products data in json format
-			echo json_encode($customers_arr);
 		}else{
-		 
-			// set response code - 404 Not found
-			http_response_code(404);
-		 
-			// tell the user no products found
-			echo json_encode(
-				array("message" => "No products found.")
-			);
+			// set response code
+			http_response_code(401);
+	 
+			// show error message
+			echo json_encode(array(
+				"message" => "Access denied. Not enough privilege.",
+			));
 		}
 	}
 	catch (Exception $e){

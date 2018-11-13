@@ -23,47 +23,58 @@ if($jwt){
 	 // if decode succeed, show user details
     try {
         // decode jwt
-        $decoded = JWT::decode($jwt, $key, array('HS256'));		
-		
-		$customer = new customers();
-		if (isset($data->id)) { 
-			$id = $data->id;
-			$customer->setCustomer_id($id); 
-		}else if (isset($data->sn)) { 
-			$sn = $data->sn;
-			$customer->setSn($sn); 
-		}
+        $decoded = (array)JWT::decode($jwt, $key, array('HS256'));
+		$type = $decoded["data"]->type;
+		if ($type >= "3") {	
+			
+			$customer = new customers();
+			if (isset($data->id)) { 
+				$id = $data->id;
+				$customer->setCustomer_id($id); 
+			}else if (isset($data->sn)) { 
+				$sn = $data->sn;
+				$customer->setSn($sn); 
+			}
 
-		$customer->get_data_customer();
+			$customer->get_data_customer();
 
-		if($customer->getName()!=null){
-			// create array
-			$customer_item=array(
-				"id" => $customer->getCustomers_id(),
-				"name" => $customer->getName(),
-				"address" => $customer->getAddress(),
-				"egn" => $customer->getEgn(),
-				"sn" => $customer->getSn(),
-				"service" => $customer->getService(),
-				"auto" => $customer->getAuto(),
-				"state" => $customer->getState(),
-				"state_rf" => $customer->getState_rf()
-			); 
-			// set response code - 200 OK
-			http_response_code(200);
-		 
-			// show customers data in json format
-			echo json_encode($customer_item);
+			if($customer->getName()!=null){
+				// create array
+				$customer_item=array(
+					"id" => $customer->getCustomers_id(),
+					"name" => $customer->getName(),
+					"address" => $customer->getAddress(),
+					"egn" => $customer->getEgn(),
+					"sn" => $customer->getSn(),
+					"service" => $customer->getService(),
+					"auto" => $customer->getAuto(),
+					"state" => $customer->getState(),
+					"state_rf" => $customer->getState_rf()
+				); 
+				// set response code - 200 OK
+				http_response_code(200);
+			 
+				// show customers data in json format
+				echo json_encode($customer_item);
+			}else{
+			 
+				// set response code - 404 Not found
+				http_response_code(404);
+			 
+				// tell the user no customers found
+				$boza = $customer->getName();
+				echo json_encode(
+					array("message $boza" => "Customer does not exist.")
+				);
+			}
 		}else{
-		 
-			// set response code - 404 Not found
-			http_response_code(404);
-		 
-			// tell the user no customers found
-			$boza = $customer->getName();
-			echo json_encode(
-				array("message $boza" => "Customer does not exist.")
-			);
+			// set response code
+			http_response_code(401);
+	 
+			// show error message
+			echo json_encode(array(
+				"message" => "Access denied. Not enough privilege.",
+			));
 		}
 	}
 	catch (Exception $e){

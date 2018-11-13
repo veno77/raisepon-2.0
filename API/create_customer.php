@@ -25,52 +25,63 @@ if($jwt){
     // if decode succeed, show user details
     try {
         // decode jwt
-        $decoded = JWT::decode($jwt, $key, array('HS256'));		
+        $decoded = (array)JWT::decode($jwt, $key, array('HS256'));
+		$type = $decoded["data"]->type;
+		if ($type >= "6") {	
 		
-		$customer = new customers();
+			$customer = new customers();
 
-		if(!empty($data->name) && !empty($data->sn) && !empty($data->auto) && !empty($data->state)){
-		 
-			// set product property values
-			$customer->setName($data->name);
-			if (!empty($data->address)) 
-				$customer->setAddress($data->address);
-			if (!empty($data->egn)) 
-				$customer->setEgn($data->egn);
-			$customer->setSn($data->sn);
-			if (!empty($data->service)) 
-				$customer->setService($data->service);
-			$customer->setAuto($data->auto);
-			$customer->setState($data->state);
-			if (!empty($data->state_rf)) 
-				$customer->setState_rf($data->state_rf);
+			if(!empty($data->name) && !empty($data->sn) && !empty($data->auto) && !empty($data->state)){
+			 
+				// set product property values
+				$customer->setName($data->name);
+				if (!empty($data->address)) 
+					$customer->setAddress($data->address);
+				if (!empty($data->egn)) 
+					$customer->setEgn($data->egn);
+				$customer->setSn($data->sn);
+				if (!empty($data->service)) 
+					$customer->setService($data->service);
+				$customer->setAuto($data->auto);
+				$customer->setState($data->state);
+				if (!empty($data->state_rf)) 
+					$customer->setState_rf($data->state_rf);
 
-		 //   $product->created = date('Y-m-d H:i:s');
-		 
-			$error = $customer->add_customer();
-		 
-			if (empty($error)) {
-				// set response code - 201 created
-				http_response_code(201);
-		 
-				// tell the user
-				
-				echo json_encode(array("message" => "Customer was created."));
+			 //   $product->created = date('Y-m-d H:i:s');
+			 
+				$error = $customer->add_customer();
+			 
+				if (empty($error)) {
+					// set response code - 201 created
+					http_response_code(201);
+			 
+					// tell the user
+					
+					echo json_encode(array("message" => "Customer was created."));
+				}else{
+			 
+					// set response code - 503 service unavailable
+					http_response_code(503);
+			 
+					// tell the user
+					echo json_encode(array("message" => "Unable to create customer. $error"));
+				}
 			}else{
-		 
-				// set response code - 503 service unavailable
-				http_response_code(503);
-		 
+			 
+				// set response code - 400 bad request
+				http_response_code(400);
+			 
 				// tell the user
-				echo json_encode(array("message" => "Unable to create customer. $error"));
+				echo json_encode(array("message" => "Unable to create customer. Data is incomplete."));
 			}
 		}else{
-		 
-			// set response code - 400 bad request
-			http_response_code(400);
-		 
-			// tell the user
-			echo json_encode(array("message" => "Unable to create customer. Data is incomplete."));
+			// set response code
+			http_response_code(401);
+	 
+			// show error message
+			echo json_encode(array(
+				"message" => "Access denied. Not enough privilege.",
+			));
 		}
 	}
 	catch (Exception $e){

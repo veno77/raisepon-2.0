@@ -21,42 +21,51 @@ $jwt=isset($data->jwt) ? $data->jwt : "";
 // decode jwt here
 // if jwt is not empty
 if($jwt){
- 
     // if decode succeed, show user details
     try {
         // decode jwt
-        $decoded = JWT::decode($jwt, $key, array('HS256'));		
-		
-		$services = new services();
-		$stmt = $services->get_data();
-		$num = $stmt->rowCount();
+        $decoded = (array)JWT::decode($jwt, $key, array('HS256'));
+		$type = $decoded["data"]->type;
+		if ($type >= "3") {
+			$services = new services();
+			$stmt = $services->get_data();
+			$num = $stmt->rowCount();
 
-		if($num>0){
-			$services_arr=array();
-			$services_arr["services"]=array();
-			while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
-				extract($row);
-				$services_item=array(
-					"id" => $ID,
-					"name" => $NAME,
+			if($num>0){
+				$services_arr=array();
+				$services_arr["services"]=array();
+				while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
+					extract($row);
+					$services_item=array(
+						"id" => $ID,
+						"name" => $NAME,
+					);
+			 
+					array_push($services_arr["services"], $services_item);
+				}
+				// set response code - 200 OK
+				http_response_code(200);
+			 
+				// show products data in json format
+				echo json_encode($services_arr);
+			}else{
+			 
+				// set response code - 404 Not found
+				http_response_code(404);
+			 
+				// tell the user no products found
+				echo json_encode(
+					array("message" => "No categories found.")
 				);
-		 
-				array_push($services_arr["services"], $services_item);
 			}
-			// set response code - 200 OK
-			http_response_code(200);
-		 
-			// show products data in json format
-			echo json_encode($services_arr);
 		}else{
-		 
-			// set response code - 404 Not found
-			http_response_code(404);
-		 
-			// tell the user no products found
-			echo json_encode(
-				array("message" => "No categories found.")
-			);
+			// set response code
+			http_response_code(401);
+	 
+			// show error message
+			echo json_encode(array(
+				"message" => "Access denied. Not enough privilege.",
+			));
 		}
 	}
 	catch (Exception $e){

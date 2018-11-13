@@ -25,58 +25,69 @@ if($jwt){
     // if decode succeed, show user details
     try {
         // decode jwt
-        $decoded = JWT::decode($jwt, $key, array('HS256'));	
-		$customer = new customers();
-		if(!empty($data->id) || !empty($data->sn)){
-			// set customer property values
-			if (isset($data->id))
-				$customer->setCustomer_id($data->id);
-			if (isset($data->sn))
-				$customer->setSn($data->sn);
-			
-			$customer->get_data_customer();
-			
-			if (!empty($data->name))
-				$customer->setName($data->name);
-			if (!empty($data->address)) 
-				$customer->setAddress($data->address);
-			if (!empty($data->egn)) 
-				$customer->setEgn($data->egn);
-			if (!empty($data->sn)) 
-				$customer->setSn($data->sn);
-			if (!empty($data->service)) 
-				$customer->setService($data->service);
-			if (!empty($data->auto)) 
-				$customer->setAuto($data->auto);
-			if (!empty($data->state)) 
-				$customer->setState($data->state);
-			if (!empty($data->state_rf)) 
-				$customer->setState_rf($data->state_rf);
-
-			$error = $customer->edit_customer();
-
-			if (empty($error)) {
-				// set response code - 201 created
-				http_response_code(201);
-		 
-				// tell the user
+		$decoded = (array)JWT::decode($jwt, $key, array('HS256'));
+		$type = $decoded["data"]->type;
+		if ($type >= "6") {	
+			$customer = new customers();
+			if(!empty($data->id) || !empty($data->sn)){
+				// set customer property values
+				if (isset($data->id))
+					$customer->setCustomer_id($data->id);
+				if (isset($data->sn))
+					$customer->setSn($data->sn);
 				
-				echo json_encode(array("message" => "Customer was updated."));
+				$customer->get_data_customer();
+				
+				if (!empty($data->name))
+					$customer->setName($data->name);
+				if (!empty($data->address)) 
+					$customer->setAddress($data->address);
+				if (!empty($data->egn)) 
+					$customer->setEgn($data->egn);
+				if (!empty($data->sn)) 
+					$customer->setSn($data->sn);
+				if (!empty($data->service)) 
+					$customer->setService($data->service);
+				if (!empty($data->auto)) 
+					$customer->setAuto($data->auto);
+				if (!empty($data->state)) 
+					$customer->setState($data->state);
+				if (!empty($data->state_rf)) 
+					$customer->setState_rf($data->state_rf);
+
+				$error = $customer->edit_customer();
+
+				if (empty($error)) {
+					// set response code - 201 created
+					http_response_code(201);
+			 
+					// tell the user
+					
+					echo json_encode(array("message" => "Customer was updated."));
+				}else{
+			 
+					// set response code - 503 service unavailable
+					http_response_code(503);
+			 
+					// tell the user
+					echo json_encode(array("message" => "Unable to edit customer. $error"));
+				}
 			}else{
-		 
-				// set response code - 503 service unavailable
-				http_response_code(503);
-		 
+			 
+				// set response code - 400 bad request
+				http_response_code(400);
+			 
 				// tell the user
-				echo json_encode(array("message" => "Unable to edit customer. $error"));
+				echo json_encode(array("message" => "Unable to edit customer. Data is incomplete."));
 			}
 		}else{
-		 
-			// set response code - 400 bad request
-			http_response_code(400);
-		 
-			// tell the user
-			echo json_encode(array("message" => "Unable to edit customer. Data is incomplete."));
+			// set response code
+			http_response_code(401);
+	 
+			// show error message
+			echo json_encode(array(
+				"message" => "Access denied. Not enough privilege.",
+			));
 		}
 	}
 	catch (Exception $e){
