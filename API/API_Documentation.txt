@@ -21,7 +21,7 @@ All customers should be treated with AUTO = "YES" to have the backend update the
 	}
 	Response should look like:
 	{
-		"records": [
+		"services": [
 			{
 				"id": "3",
 				"name": "Internet_4port"
@@ -48,7 +48,7 @@ All customers should be treated with AUTO = "YES" to have the backend update the
 			}
 		]
 	}
-
+ 
 3. List registered customers with get_customers.php using the assigne jwt token:
 	{
 		"jwt": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJpc3MiOiJSYWlzZXBvbiIsImF1ZCI6IlJhaXNlcG9uIiwiaWF0IjoxNTQyMTA3ODg4LCJuYmYiOjE1NDIxMDc4OTgsImV4cCI6MTU0MjExMTQ5OCwiZGF0YSI6eyJpZCI6IjEiLCJ1c2VybmFtZSI6ImFkbWluIiwidHlwZSI6IjkifX0.DqYvlphdTZ8fb9up6SojGw1YWAWdePTXDXRuXwGOL1A"
@@ -56,7 +56,7 @@ All customers should be treated with AUTO = "YES" to have the backend update the
 
 	Response will look like:
 	{
-		"records": [
+		"customers": [
 			{
 				"id": "191",
 				"name": "ISCOMHT803-W(T)",

@@ -34,7 +34,7 @@ if($jwt){
 
 		if($num>0){
 			$customers_arr=array();
-			$customers_arr["records"]=array();
+			$customers_arr["customers"]=array();
 			while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 				extract($row);
 				$customer_item=array(
@@ -49,7 +49,7 @@ if($jwt){
 					"state_rf" => $STATE_RF
 				);
 		 
-				array_push($customers_arr["records"], $customer_item);
+				array_push($customers_arr["customers"], $customer_item);
 			}
 			// set response code - 200 OK
 			http_response_code(200);

@@ -33,7 +33,7 @@ if($jwt){
 
 		if($num>0){
 			$services_arr=array();
-			$services_arr["records"]=array();
+			$services_arr["services"]=array();
 			while ($row = $stmt->fetch(PDO::FETCH_ASSOC)){
 				extract($row);
 				$services_item=array(
@@ -41,7 +41,7 @@ if($jwt){
 					"name" => $NAME,
 				);
 		 
-				array_push($services_arr["records"], $services_item);
+				array_push($services_arr["services"], $services_item);
 			}
 			// set response code - 200 OK
 			http_response_code(200);
