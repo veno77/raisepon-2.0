@@ -385,7 +385,7 @@ class customers {
 			}
 			
 			//UNLINK OLD RRD
-			array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "*"));
+		//	array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "*"));
 		}
 		sleep(1);
 		//ADD_ONU_VIA_SNMP
@@ -398,6 +398,7 @@ class customers {
 			}
 			
 			//CREATE RRD
+			/*
 			//TRAFFIC RRD
 			$error = $this->onu_traffic_rrd();
 			if (!empty($error)) {
@@ -417,6 +418,7 @@ class customers {
 			if (!empty($error)) {
 				return $error;
 			}
+			*/
 		} 
 	}
 	
@@ -785,7 +787,7 @@ class customers {
 		// PREPARE SNMPSET TO ADD ONU
         try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT CUSTOMERS.ID as C_ID, CUSTOMERS.NAME, CUSTOMERS.SN, CUSTOMERS.STATE, PON_ONU_ID, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.SERVICE, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW as RW, PON.ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, LINE_PROFILE.LINE_PROFILE_ID, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS as PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.SN = '$sn'");
+			$result = $conn->db->query("SELECT CUSTOMERS.ID as C_ID, CUSTOMERS.NAME, CUSTOMERS.SN, CUSTOMERS.STATE, CUSTOMERS.AUTO, PON_ONU_ID, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.SERVICE, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW as RW, PON.ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, LINE_PROFILE.LINE_PROFILE_ID, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS as PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.SN = '$sn'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -804,6 +806,7 @@ class customers {
 			$this->customers_id = $row["C_ID"];
 			$this->pon_type = $row["PON_TYPE"];
 			$this->state = $row["STATE"];
+			$this->auto = $row["AUTO"];
 		}
 		$snmp_obj = new snmp_oid();
 		$this->big_onu_id = $this->type2id($slot_id, $port_id, $this->pon_onu_id);
@@ -814,7 +817,7 @@ class customers {
 		$dtype_oid = $snmp_obj->get_pon_oid("dtype_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$state_oid = $snmp_obj->get_pon_oid("onu_active_state_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$description_oid = $snmp_obj->get_pon_oid("description_oid", $this->pon_type) . "." . $this->big_onu_id;
-
+		
 		//EXECUTE SNMPSET TO ADD ONU
 		$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
 		if ($this->pon_type == "GPON") {
@@ -823,6 +826,10 @@ class customers {
 			} else {
 				$session->set(array($sn_oid, $row_status_oid), array('s', 'i'), array($this->sn, '4'));
 			}
+	//		if ($this->state == "NO" && $this->auto == "YES") {
+		//		$session->set($state_oid, 'i', '2');
+			//}
+			
 		}
 		if ($this->pon_type == "EPON") {
 			$sn = "0x" . $this->sn;	
