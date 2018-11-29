@@ -211,78 +211,87 @@ function addCustomer(olt, pon_port, sn) {
 }
 
 function graph(id, type) {
-        $('#output').html('<img src="pic/loading.gif" />');
-        jQuery.ajax({
-			url: "graph.php",
-			data: {id: id, type: type},
-			type: "GET",
-			success:function(data){$('#output').html(data);}
-        });
+	$('#output').html('<img src="pic/loading.gif" />');
+	jQuery.ajax({
+		url: "graph.php",
+		data: {id: id, type: type},
+		type: "GET",
+		success:function(data){$('#output').html(data);}
+	});
 }
 function graph_onu(id, type) {
-        $('#output').html('<img src="pic/loading.gif" />');
-        jQuery.ajax({
-			url: "graph.php",
-			data: {id: id, type: type},
-			type: "GET",
-			success:function(data){$('#output').html(data);}
-        });
+	$('#output').html('<img src="pic/loading.gif" />');
+	jQuery.ajax({
+		url: "graph.php",
+		data: {id: id, type: type},
+		type: "GET",
+		success:function(data){$('#output').html(data);}
+	});
 }
 function graph_olt(ip_address, index, ifDescr) {
-        $('#output').html('<img src="pic/loading.gif" />');
-        jQuery.ajax({
-			url: "graph_olt.php",
-			data: {ip_address: ip_address, index: index, ifDescr: ifDescr},
-			type: "GET",
-			success:function(data){$('#output').html(data);}
-        });
+	$('#output').html('<img src="pic/loading.gif" />');
+	jQuery.ajax({
+		url: "graph_olt.php",
+		data: {ip_address: ip_address, index: index, ifDescr: ifDescr},
+		type: "GET",
+		success:function(data){$('#output').html(data);}
+	});
 }
 
 function graph_pon(pon_id, type) {
-        $('#output').html('<img src="pic/loading.gif" />');
-        jQuery.ajax({
-			url: "graph_pon.php",
-			data: {id: pon_id, type: type},
-			type: "GET",
-			success:function(data){$('#output').html(data);}
-        });
+	$('#output').html('<img src="pic/loading.gif" />');
+	jQuery.ajax({
+		url: "graph_pon.php",
+		data: {id: pon_id, type: type},
+		type: "GET",
+		success:function(data){$('#output').html(data);}
+	});
 }
 
 function LoadGraphs() {
-        $('#output').html('<img src="pic/loading.gif" />');
-        jQuery.ajax({
-			url: "graphs.php",
-			data: $( "#graphs" ).serialize(),
-			type: "POST",
-			success:function(data){$('#output').html(data);}
-        });
+	$('#output').html('<img src="pic/loading.gif" />');
+	jQuery.ajax({
+		url: "graphs.php",
+		data: $( "#graphs" ).serialize(),
+		type: "POST",
+		success:function(data){$('#output').html(data);}
+	});
 }
 function LoadIndex() {
-        $('#output').html('<img src="pic/loading.gif" />');
-        jQuery.ajax({
-			url: "index.php",
-			data: $( "#load" ).serialize(),
-			type: "POST",
-			success:function(data){$('#output').html(data);}
-        });
+	$('#output').html('<img src="pic/loading.gif" />');
+	jQuery.ajax({
+		url: "index.php",
+		data: $( "#load" ).serialize(),
+		type: "POST",
+		success:function(data){$('#output').html(data);}
+	}).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
 }
 function SearchIndex() {
-        $('#output').html('<img src="pic/loading.gif" />');
-        jQuery.ajax({
-			url: "index.php",
-			data: $( "#search" ).serialize(),
-			type: "POST",
-			success:function(data){$('#output').html(data);}
-        });
+	$('#output').html('<img src="pic/loading.gif" />');
+	jQuery.ajax({
+		url: "index.php",
+		data: $( "#search" ).serialize(),
+		type: "POST",
+		success:function(data){$('#output').html(data);}
+	}).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
 }
 function UnassignedIndex() {
-        $('#output').html('<img src="pic/loading.gif" />');
-        jQuery.ajax({
-			url: "index.php",
-			data: $( "#unassigned" ).serialize(),
-			type: "POST",
-			success:function(data){$('#output').html(data);}
-        });
+	$('#output').html('<img src="pic/loading.gif" />');
+	jQuery.ajax({
+		url: "index.php",
+		data: $( "#unassigned" ).serialize(),
+		type: "POST",
+		success:function(data){$('#output').html(data);}
+	}).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
 }
 $(document).ready(function(){
 	$(document).on('click', '#navbar2 .nav li a', function () {
