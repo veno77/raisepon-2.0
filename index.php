@@ -59,6 +59,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				<form class="form-inline" id="search" method="post">
 					<label for="name">Name</label>
 					<input type="text" name="name"  size="15"  class="form-control" placeholder="Name"  aria-describedby="sizing-addon1">
+					<label for="address">Address</label>
+					<input type="text" name="address"  size="15"  class="form-control" placeholder="Address"  aria-describedby="sizing-addon1">
 					<label for="egn">EGN</label>
 					<input type="text" name="egn"  maxlength="10" size="10" class="form-control" placeholder="EGN" aria-describedby="sizing-addon1">
 					<label for="sn">SN</label>
@@ -86,7 +88,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <div class="container" >
 	<div id="output" class="text-center">
 		<?php
-		if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($index_obj->getEgn()) || !empty($index_obj->getSn()) || $index_obj->getSubmit() == "UNASSIGNED") {
+		if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($index_obj->getAddress()) || !empty($index_obj->getEgn()) || !empty($index_obj->getSn()) || $index_obj->getSubmit() == "UNASSIGNED") {
 		?>
 			<div class="page-header">
 			<?php 

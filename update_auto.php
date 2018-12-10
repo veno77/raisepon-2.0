@@ -9,22 +9,25 @@ $auto_update_obj = new customers();
 //Process AUTO add customers
 $rows = $auto_update_obj->get_Illegal_onus();
 foreach ($rows as $olt => $values) {
-	foreach ($values as $roww) {
-		$row_auto = $auto_update_obj->check_Auto($roww['0']);
+	foreach ($values as $id => $roww) {
+		$obj = new customers();
+		$row_auto = $obj->check_Auto($roww['0']);
+		print_r($row_auto);
 		if ($row_auto) {
 			foreach($row_auto as $row) {
 				if ($row["AUTO"] == "YES") {
-					$auto_update_obj->setCustomer_id($row["ID"]);
-					$pon_port = $auto_update_obj->get_Pon_port($olt, $roww{'1'},$roww{'2'});
+					$obj->setCustomer_id($row["ID"]);
+					$pon_port = $obj->get_Pon_port($olt, $roww{'1'},$roww{'2'});
 					foreach ($pon_port as $pon) {
 						$pon_id = $pon{'ID'};
 					}
-					$auto_update_obj->setPon_port($pon_id);
-					$auto_update_obj->setOlt($olt);
-					$auto_update_obj->get_data_customer();
-					$auto_update_obj->edit_customer();
-					if (null !== $auto_update_obj->getState_rf()) {
-						$auto_update_obj->update_rf_snmp();
+					$obj->setPon_port($pon_id);
+					$obj->setOlt($olt);
+					$obj->get_data_customer();
+					$error = $obj->edit_customer();
+					echo $error; 
+					if (null !== $obj->getState_rf()) {
+						$obj->update_rf_snmp();
 					}
 				}
 			}

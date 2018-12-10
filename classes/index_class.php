@@ -6,6 +6,7 @@ class index {
 	public $name;
 	private $olt_id;
 	private $pon_id;
+	public $address;
 	public $pon_port;
 	public $egn;
 	public $sn;
@@ -16,6 +17,7 @@ class index {
 		if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$this->onu_id = isset($_POST['onu_id'])	? $this->test_input($_POST['onu_id']) : null;
 			$this->name = isset($_POST['name'])	? $this->test_input($_POST['name']) : null;
+			$this->address = isset($_POST['address'])	? $this->test_input($_POST['address']) : null;
 			$this->olt_id = isset($_POST['olt_id'])	? $this->test_input($_POST['olt_id']) : null;
 			$this->pon_id = isset($_POST['pon_id'])	? $this->test_input($_POST['pon_id']) : null;
 			$this->pon_port = isset($_POST['pon_port'])	? $this->test_input($_POST['pon_port']) : null;
@@ -35,6 +37,9 @@ class index {
 	
 	function getName() {
 		return $this->name;
+	}
+	function getAddress() {
+		return $this->address;
 	}
 	function getEgn() {
 		return $this->egn;
@@ -103,6 +108,8 @@ class index {
 				$where = "CUSTOMERS.EGN = '$this->egn'";
 			if(!empty($this->sn)) 
 				$where = "CUSTOMERS.SN = '$this->sn'";
+			if(!empty($this->address)) 
+				$where = "CUSTOMERS.ADDRESS LIKE '%$this->address%'";
 		}
 		if ($this->submit == "UNASSIGNED")
 			$where = "CUSTOMERS.OLT is NULL or CUSTOMERS.PON_PORT is NULL";

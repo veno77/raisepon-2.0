@@ -445,6 +445,14 @@ class customers {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
 		}
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("DELETE FROM ONU_RX_POWER where CUSTOMERS_ID='$this->customers_id'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		
 		//DESTROY ONU in OLT
 		
 	
