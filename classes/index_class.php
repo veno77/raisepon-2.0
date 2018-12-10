@@ -135,6 +135,19 @@ class index {
 		return $last_online;
 	}
 	
+	function get_rx_power($id) {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT RX_POWER from ONU_RX_POWER where CUSTOMERS_ID = $id");
+		} catch (PDOException $e) {
+			$error =  "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			return $row{'RX_POWER'};
+		}	
+	}
+	
 	function test_input($data) {
 			$data = trim($data);
 			$data = stripslashes($data);

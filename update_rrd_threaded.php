@@ -31,34 +31,66 @@ class WorkerThreads extends Thread
 			$big_onu_id = $snmp_obj->type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
 			$big_onu_id_2 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
 			if ($row{'PON_TYPE'} == "GPON") {
-				$index_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
+				if ($row{'PON_ONU_ID'} < 100) {
+					$index_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
+				}else{
+					$index_2 = (3<<28)+(10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * ($row{'PON_ONU_ID'}%100) + 1);
+				}		
 			}
 			if ($row{'PON_TYPE'} == "EPON") {
 				$index_2 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
 			}
 			$olt_ip_address = $row["IP_ADDRESS"];	
-			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd";
+			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd"; 
+			$error = "0";
+			if(!is_file($rrd_traffic))
+				$error = "1";
 			$rrd_unicast = dirname(__FILE__) . "/rrd/" . $sn . "_unicast.rrd";
+			if(!is_file($rrd_unicast))
+				$error = "1";
 			$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $sn . "_broadcast.rrd";
+			if(!is_file($rrd_broadcast))
+				$error = "1";
 			$rrd_multicast = dirname(__FILE__) . "/rrd/" . $sn . "_multicast.rrd";
+			if(!is_file($rrd_multicast))
+				$error = "1";
+			if ($error == "1") {
+				$customers_obj = new customers();
+				$customers_obj->setSn($sn);
+				$error = $customers_obj->onu_traffic_rrd();
+				if (!empty($error)) {
+					return $error;
+				}
+			}
+			$error = "0";
 			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.rrd";
+			if(!is_file($rrd_power)) {
+				$customers_obj = new customers();
+				$customers_obj->setSn($sn);
+				$error = $customers_obj->onu_power_rrd();
+				if (!empty($error)) {
+					return $error;
+				}
+			}
+			
 			$total_input_traffic = 0;
 			$total_output_traffic = 0;
 			$multicast_in = 0;
 			$multicast_out = 0;
 			if ($row{'PON_TYPE'} == "EPON") {
-				$traffic_in_oid = "1.3.6.1.2.1.31.1.1.1.6." . $big_onu_id;
-				$traffic_out_oid = "1.3.6.1.2.1.31.1.1.1.10." . $big_onu_id;
+				$traffic_in_oid = $snmp_obj->get_pon_oid("ifHCInOctets", "OLT") . "." . $big_onu_id;
+				$traffic_out_oid = $snmp_obj->get_pon_oid("ifHCOutOctets", "OLT") . "." . $big_onu_id;
 				//Unicast
-				$unicast_in_oid = "1.3.6.1.2.1.31.1.1.1.7." . $big_onu_id;
-				$unicast_out_oid = "1.3.6.1.2.1.31.1.1.1.11." . $big_onu_id;
+				$unicast_in_oid = $snmp_obj->get_pon_oid("ifHCInUcastPkts", "OLT") . "." . $big_onu_id;
+				$unicast_out_oid = $snmp_obj->get_pon_oid("ifHCOutUcastPkts", "OLT") . "." . $big_onu_id;
 				//Broadcast
-				$broadcast_in_oid = "1.3.6.1.2.1.31.1.1.1.9." . $big_onu_id;
-				$broadcast_out_oid = "1.3.6.1.2.1.31.1.1.1.13." . $big_onu_id;
+				$broadcast_in_oid = $snmp_obj->get_pon_oid("ifHCInBroadcastPkts", "OLT") . "." . $big_onu_id;
+				$broadcast_out_oid = $snmp_obj->get_pon_oid("ifHCOutBroadcastPkts", "OLT") . "." . $big_onu_id;
 				//Multicast
-				$multicast_in_oid = "1.3.6.1.2.1.31.1.1.1.8." . $big_onu_id;
-				$multicast_out_oid = "1.3.6.1.2.1.31.1.1.1.12." . $big_onu_id;
+				$multicast_in_oid = $snmp_obj->get_pon_oid("ifHCInMulticastPkts", "OLT") . "." . $big_onu_id;
+				$multicast_out_oid = $snmp_obj->get_pon_oid("ifHCOutMulticastPkts", "OLT") . "." . $big_onu_id;
 			}
+			
 			$status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 			//Power
 			$recv_power_oid = $snmp_obj->get_pon_oid("onu_recv_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
@@ -71,11 +103,12 @@ class WorkerThreads extends Thread
 			$octets_in_ethernet = $snmp_obj->get_pon_oid("uni_octets_in_ethernet_oid", $row{'PON_TYPE'}) . ".";
 			$octets_out_ethernet = $snmp_obj->get_pon_oid("uni_octets_out_ethernet_oid", $row{'PON_TYPE'}) . ".";
 				
+			$status = "0";
 			//GET STATUS via SNMP
 			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-		//	if(isset($row{'IP_ADDRESS'})) {
+			$status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 			$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-			$status = $session->get($status_oid);
+			$status = $session->get($status_oid);	
 			
 			if ($status == "1") {
 				$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
@@ -135,13 +168,8 @@ class WorkerThreads extends Thread
 						$err = rrd_error();
 						echo "ERROR occurred: $err\n";
 					}
-					
-					
-					
-					
 				}
-		   
-				if ($rf == "Yes") {
+				if ($rf == "Yes" && $row{'PON_TYPE'} == "EPON") {
 					$rf_input_power = $session->get($rf_input_power_oid);
 					$rf_input_power = round($rf_input_power/10,4);
 					$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:$rf_input_power"));
@@ -153,10 +181,33 @@ class WorkerThreads extends Thread
 					$err = rrd_error();
 					echo "ERROR occurred: $err\n";
 				}
-				if ($hgu !== "Yes") {
+								if ($hgu !== "Yes") {
 					for ($i=1; $i <= $row{'PORTS'}; $i++) {
 						$ethernet_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + $i;
-						$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_ethernet_" . $i . ".rrd";
+						$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".rrd";
+						if(!is_file($octets_ethernet)) {
+							$opts = array( "--step", "300", "--start", "0",
+							   "DS:input:DERIVE:600:0:U",
+							   "DS:output:DERIVE:600:0:U",
+							   "RRA:AVERAGE:0.5:1:600",
+							   "RRA:AVERAGE:0.5:6:700",
+							   "RRA:AVERAGE:0.5:24:775",
+							   "RRA:AVERAGE:0.5:288:797",
+							   "RRA:MAX:0.5:1:600",
+							   "RRA:MAX:0.5:6:700",
+							   "RRA:MAX:0.5:24:775",
+							   "RRA:MAX:0.5:288:797"
+							);
+							$ret = rrd_create($octets_ethernet, $opts);
+
+							if( $ret == 0 )
+							{
+								$err = rrd_error();
+								return $err;
+							}	
+						}
+						
+						
 						$octets_in_ethernet_id = $octets_in_ethernet . $ethernet_id;
 						$octets_out_ethernet_id = $octets_out_ethernet . $ethernet_id;
 						$octets_in_ethernet_val = $session->get($octets_in_ethernet_id);
@@ -170,10 +221,7 @@ class WorkerThreads extends Thread
 					}
 				}
 			}
-		 
-	//	 echo $this->olt_ip_address . "\n";
 		}
-		
 		try {
 			$conn = db_connect::getInstance();
 			$result = $conn->db->query("SELECT PON.ID, PON.SLOT_ID, PON.PORT_ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO from PON LEFT JOIN OLT on PON.OLT=OLT.ID where INET_NTOA(OLT.IP_ADDRESS)='$this->olt_ip_address'");
@@ -242,20 +290,28 @@ class WorkerThreads extends Thread
 }
 try {
 	$conn = db_connect::getInstance();
-	$result = $conn->db->query("SELECT ID, INET_NTOA(IP_ADDRESS) as IP_ADDRESS from OLT");
+	$result = $conn->db->query("SELECT ID, NAME, MODEL, INET_NTOA(IP_ADDRESS) as IP_ADDRESS, RO, RW from OLT");
 } catch (PDOException $e) {
 	echo "Connection Failed:" . $e->getMessage() . "\n";
 	exit;
 }
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-	${"workers" . $row["ID"]} = new WorkerThreads($row["IP_ADDRESS"]);
-	${"workers" . $row["ID"]}->start();
-	
+	$ip_address = $row["IP_ADDRESS"];
+	$olt_status_oid = $snmp_obj->get_pon_oid("olt_status_oid", "OLT");
+	snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+	$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+	$olt_status = $session->get($olt_status_oid);
+	if (!empty($olt_status)) {
+		${"workers" . $row["ID"]} = new WorkerThreads($row["IP_ADDRESS"]);
+		${"workers" . $row["ID"]}->start();
+		${"workers" . $row["ID"]}->join();
+	}
 }
+/*
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	${"workers" . $row["ID"]}->join();
 }
-
+*/
 
 
 

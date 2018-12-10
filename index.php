@@ -154,19 +154,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								$status = "<font color=green>Online</font>";
 								//GET POWER/DISTANCE via SNMP
 								if ($row{'PON_TYPE'} == "GPON") {
+									/*
 									$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_rx_gpon;
 									$power = $session->get($onu_rx_power_oid);
 									if ($power > 32767)
 										$power = $power - 65535 - 1;
 									$power = round(($power-15000)/500,2);
-									
+									*/
 									
 									$onu_register_distance = $session->get($onu_register_distance_oid);
 								}
 								if ($row{'PON_TYPE'} == "EPON") {
-									$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_3;
-									$power = $session->get($onu_rx_power_oid);
-									$power = round(10*log10($power/10000),2);
+								//	$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_3;
+								//	$power = $session->get($onu_rx_power_oid);
+								//	$power = round(10*log10($power/10000),2);
 									
 									$dot3MpcpRoundTripTime = $session->get($dot3MpcpRoundTripTime);
 									if ($dot3MpcpRoundTripTime <= '46')
@@ -175,11 +176,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 										$onu_register_distance = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
 								}
 								
-								
-								if ($power < "-25") {
-									$power = "<font color=red>" . $power . "</font>" ;
+								$power = $index_obj->get_rx_power($row{'ID'});
+								if ($power) {
+									if ($power < "-25") {
+										$power = "<font color=red>" . $power . "</font>" ;
+									} else {
+										$power = "<font color=green>" . $power . "</font>" ;
+									}
 								} else {
-									$power = "<font color=green>" . $power . "</font>" ;
+									$power = NULL;
 								}
 								/*
 								if ($row{'RF'} == "1") {

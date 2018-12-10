@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.41, for FreeBSD10.4 (amd64)
+-- MySQL dump 10.13  Distrib 5.6.42, for FreeBSD11.2 (amd64)
 --
 -- Host: localhost    Database: gpon
 -- ------------------------------------------------------
--- Server version	5.6.41
+-- Server version	5.6.42
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -86,8 +86,9 @@ CREATE TABLE `CUSTOMERS` (
   `STATE_RF` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`ID`),
   KEY `OLT` (`OLT`),
-  KEY `PON_PORT` (`PON_PORT`)
-) ENGINE=InnoDB AUTO_INCREMENT=272 DEFAULT CHARSET=utf8;
+  KEY `PON_PORT` (`PON_PORT`),
+  KEY `SN` (`SN`)
+) ENGINE=InnoDB AUTO_INCREMENT=267 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,7 +107,7 @@ CREATE TABLE `HISTORY` (
   `USER_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `CUSTOMERS_ID` (`CUSTOMERS_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=650 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=653 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -194,6 +195,21 @@ CREATE TABLE `ONU` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `ONU_RX_POWER`
+--
+
+DROP TABLE IF EXISTS `ONU_RX_POWER`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ONU_RX_POWER` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `CUSTOMERS_ID` int(11) NOT NULL,
+  `RX_POWER` float NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `PON`
 --
 
@@ -224,7 +240,8 @@ CREATE TABLE `SERVICES` (
   `NAME` varchar(255) NOT NULL,
   `LINE_PROFILE_ID` int(11) NOT NULL,
   `SERVICE_PROFILE_ID` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `LINE_PROFILE_ID` (`LINE_PROFILE_ID`)
 ) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
@@ -257,4 +274,4 @@ CREATE TABLE `SERVICE_PROFILE` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2018-11-20 10:56:46
+-- Dump completed on 2018-12-10 12:04:01

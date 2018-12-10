@@ -30,12 +30,15 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 
 
 try {
-	$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICE_PROFILE.PORTS, SERVICE_PROFILE.HGU, SERVICE_PROFILE.RF, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID");
+	$result = $db->query("SELECT CUSTOMERS.ID as ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICE_PROFILE.PORTS, SERVICE_PROFILE.HGU, SERVICE_PROFILE.RF, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID");
 } catch (PDOException $e) {
 	echo "Connection Failed:" . $e->getMessage() . "\n";
 	exit;
 }
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+	
+	
+	$id = $row['ID'];
 	$pon_type = $row{'PON_TYPE'};
 	$hgu = $row{'HGU'};
  	$catv_input_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + 160;	
@@ -44,6 +47,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	$ip_address = $row["IP_ADDRESS"];
 	$customers_obj = new customers();
 	$big_onu_id = $customers_obj->type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
+		
+	
 	if ($row{'PON_TYPE'} == "GPON") {
 		if ($row{'PON_ONU_ID'} < 100) {
 			$index_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
@@ -113,6 +118,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			$status = $session->get($status_oid);		
 			
 			if ($status == "1") {
+				echo $sn . "\n";
 				//Power
 				$recv_power_oid = $snmp_obj->get_pon_oid("onu_recv_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
 				$send_power_oid = $snmp_obj->get_pon_oid("onu_send_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
@@ -137,15 +143,15 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 					$recv_power = $session->get($recv_power_oid);
 					if ($recv_power > 32767)
 						$recv_power = $recv_power - 65535 - 1;
-					$recv_power = round(($recv_power-15000)/500,4);
+					$recv_power = round(($recv_power-15000)/500,2);
 					$send_power = $session->get($send_power_oid);
-					$send_power = round(($send_power-15000)/500,4);
+					$send_power = round(($send_power-15000)/500,2);
 				}
 				if ($row{'PON_TYPE'} == "EPON") {
 					$recv_power = $session->get($recv_power_oid);
-					$recv_power = round(10*log10($recv_power/10000),4);
+					$recv_power = round(10*log10($recv_power/10000),2);
 					$send_power = $session->get($send_power_oid);
-					$send_power = round(10*log10($send_power/10000),4);
+					$send_power = round(10*log10($send_power/10000),2);
 					$total_input_traffic = $session->get($traffic_in_oid);
 					$total_output_traffic = $session->get($traffic_out_oid);
 					$ret = rrd_update($rrd_traffic, array("N:$total_input_traffic:$total_output_traffic"));
@@ -184,7 +190,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 					
 					
 				}
-		   
+  
+			
 				if ($rf == "Yes" && $row{'PON_TYPE'} == "EPON") {
 					$rf_input_power = $session->get($rf_input_power_oid);
 					$rf_input_power = round($rf_input_power/10,4);
@@ -235,6 +242,29 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 							echo "ERROR occurred: $err\n";
 						}
 					}
+				}
+				
+				try {
+					$result2 = $db->query("SELECT count(*) from ONU_RX_POWER where CUSTOMERS_ID = '$id'");
+				} catch (PDOException $e) {
+					$error = "Connection Failed:" . $e->getMessage() . "\n";
+					return $error;
+				}
+				$count = $result2->fetchColumn(); 
+				if ($count > "0" ) {
+					try {
+						$result2 = $db->query("UPDATE ONU_RX_POWER SET RX_POWER = '$recv_power' where CUSTOMERS_ID = '$id'");
+					} catch (PDOException $e) {
+						$error = "Connection Failed:" . $e->getMessage() . "\n";
+						return $error;	
+					}	 
+				} else {
+					try {
+						$result2 = $db->query("INSERT INTO ONU_RX_POWER (CUSTOMERS_ID, RX_POWER) VALUES ('$id', '$recv_power')");
+					} catch (PDOException $e) {
+						$error = "Connection Failed:" . $e->getMessage() . "\n";
+						return $error;	
+					}	 
 				}
 			} 
 		}
