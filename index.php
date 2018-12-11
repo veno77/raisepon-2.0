@@ -292,10 +292,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						}else{
 							echo "<tr align=\"right\">";
 						}
+						if ($index_obj->getSubmit() == "SEARCH") {
 						?>
-							<!-- <td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row{'ID'}; ?>"></td> -->
-							<td onClick="ShowSamePon('<?php echo $row{'OLT_ID'} . "','" . $row{'PON_ID'} . "','" . $row{'ID'}; ?>');"><?php if ($index_obj->getSubmit() == "SEARCH"){echo $row{'OLT_NAME'} . "/" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "/"	;} echo $row{'PON_ONU_ID'}; ?></td>
-							<td><?php echo $row{'NAME'}; ?></td>
+							<!-- <td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row{'ID'}; ?>"></td> -->							
+							<td><button type="button" class="btn btn-default" onClick="ShowSamePon('<?php echo $row{'OLT_ID'} . "','" . $row{'PON_ID'} . "','" . $row{'ID'}; ?>');"><?php echo $row{'OLT_NAME'} . "/" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "/"	; echo $row{'PON_ONU_ID'}; ?></button></td>
+						<?php }else{ ?>
+							<td><?php echo $row{'PON_ONU_ID'}; ?></td>
+						<?php } ?>
+						<td><?php echo $row{'NAME'}; ?></td>
 							<td><?php echo $row{'ADDRESS'}; ?></td>
 							<td><?php echo $row{'SERVICE_NAME'}; ?></td>
 							<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
