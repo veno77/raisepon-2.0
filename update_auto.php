@@ -1,9 +1,5 @@
 <?php
-
 include("classes/customers_class.php");
-
-
-
 $auto_update_obj = new customers();
 
 //Process AUTO add customers
@@ -12,7 +8,7 @@ foreach ($rows as $olt => $values) {
 	foreach ($values as $id => $roww) {
 		$obj = new customers();
 		$row_auto = $obj->check_Auto($roww['0']);
-		print_r($row_auto);
+	//	print_r($row_auto);
 		if ($row_auto) {
 			foreach($row_auto as $row) {
 				if ($row["AUTO"] == "YES") {
@@ -25,7 +21,6 @@ foreach ($rows as $olt => $values) {
 					$obj->setOlt($olt);
 					$obj->get_data_customer();
 					$error = $obj->edit_customer();
-					echo $error; 
 					if (null !== $obj->getState_rf()) {
 						$obj->update_rf_snmp();
 					}

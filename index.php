@@ -1,9 +1,9 @@
 <?php
-include ("header.php");
-include ("common.php");
-include ("navigation.php");
-include ("classes/index_class.php");
-include ("classes/snmp_class.php");
+require_once("header.php");
+require_once("common.php");
+require_once("navigation.php");
+require_once("classes/index_class.php");
+require_once("classes/snmp_class.php");
 //header('Cache-control: private', true);
 $index_obj = new index();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<select class="form-control" id="select-pon" name="pon_id">
 						<option value="">PON PORT</option></select>
 						<input type="hidden" name="SUBMIT" value="LOAD">
-						<button class="btn btn-basic" type="button" onClick="LoadIndex();">LOAD</button>
+						<button class="btn btn-basic" type="button" onClick="LoadIndex();">LOAD</button>	
 					</div>
 				</form>
 			</div>
@@ -125,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					</thead>
 				<?php
 				$rows = $index_obj->build_table(); 
-				if(!empty($rows)) {
+				if(!empty($rows)) {	
 					foreach ($rows as $row) { 
 						$onu_register_distance = "";
 						if (isset($row{'PON_TYPE'})) {
@@ -286,12 +286,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$offline_reason = NULL;
 							$db_sn = $row{'SN'};
 							$sync = NULL;
-						}	
+						}
+						if ($row{'ID'} == $index_obj->getOnu_id()) {
+							echo "<tr class=\"bg-danger\" align=\"right\">";
+						}else{
+							echo "<tr align=\"right\">";
+						}
 						?>
-	
-						<tr align=right>
 							<!-- <td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row{'ID'}; ?>"></td> -->
-							<td><?php if ($index_obj->getSubmit() == "SEARCH"){echo $row{'OLT_NAME'} . "/" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "/"	;} echo $row{'PON_ONU_ID'}; ?></td>
+							<td onClick="ShowSamePon('<?php echo $row{'OLT_ID'} . "','" . $row{'PON_ID'} . "','" . $row{'ID'}; ?>');"><?php if ($index_obj->getSubmit() == "SEARCH"){echo $row{'OLT_NAME'} . "/" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "/"	;} echo $row{'PON_ONU_ID'}; ?></td>
 							<td><?php echo $row{'NAME'}; ?></td>
 							<td><?php echo $row{'ADDRESS'}; ?></td>
 							<td><?php echo $row{'SERVICE_NAME'}; ?></td>

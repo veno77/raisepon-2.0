@@ -293,6 +293,18 @@ function UnassignedIndex() {
 		$('.dropdown-toggle').dropdown();
 	});
 }
+function ShowSamePon(olt_id, pon_id, onu_id) {
+	$('#output').html('<img src="pic/loading.gif" />');
+	jQuery.ajax({
+		url: "index.php",
+		data: {olt_id: olt_id, pon_id: pon_id, onu_id: onu_id, SUBMIT: "LOAD"},
+		type: "POST",
+		success:function(data){$('#output').html(data);}
+	}).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
+}
 $(document).ready(function(){
 	$(document).on('click', '#navbar2 .nav li a', function () {
 		 $('.active').removeClass('active');
