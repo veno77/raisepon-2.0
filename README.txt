@@ -19,8 +19,8 @@ net-snmp + php-snmp
 rrdtool + pecl-rrd(php-rrd in Debian)
 
 Copy the files to your web folder.
-Create database "gpon" and load in it the supplied gpon.sql file. 
-Grant permissions to user for databse "gpon". Modify classes/db_connect_class.php and dbconnect.php to match the mysql user,pass.
+Create database "raisepon" and load in it the supplied raisepon.sql file. 
+Grant permissions to user for databse "raisepon". Modify classes/db_connect_class.php and dbconnect.php to match the mysql user,pass.
 
 
 Add the following to your crontab:
@@ -36,7 +36,7 @@ Configure your OLTs to send logs to your syslogd server.
 
 Edit your sylogd.conf:
 
-local7.*                                        /var/log/gpon.log
+local7.*                                        /var/log/raisepon.log
 
 Create rrd/ directory under the raisepon root tree.
 
