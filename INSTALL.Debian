@@ -1,0 +1,83 @@
+#Update the repositories with the latest packages
+sudo apt-get update
+
+#Install Apache2
+sudo apt-get install apache2
+
+
+#install php 
+sudo apt-get install php
+
+#install php-mysql
+sudo apt-get install php-mysql
+
+#install net-snmp
+sudo apt-get install snmp
+
+#install php-snmp
+sudo apt-get install php-snmp
+
+#install rrd
+sudo apt-get install rrdtool
+
+#install php-rrd
+$sudo apt-get install php-rrd
+
+#start apache2
+$sudo service apache2 start
+
+#install git
+$sudo apt-get install git
+
+#go to apache root directory /var/www/html and fetch raisepon-2.0 repository
+$cd /var/www/html
+$sudo git clone https://github.com/veno77/raisepon-2.0.git
+
+#enter the raisepon-2.0/ dir and create rrd/ directory
+$cd raisepon-2.0
+$ mkdir rrd
+
+#grant privileges to the rrd dir for the web user
+$sudo chown -R www-data:www-data rrd
+
+#install Mysql/MariaDB server
+$sudo apt-get install mysql-server
+
+#start mysql-server
+$sudo service mysqld start
+
+#login to mysql as root
+$sudo mysql
+
+#create db raisepon
+MariaDB [mysql]> create database raisepon;
+Query OK, 1 row affected (0.00 sec)
+
+#create user raisepon with password and grant privileges to database 'raisepon'
+MariaDB [mysql]> create user 'raisepon'@'localhost' identified by 'r41sepon';
+Query OK, 0 rows affected (0.00 sec)
+
+#grant privileges to user raisepon for db 'raisepon'
+MariaDB [mysql]> grant all on raisepon.* to 'raisepon'@'localhost';
+Query OK, 0 rows affected (0.00 sec)
+
+#load the sql database , for password use the set password "r41sepon" 
+$mysql -u raisepon -p raisepon < raisepon.sql 
+Enter password: 
+
+#set the crontab
+$sudo vi /etc/crontab 
+
+#add the following two lines at the bottom of the file
+*/5 * * * *     www-data     /usr/bin/php -f /var/www/html/raisepon-2.0/update_rrd.php > /dev/null 2>&1
+*/5 * * * *     www-data     /usr/bin/php -f /var/www/html/raisepon-2.0/update_auto.php > /dev/null 2>&1
+
+#save the file esc : x enter
+
+#open your web browser and go to http://localhost/raisepon-2.0/
+
+#login with default user/pass : admin/admin123
+
+#add at least one OLT and PON port 
+
+
