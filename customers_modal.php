@@ -131,7 +131,13 @@ $customers_obj = new customers();
 	</div>
 	<div class="col-md-4">
 		<div class="form-group">
+		<?php
+		if (null !== $customers_obj->getCustomers_id()) {
+		?>
 			<label><input type="checkbox" id="state" name="state" value="YES"<?php if($customers_obj->getState() == "YES") print "checked" ?>> ACTIVE</label> 
+		<?php }else{ ?>
+			<label><input type="checkbox" id="state" name="state" value="YES" checked> ACTIVE</label> 
+		<?php } ?>
 		</div>
 	</div>
 </div>

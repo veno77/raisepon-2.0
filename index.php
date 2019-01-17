@@ -54,8 +54,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		</div>
 	</div>
 	<div class="row justify-content-md-center">
-		<div class="text-center">
-			<div class="form-group">
+		<div class="text-center"> 
+			<div class="form-group"> 
 				<form class="form-inline" id="search" method="post">
 					<label for="name">Name</label>
 					<input type="text" name="name"  size="15"  class="form-control" placeholder="Name"  aria-describedby="sizing-addon1">
@@ -63,8 +63,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					<input type="text" name="address"  size="15"  class="form-control" placeholder="Address"  aria-describedby="sizing-addon1">
 					<label for="egn">EGN</label>
 					<input type="text" name="egn"  maxlength="10" size="10" class="form-control" placeholder="EGN" aria-describedby="sizing-addon1">
-					<label for="sn">SN</label>
-					<input type="text" name="sn"  maxlength="15" size="15" class="form-control" placeholder="SN" aria-describedby="sizing-addon1">
+					<label for="sn">SN/MAC</label>
+					<input type="text" name="sn"  maxlength="15" size="15" class="form-control" placeholder="SN/MAC" aria-describedby="sizing-addon1">
 					<input type="hidden" name="SUBMIT" value="SEARCH">
 					<button class="btn btn-basic"  type="button" onClick="SearchIndex();">SEARCH</button>
 				</form>
