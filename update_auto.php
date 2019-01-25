@@ -14,10 +14,12 @@ foreach ($rows as $olt => $values) {
 				if ($row["AUTO"] == "YES") {
 					$obj->setCustomer_id($row["ID"]);
 					$pon_port = $obj->get_Pon_port($olt, $roww{'1'},$roww{'2'});
-					foreach ($pon_port as $pon) {
-						$pon_id = $pon{'ID'};
+					if($pon_port) {	
+						foreach ($pon_port as $pon) {						
+							$pon_id = $pon{'ID'};
+							$obj->setPon_port($pon_id);
+						}
 					}
-					$obj->setPon_port($pon_id);
 					$obj->setOlt($olt);
 					$obj->get_data_customer();
 					$error = $obj->edit_customer();
