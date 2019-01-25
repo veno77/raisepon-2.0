@@ -110,6 +110,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						$save = '';
 						$cpu = '';
 						$sysuptime = '';
+						$slot = '';
+						$total_cpu = "";
 						if ($status) {
 							$status = "<font color=green>Online</font>";
 							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
@@ -119,12 +121,25 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							}else {
 								$temp = $temp . "\xc2\xb0C";
 							}
-							$cpu = $session->get($snmp_obj->get_pon_oid("olt_cpu_oid", "OLT"));
-							if ($cpu > '50') {
-								$cpu = "<font color=red>" . $cpu . "%</font>";
-							}else{
-								$cpu = $cpu . "%";
+							snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
+							snmp_set_quick_print(TRUE);
+							snmp_set_enum_print(TRUE);
+							snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+							$session = new SNMP(SNMP::VERSION_1, $row{'IP_ADDRESS'}, $row{'RO'});
+							$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
+							$cpus = $session->walk($olt_cpu_oid);
+							foreach ($cpus as $cpu_oid => $cpu) {
+								$slot = str_replace($olt_cpu_oid, '', substr($cpu_oid, 0, -1));
+								$slot = str_replace('.','',$slot);
+								if ($cpu > '50') {
+									$cpu = "Slot" . $slot . ": <font color=red>" . $cpu . "%</font>";
+								}else{
+									$cpu = "Slot" . $slot . ": " . $cpu . "%";
+								}
+								$total_cpu = $total_cpu . $cpu . "<br>";
 							}
+							snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
 							$sysuptime = $session->get($snmp_obj->get_pon_oid("sys_uptime_oid", "OLT"));
 							$sysuptime_days = floor($sysuptime/(100*3600*24));
 							$sysuptime_hours = $sysuptime/(100*3600)%24;
@@ -145,7 +160,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<td><?php echo $row{'RW'}; ?></td>
 							<td><?php echo $status; ?></td>
 							<td><?php echo $temp; ?></td>
-							<td><?php echo $cpu; ?></td>
+							<td><?php echo $total_cpu; ?></td>
 							<td><?php echo $sysuptime; ?></td>
 							<td><?php echo "<a href=\"olt_details.php?id=" . $row{'ID'} . "\">"; ?><button type="button" class="btn btn-default">INFO</button></a></td>
 							<td><?php echo $save; ?></td>
