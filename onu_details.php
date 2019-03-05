@@ -42,6 +42,7 @@ print "<nav id=\"navbar2\" class=\"navbar\"><ul class=\"nav nav-tabs\">";
 print "<li class=\"nav-item active\"><a onClick=\"getPage('". $customer_id . "', 'info');\">INFO</a></li>";	
 print "<li class=\"nav-item\"><a onClick=\"getPage('". $customer_id . "', 'ports');\">PORTS</a></li>";	
 print "<li class=\"nav-item\"><a onClick=\"getPage('". $customer_id . "', 'graphs');\">GRAPHS</a></li>";	
+print "<li class=\"nav-item\"><a onClick=\"getPage('". $customer_id . "', 'history');\">HISTORY</a></li>";	
 print "</ul></nav>";
 print "</div></div>";
 print "<br>";

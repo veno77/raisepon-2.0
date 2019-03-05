@@ -544,8 +544,10 @@ class customers {
 			$reason = "Added New Customer";
 		} elseif ($rsn == "edit") {
 			$reason = "Edit Customer";
+		} elseif ($rsn == "reboot") {
+			$reason = "Reboot ONU";
 		} else {
-			$reason = "";
+			$reason = $rsn;
 		}
 		try {
 			$conn = db_connect::getInstance();
@@ -1019,6 +1021,42 @@ class customers {
 		}
 		$rows = $result->fetchAll();
 		return $rows;	
+	}
+	
+	function not_paid() {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT ID, SN from NOT_PAID");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		$rows = $result->fetchAll();
+		foreach ($rows as $row) { 
+			$this->sn = $row["SN"];
+			try {
+				$conn = db_connect::getInstance();
+				$result = $conn->db->query("UPDATE CUSTOMERS SET STATE = 'NO', AUTO = 'YES' where CUSTOMERS.SN = '$this->sn'");
+			} catch (PDOException $e) {
+				echo "Connection Failed:" . $e->getMessage() . "\n";
+				exit;
+			}	
+			$this->get_data_customer();
+
+			$error = $this->edit_customer();
+		
+			if($error) {
+				echo $error;
+				exit;
+			}
+			try {
+				$conn = db_connect::getInstance();
+				$result = $conn->db->query("DELETE FROM NOT_PAID where SN='$this->sn'");
+			} catch (PDOException $e) {
+				echo "Connection Failed:" . $e->getMessage() . "\n";
+				exit;
+			}	
+		}	
 	}
 }
 

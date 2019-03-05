@@ -2,6 +2,7 @@
 include ("common.php");
 include ("dbconnect.php");
 include ("classes/snmp_class.php");
+include ("classes/customers_class.php");
 	
 $mac_address_table = $customer_id = $type = $rf_status = "";
 $snmp_obj = new snmp_oid();
@@ -23,6 +24,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	if (isset($_POST["port_num"])) {
                 $port_num = test_input($_POST["port_num"]);
         }	
+	$customer_obj = new customers();
+	$customer_obj->setCustomer_id($customer_id);
+	$customer_obj->get_data_customer();
 	if ($_POST["type"] == "Reboot") {
 		try {
 			$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS)as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.ID = '$customer_id'");
@@ -51,6 +55,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$reboot = $session->set($reboot_oid, 'i', '1');
 		if ($session->getError())
 				return(var_dump($session->getError()));
+		$customer_obj->update_history("reboot", $cur_user_id);
 		echo "<center><div class=\"bg-success  text-white\">Onu Rebooted Succesfully</center></div>";
 
 	}
@@ -94,7 +99,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		
 		if ($session->getError())
 				return(var_dump($session->getError()));
-		
+		if ($rf_val == "1")
+			$customer_obj->update_history("set RF port ENABLED", $cur_user_id);
+		if ($rf_val == "2")
+			$customer_obj->update_history("set RF port DISABLED", $cur_user_id);
 		$type = "ports";
 	}
 	
@@ -128,8 +136,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $rw);
 		$set_uni = $session->set($uni_port_admin_set, 'i', $uni_val);
 		if ($session->getError())
-				return(var_dump($session->getError()));
-			
+			return(var_dump($session->getError()));
+		if ($uni_val == "1")
+			$customer_obj->update_history("set UNI port " . $port_num . " ENABLED", $cur_user_id);
+			if ($uni_val == "2")
+			$customer_obj->update_history("set UNI port " . $port_num . " DISABLED", $cur_user_id);
 		$type = "ports";
 	}
 
@@ -345,8 +356,10 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<input type=\"hidden\" name=\"customer_id\" value=\"". $customer_id ."\">";
 		print "<div class=\"row justify-content-md-center\"><div class=\"col-md-4\">";
 		//print "<button class=\"btn btn-info\" type=\"submit\" name='type' value='Reboot'>Reboot</button>";
-		print "<button class=\"btn btn-info\" type=\"button\" onClick=\"getPage('" . $customer_id . "', 'Reboot');\">Reboot</button>";
-        print "</div></div>";
+		if ($user_class >= "6") { 
+			print "<button class=\"btn btn-info\" type=\"button\" onClick=\"getPage('" . $customer_id . "', 'Reboot');\">Reboot</button>";
+        }
+		print "</div></div>";
 		print "</form></div>";
 	}
 
@@ -397,8 +410,10 @@ where CUSTOMERS.ID = '$customer_id'");
 						<?php if ($pon_type == "EPON") { ?>
 							<th>Isolation</th>	
 						<?php } ?>
+						<?php if ($user_class >= "6") { ?> 
 							<th>Enable/Disable</th>
 							<th>Do it!</th>
+						<?php } ?>
 						</tr>  
 					</thead>
 			<?php
@@ -545,20 +560,19 @@ where CUSTOMERS.ID = '$customer_id'");
 					print "<td>" . $EthPortNativeVlan . "</td><td>" . $rcGponOnuEthPortDSPolicingProfileId . "</td><td>" . $rcGponOnuEthPortUSPolicingProfileId . "</td>"	;
 				if ($pon_type == "EPON")			
 					print "<td>" . $port_isolation . "</td>";
-			
-					?>
-					
-						<td>
-								
-									<select class="form-control" id="uni_num_<?php echo $i; ?>" name="uni_num_<?php echo $i; ?>" >								
-										<option value="1" >Enable</option>		
-										<option value="2" >Disable</option>											
-									</select>
-								</td>
-								<td>
+				if ($user_class >= "6") { 
+				?>
+					<td>
+						<select class="form-control" id="uni_num_<?php echo $i; ?>" name="uni_num_<?php echo $i; ?>" >								
+							<option value="1" >Enable</option>		
+							<option value="2" >Disable</option>											
+						</select>
+					</td>
+					<td>
 						<?php print	"<button class=\"btn btn-info\" type=\"button\" onClick=\"setUniPortStatus('" . $customer_id . "', '" . $i . "','SET_UNI');\">SET</button>"; ?>
-								</td>
-			<?php
+					</td>
+				<?php
+				}
 				print "</tr>";
 			}
 			
@@ -567,21 +581,24 @@ where CUSTOMERS.ID = '$customer_id'");
 		if ($rf == "Yes") {
 			?>
 			<div class="row">
-			<div class="form-group">
-				<form class="form-horizontal" action="onu_details.php" method="post">
-				<?php 		print "<input type=\"hidden\" name=\"customer_id\" value=\"". $customer_id ."\">";
-				?>
-				<div class="col-md-5">
-					<div class="table-responsive">
-						<table class="table table-bordered table-condensed table-hover">
-							<thead>
-								<tr>
-									<th>Port</th>
-									<th>Admin</th>
-									<th>Enable/Disable</th>
-									<th>Do it!</th>
-								</tr>
-							</thead>
+				<div class="form-group">
+					<form class="form-horizontal" action="onu_details.php" method="post">
+					<?php 		
+						print "<input type=\"hidden\" name=\"customer_id\" value=\"". $customer_id ."\">";
+					?>
+					<div class="col-md-5">
+						<div class="table-responsive">
+							<table class="table table-bordered table-condensed table-hover">
+								<thead>
+									<tr>
+										<th>Port</th>
+										<th>Admin</th>
+										<?php if ($user_class >= "6"): ?>
+											<th>Enable/Disable</th>
+											<th>Do it!</th>
+										<?php endif; ?>
+									</tr>
+								</thead>
 			<?php
 			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 			$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
@@ -598,24 +615,20 @@ where CUSTOMERS.ID = '$customer_id'");
 				$onu_rf_status = "<font color=red>Disabled</font>" ;
 			}
 			print "<tr  align=center><td>RF</td><td>" . $onu_rf_status . "</td>" ; 
-			
+			if ($user_class >= "6"):
 			?>
-			
-						
-								<td>
-								
-									<select class="form-control" id="rf_menu" name="rf_menu" >								
-										<option value="1" >Enable</option>		
-										<option value="2" >Disable</option>											
-									</select>
-								</td>
-								<td>
-						<?php print	"<button class=\"btn btn-info\" type=\"button\" onClick=\"getPageRF('" . $customer_id . "', 'SET_RF');\">SET</button>"; ?>
-								</td>
-							
-					</tr>
+				<td>
+					<select class="form-control" id="rf_menu" name="rf_menu" >								
+						<option value="1" >Enable</option>		
+						<option value="2" >Disable</option>											
+					</select>
+				</td>
+				<td>
+					<?php print	"<button class=\"btn btn-info\" type=\"button\" onClick=\"getPageRF('" . $customer_id . "', 'SET_RF');\">SET</button>"; ?>
+				</td>					
+			</tr>
 			<?php
-			
+			endif;
 			print "</table></form></div></div></div></div>";
 		}
 		if ($pon_type == "GPON" && $hgu !="Yes") {
@@ -785,9 +798,39 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<td><p onClick=\"graph('". $customer_id . "', 'broadcast');\"><img src=\"rrd/" . $broadcast_url . "\"></img></p></td></tr>";
 		print "<tr><td><p onClick=\"graph('". $customer_id . "', 'multicast');\"><img src=\"rrd/" . $multicast_url . "\"></img></p></td>";
 		print "<td><p onClick=\"graph('". $customer_id . "', 'power');\"><img src=\"rrd/" . $rrd_power_url . "\"></img></p></td></tr>";
-		print "<table></div></div>";
-        }
-
+		print "</table></div></div>";
+	}
+	if ($type == "history"){
+	?>
+		<div class="table-responsive">
+			<table class="table table-bordered table-condensed table-hover">
+				<thead>
+					<tr>
+						<th>DATE</th>
+						<th>ACTION</th>
+						<th>USERNAME</th>
+					</tr>
+				</thead>
+				<?php 
+				try {
+						$result = $db->query("SELECT DATE, ACTION, SN, USER_ID, USERNAME from HISTORY LEFT JOIN ACCOUNTS on USER_ID=ACCOUNTS.ID where CUSTOMERS_ID = '$customer_id' ORDER BY HISTORY.ID DESC");
+					} catch (PDOException $e) {
+						echo "Connection Failed:" . $e->getMessage() . "\n";
+						exit;
+				}
+				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+					$date = $row['DATE'];
+					$action = $row['ACTION'];
+					$sn = $row['SN'];
+					$username = $row['USERNAME'];
+					
+					print "<tr><td>" . $date . "</td><td>" . $action . "</td><td>" . $username . "</td></tr>";
+				}
+				?>
+			</table>
+		</div>
+	<?php
+	}
 }
 ?>
 

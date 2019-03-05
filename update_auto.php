@@ -1,8 +1,12 @@
 <?php
 include("classes/customers_class.php");
-$auto_update_obj = new customers();
+
+//Disable ONUs with Serial Numbers in the NOT_PAID table
+$izkl = new customers();
+$izkl->not_paid();
 
 //Process AUTO add customers
+$auto_update_obj = new customers();
 $rows = $auto_update_obj->get_Illegal_onus();
 foreach ($rows as $olt => $values) {
 	foreach ($values as $id => $roww) {
@@ -31,16 +35,6 @@ foreach ($rows as $olt => $values) {
 		}
 	}
 }
-/*
-//Process Changed Customers
-$rows = $auto_update_obj->get_changed();
-foreach ($rows as $row) {
-	$auto_update_obj->setCustomer_id($row['ID']);
-	$auto_update_obj->get_data_customer();
-	$auto_update_obj->edit_customer();
 
-}
-
-*/
 
 ?>

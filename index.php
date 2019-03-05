@@ -120,7 +120,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<th>OFFLINE<br>REASON</th>
 							<th>INFO</th>
 							<th>SYN</th>
-							<th>EDIT</th>
+							<?php if ($user_class >= "6") { ?><th>EDIT</th><?php } ?>
 						</tr>
 					</thead>
 				<?php
@@ -311,7 +311,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<td><?php echo $offline_reason; ?></td>
 							<td><?php if ($index_obj->getSubmit() != "UNASSIGNED") { echo "<a href=\"onu_details.php?id=" . $row{'ID'} . "\">";} ?><button type="button" class="btn btn-default">INFO</button></а></td>
 							<td><?php echo $sync; ?></td>
-							<td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
+							<?php if ($user_class >= "6") { ?><td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row{'ID'}; ?>');">EDIT</button></td><?php } ?>
 						</tr>
 					<?php }
 				} ?>
