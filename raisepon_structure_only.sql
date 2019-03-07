@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.42, for FreeBSD11.2 (amd64)
+-- MySQL dump 10.13  Distrib 5.6.43, for FreeBSD11.2 (amd64)
 --
 -- Host: localhost    Database: raisepon
 -- ------------------------------------------------------
--- Server version	5.6.42
+-- Server version	5.6.43
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -29,7 +29,7 @@ CREATE TABLE `ACCOUNTS` (
   `TYPE` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `USERNAME` (`USERNAME`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,7 +106,7 @@ CREATE TABLE `HISTORY` (
   `USER_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `CUSTOMERS_ID` (`CUSTOMERS_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=598 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=633 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -123,6 +123,20 @@ CREATE TABLE `LINE_PROFILE` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `TEMPLATE_ID` (`LINE_PROFILE_ID`) USING BTREE
 ) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `NOT_PAID`
+--
+
+DROP TABLE IF EXISTS `NOT_PAID`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `NOT_PAID` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `SN` varchar(255) CHARACTER SET utf8 NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -205,7 +219,7 @@ CREATE TABLE `ONU_RX_POWER` (
   `CUSTOMERS_ID` int(11) NOT NULL,
   `RX_POWER` float NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -272,4 +286,4 @@ CREATE TABLE `SERVICE_PROFILE` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-02-07 15:42:17
+-- Dump completed on 2019-03-07 20:34:38
