@@ -1022,7 +1022,18 @@ class customers {
 		$rows = $result->fetchAll();
 		return $rows;	
 	}
-	
+	function get_Service_name(){
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT NAME from SERVICES  where ID=$this->service");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		$rows = $result->fetchAll();
+		foreach ($rows as $row) 
+		return $row["NAME"];
+	}
 	function not_paid() {
 		try {
 			$conn = db_connect::getInstance();
