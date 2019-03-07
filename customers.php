@@ -18,7 +18,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (!empty($error)) {
 				echo $error;
 			}else{
-				$output = $customers_obj->update_history("add", $cur_user_id);
+				$output = $customers_obj->update_history("Add New Customer: SERVICE: \"" . $customers_obj->get_Service_name() . "\", AUTO: \"" . $customers_obj->getAuto() . "\", STATE: \"" . $customers_obj->getState() . "\"", $cur_user_id);
 				echo "<center><div class=\"bg-success  text-white\">Customer added Succesfully</div></center>";
 			}
 		} else {
@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (!empty($error)) {
 				echo $error;
 			}else{
-				$output = $customers_obj->update_history("Edit Customer: SERVICE " . $customers_obj->get_Service_name() . ", AUTO: " . $customers_obj->getAuto() . ", STATE: " . $customers_obj->getState(), $cur_user_id);
+				$output = $customers_obj->update_history("Edit Customer: SERVICE: \"" . $customers_obj->get_Service_name() . "\", AUTO: \"" . $customers_obj->getAuto() . "\", STATE: \"" . $customers_obj->getState() . "\"", $cur_user_id);
 				echo "<center><div class=\"bg-success  text-white\">Customer edited Succesfully</div></center>";
 			}
 		} else {
