@@ -143,7 +143,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$customer_obj->update_history("set UNI port " . $port_num . " DISABLED", $cur_user_id);
 		$type = "ports";
 	}
+	if ($_POST["type"] == "Delete_History") {
+		try {
+			$result = $db->query("Delete from HISTORY where CUSTOMERS_ID = '$customer_id'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		$customer_obj->update_history("History Deleted", $cur_user_id);
+		echo "<center><div class=\"bg-success  text-white\">History Deleted Succesfully</center></div>";
 
+	}
 	if ($type == "info"){
 		try {
 			$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, SERVICES.ID, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID
@@ -352,9 +362,9 @@ where CUSTOMERS.ID = '$customer_id'");
 //		print "<tr><td>Software version:</td><td>" . $version . "</td></tr>";
 //		print "<tr><td>Firmware version:</td><td>" . $firmware . "</td></tr>";
 		print "</table></div>";
-		print "<div class=\"form-group\"><form class=\"form-horizontal\" action=\"onu_info.php\" method=\"post\">";
-		print "<input type=\"hidden\" name=\"customer_id\" value=\"". $customer_id ."\">";
-		print "<div class=\"row justify-content-md-center\"><div class=\"col-md-4\">";
+		//print "<div class=\"form-group\"><form class=\"form-horizontal\" action=\"onu_info.php\" method=\"post\">";
+		//print "<input type=\"hidden\" name=\"customer_id\" value=\"". $customer_id ."\">";
+		//print "<div class=\"row justify-content-md-center\"><div class=\"col-md-4\">";
 		//print "<button class=\"btn btn-info\" type=\"submit\" name='type' value='Reboot'>Reboot</button>";
 		if ($user_class >= "6") { 
 			print "<button class=\"btn btn-info\" type=\"button\" onClick=\"getPage('" . $customer_id . "', 'Reboot');\">Reboot</button>";
@@ -801,35 +811,41 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "</table></div></div>";
 	}
 	if ($type == "history"){
-	?>
-		<div class="table-responsive">
-			<table class="table table-bordered table-condensed table-hover">
-				<thead>
-					<tr>
-						<th>DATE</th>
-						<th>ACTION</th>
-						<th>USERNAME</th>
-					</tr>
-				</thead>
-				<?php 
-				try {
-						$result = $db->query("SELECT DATE, ACTION, SN, USER_ID, USERNAME from HISTORY LEFT JOIN ACCOUNTS on USER_ID=ACCOUNTS.ID where CUSTOMERS_ID = '$customer_id' ORDER BY HISTORY.ID DESC");
-					} catch (PDOException $e) {
-						echo "Connection Failed:" . $e->getMessage() . "\n";
-						exit;
-				}
-				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-					$date = $row['DATE'];
-					$action = $row['ACTION'];
-					$sn = $row['SN'];
-					$username = $row['USERNAME'];
-					
-					print "<tr><td>" . $date . "</td><td>" . $action . "</td><td>" . $username . "</td></tr>";
-				}
-				?>
-			</table>
+		if ($user_class >= "6") { 
+			print "<div class=\"table-responsive\"><table class=\"table\"><button class=\"btn btn-info\" type=\"button\" onClick=\"getPage('" . $customer_id . "', 'Delete_History');\">Delete History</button></table></div>"; 
+        }	
+		?>
+		<div "container">
+			<div class="table-responsive">
+				<table class="table table-bordered table-condensed table-hover">
+					<thead>
+						<tr>
+							<th>DATE</th>
+							<th>ACTION</th>
+							<th>USERNAME</th>
+						</tr>
+					</thead>
+					<?php 
+					try {
+							$result = $db->query("SELECT DATE, ACTION, SN, USER_ID, USERNAME from HISTORY LEFT JOIN ACCOUNTS on USER_ID=ACCOUNTS.ID where CUSTOMERS_ID = '$customer_id' ORDER BY HISTORY.ID DESC LIMIT 20"); 
+						} catch (PDOException $e) {
+							echo "Connection Failed:" . $e->getMessage() . "\n";
+							exit;
+					}
+					while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+						$date = $row['DATE'];
+						$action = $row['ACTION'];
+						$sn = $row['SN'];
+						$username = $row['USERNAME'];
+						
+						print "<tr><td>" . $date . "</td><td>" . $action . "</td><td>" . $username . "</td></tr>";
+					}
+					?>
+				</table>
+			</div>
 		</div>
 	<?php
+		
 	}
 }
 ?>
