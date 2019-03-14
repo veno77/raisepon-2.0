@@ -994,14 +994,19 @@ class customers {
 			$rw = $row['RW'];
 			$olt_type = $row['TYPE'];
 			$name = $row['NAME'];
-			$pon_type = $row['PON_TYPE'];
+			$pon_type = $row['PON_TYPE']; 
 			$rf_val = $row['STATE_RF'];
 		}
 		
 		if ($pon_type == "EPON")
 			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
-		if ($pon_type == "GPON")
-			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		
+		if ($pon_type == "GPON") {
+			if ($pon_onu_id < 100) {
+				$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		
+			}else{
+				$index_rf = (3<<28)+($slot_id * 10000000 + $port_id * 100000 + ($pon_onu_id%100) * 1000 + 1);
+			}
+		}
 		
 		$snmp_obj = new snmp_oid();
 		$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
