@@ -246,7 +246,14 @@ where CUSTOMERS.ID = '$customer_id'");
 			}elseif ($match_state == "2"){
 				$match_state = "mismatch(2)";
 			}
-			
+			$rcGponOnuNetIpAddr_oid = $snmp_obj->get_pon_oid("rcGponOnuNetIpAddr", $pon_type) . "." . $index . ".1";
+			$rcGponOnuNetIpAddr = $session->get($rcGponOnuNetIpAddr_oid);
+			$rcGponOnuNetIpMask_oid = $snmp_obj->get_pon_oid("rcGponOnuNetIpMask", $pon_type) . "." . $index . ".1";
+			$rcGponOnuNetIpMask = $session->get($rcGponOnuNetIpMask_oid);
+			$rcGponOnuNetDefaultGateway_oid = $snmp_obj->get_pon_oid("rcGponOnuNetDefaultGateway", $pon_type) . "." . $index . ".1";
+			$rcGponOnuNetDefaultGateway = $session->get($rcGponOnuNetDefaultGateway_oid);
+			$rcGponOnuNetVlan_oid = $snmp_obj->get_pon_oid("rcGponOnuNetVlan", $pon_type) . "." . $index . ".1";
+			$rcGponOnuNetVlan = $session->get($rcGponOnuNetVlan_oid);
 			$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $pon_type) . "." . $index2;
 			$onu_rx_power = $session->get($onu_rx_power_oid);
 			if ($onu_rx_power > 32767)
@@ -346,6 +353,10 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<tr><th>SW Version 1:</th><td>" . $raisecomSWFileVersion1 . " " . $raisecomSWFileCommit1 . " " . $raisecomSWFileActivate1 . "</th></tr>";
         print "<tr><th>SW Version 2:</th><td>" . $raisecomSWFileVersion2 . " " . $raisecomSWFileCommit2 . " " . $raisecomSWFileActivate2 . "</th></tr>";
 		print "<tr><th>Match State:</th><td>" . $match_state . "</td></tr>";
+		print "<tr><th>IP Address:</th><td><a href=\"http://" . $rcGponOnuNetIpAddr . "\" target=\"_blank\">" . $rcGponOnuNetIpAddr . "</a></td></tr>";
+		print "<tr><th>Net Mask:</th><td>" . $rcGponOnuNetIpMask . "</td></tr>";
+		print "<tr><th>Net Default Gateway:</th><td>" . $rcGponOnuNetDefaultGateway . "</td></tr>";
+		print "<tr><th>Net Vlan:</th><td>" . $rcGponOnuNetVlan . "</td></tr>";		
 		print "<tr><th>Line Profile ID:</th><td>" . $line_profile_id . "</td></tr>";
 		print "<tr><th>Line Profile Name:</th><td>" . $line_profile_name . "</td></tr>";
 		print "<tr><th>Service Profile ID:</th><td>" . $service_profile_id . "</td></tr>";

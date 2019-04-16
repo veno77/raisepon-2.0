@@ -159,7 +159,7 @@ class customers {
 				$conn = db_connect::getInstance();
 				$result = $conn->db->query("SELECT PON_ONU_ID from CUSTOMERS where OLT='$this->olt' and PON_PORT='$this->pon_port'");
 			} catch (PDOException $e) {
-				$error = "Connection Failed:" . $e->getMessage() . "\n";
+				$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
 				return $error;
 			}
 			
@@ -173,7 +173,7 @@ class customers {
 				$conn = db_connect::getInstance();
 				$result = $conn->db->query("SELECT CARDS_MODEL.PON_TYPE from CARDS_MODEL LEFT JOIN PON on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where PON.ID='$this->pon_port'");
 			} catch (PDOException $e) {
-				$error = "Connection Failed:" . $e->getMessage() . "\n";
+				$error = "Connection 2 Failed:" . $e->getMessage() . "\n";
 				return $error;
 			}
 			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
@@ -200,7 +200,7 @@ class customers {
 			$conn = db_connect::getInstance();
 			$result = $conn->db->query("SELECT SN from CUSTOMERS where SN = '$this->sn'");
 		} catch (PDOException $e) {
-			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			$error = "Connection 3 Failed:" . $e->getMessage() . "\n";
 	        return $error;
 		}
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
@@ -245,7 +245,7 @@ class customers {
 			$conn = db_connect::getInstance();
 			$result = $conn->db->query("INSERT INTO CUSTOMERS (NAME, ADDRESS, EGN, OLT, PON_PORT, PON_ONU_ID, SERVICE, SN, AUTO, STATE, STATE_RF) VALUES ('$this->name', '$this->address', $egn, $olt, $pon_port, $pon_onu_id, $service, '$this->sn', '$this->auto', '$this->state', $state_rf)");
 		} catch (PDOException $e) {
-			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			$error = "Connection 4 Failed:" . $e->getMessage() . "\n";
 			return $error;
 		}
 
@@ -1028,16 +1028,18 @@ class customers {
 		return $rows;	
 	}
 	function get_Service_name(){
-		try {
-			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT NAME from SERVICES  where ID=$this->service");
-		} catch (PDOException $e) {
-			echo "Connection Failed:" . $e->getMessage() . "\n";
-			exit;
+		if (!empty($this->service)) {
+			try {
+				$conn = db_connect::getInstance();
+				$result = $conn->db->query("SELECT NAME from SERVICES  where ID=$this->service");
+			} catch (PDOException $e) {
+				echo "Connection Failed:" . $e->getMessage() . "\n";
+				exit;
+			}
+			$rows = $result->fetchAll();
+			foreach ($rows as $row) 
+			return $row["NAME"];
 		}
-		$rows = $result->fetchAll();
-		foreach ($rows as $row) 
-		return $row["NAME"];
 	}
 	function not_paid() {
 		try {

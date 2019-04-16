@@ -49,6 +49,11 @@ class snmp_oid {
 		"rcGponPONPortSFPOperStatus" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.13",
 		"rcGponPONOnuRegisterDistanceMin" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.5",
 		"rcGponPONOnuRegisterDistanceMax" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.6",
+		"rcGponOnuNetCurrentIpAddr" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.13", 
+		"rcGponOnuNetIpAddr" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.2",
+		"rcGponOnuNetIpMask" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.3",
+		"rcGponOnuNetDefaultGateway" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.4",
+		"rcGponOnuNetVlan" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.7",
 	);
 	
 	private $epon_oid = array(
