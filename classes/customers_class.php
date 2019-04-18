@@ -30,6 +30,7 @@ class customers {
 	private $gateway;
 	private $vlan;
 	private $onu_ip_address;
+	private $old_onu_ip_address;
 
 	function __construct() {
 		if (!empty($_SERVER["REQUEST_METHOD"])) {
@@ -56,6 +57,7 @@ class customers {
 				$this->gateway = !empty($_POST['gateway']) ? $this->test_input($_POST['gateway']) : null;
 				$this->vlan = !empty($_POST['vlan']) ? $this->test_input($_POST['vlan']) : null;
 				$this->onu_ip_address = !empty($_POST['onu_ip_address']) ? $this->test_input($_POST['onu_ip_address']) : null;
+				$this->old_onu_ip_address = !empty($_POST['old_onu_ip_address']) ? $this->test_input($_POST['old_onu_ip_address']) : null;
 
 			}
 		
@@ -161,6 +163,9 @@ class customers {
 	function setState_rf($state_rf) {
 		$this->state_rf = $state_rf;
 	}
+	function getOld_onu_ip_address() {
+		return $this->old_onu_ip_address;
+	}
 	function add_customer() {
 		if (!empty($this->olt) && !empty($this->pon_port)) {
 			// FIND FREE ID
@@ -201,8 +206,10 @@ class customers {
 				return $error;
 			}
 			$pon_onu_id = array_values($arr3)[0];
-		
-		
+		} else {
+			$pon_onu_id = "NULL";
+		}
+		if (isset($this->olt)) {
 			//FIND FREE IP if DEFINED IP_POOL to OLT
 			try {
 				$conn = db_connect::getInstance();
@@ -243,20 +250,23 @@ class customers {
 						$this->gateway = $row3["GATEWAY"];
 						$this->vlan = $row3["VLAN"];					
 					}
-					
-					$ip_pool_range = range($start_ip, $end_ip);
-					$free_ips = array_diff($ip_pool_range,$ip_address_array);
-					$free_ips = array_filter($free_ips);
-					if (empty($free_ips)) {
-						$error = "Not Free IP ADDRESS";
-						return $error;
+					if (!empty($this->old_onu_ip_address)) {
+						$this->onu_ip_address = $this->old_onu_ip_address;
 					}else{
-						$this->onu_ip_address = array_values($free_ips)[0];
+						$ip_pool_range = range($start_ip, $end_ip);
+						$free_ips = array_diff($ip_pool_range,$ip_address_array);
+						$free_ips = array_filter($free_ips);
+						if (empty($free_ips)) {
+							$error = "Not Free IP ADDRESS";
+							return $error;
+						}else{
+							$this->onu_ip_address = array_values($free_ips)[0];
+						}
 					}
+					$onu_ip_address = "'" . $this->onu_ip_address . "'";
 				}
 			}
 		} else {
-			$pon_onu_id = "NULL";
 			$onu_ip_address = "NULL";
 		}
 		// CHECK Serial Number for duplicates
@@ -281,20 +291,6 @@ class customers {
 		}
 		if (!empty($this->service)) {
 			$service = "'" . $this->service . "'";
-			try {
-				$conn = db_connect::getInstance();
-				$result = $conn->db->query("SELECT HGU from SERVICE_PROFILE LEFT JOIN SERVICES on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID WHERE SERVICES.ID = $service");
-			} catch (PDOException $e) {
-				$error = "Connection 3 Failed:" . $e->getMessage() . "\n";
-				return $error;
-			}
-			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				if ($row["HGU"] == "No" && !empty($this->olt)) {
-					$onu_ip_address =  "'" . $this->onu_ip_address . "'";
-				}else{
-					$onu_ip_address = "NULL";
-				}
-			}
 		}else{
 			$service = "NULL";
 			$onu_ip_address = "NULL";
@@ -403,48 +399,54 @@ class customers {
 					return $error;
 				}
 				$pon_onu_id = array_values($arr3)[0];
-				
-				//FIND FREE IP if DEFINED IP_POOL to OLT
-				try {
-					$conn = db_connect::getInstance();
-					$result = $conn->db->query("SELECT IP_POOL_ID from OLT_IP_POOLS where OLT_ID='$this->olt'");
-				} catch (PDOException $e) {
-					$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
-					return $error;
-				}
-				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-					$n = count($row);
-					if ($n > 0) {
-						$ip_pool_id = $row{'IP_POOL_ID'};
-						try {
-							$conn = db_connect::getInstance();
-							$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
-						} catch (PDOException $e) {
-							$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-							return $error2;
-						}		
+			}else {
+				$pon_onu_id = "NULL";
+			}
+		}
+		if (isset($this->olt)) {
+			//FIND FREE IP if DEFINED IP_POOL to OLT
+			try {
+				$conn = db_connect::getInstance();
+				$result = $conn->db->query("SELECT IP_POOL_ID from OLT_IP_POOLS where OLT_ID='$this->olt'");
+			} catch (PDOException $e) {
+				$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
+				return $error;
+			}
+			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+				$n = count($row);
+				if ($n > 0) {
+					$ip_pool_id = $row{'IP_POOL_ID'};
+					try {
+						$conn = db_connect::getInstance();
+						$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
+					} catch (PDOException $e) {
+						$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
+						return $error2;
+					}		
 
-						$ip_address_array = array();
-						while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
-							array_push($ip_address_array, $row2{'IP_ADDRESS'});
-						}
-						
-						try {
-							$conn = db_connect::getInstance();
-							$result3 = $conn->db->query("SELECT ID, INET_NTOA(SUBNET) as SUBNET, INET_NTOA(NETMASK) as NETMASK, START_IP, END_IP, INET_NTOA(GATEWAY) as GATEWAY, VLAN from IP_POOL where ID='$ip_pool_id'");
-						} catch (PDOException $e) {
-							$error3 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-							return $error3;
-						}		
-						while ($row3 = $result3->fetch(PDO::FETCH_ASSOC)) {
-							$subnet = $row3["SUBNET"];
-							$this->netmask = $row3["NETMASK"];
-							$start_ip = $row3["START_IP"];
-							$end_ip = $row3["END_IP"];
-							$this->gateway = $row3["GATEWAY"];
-							$this->vlan = $row3["VLAN"];					
-						}
-						
+					$ip_address_array = array();
+					while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
+						array_push($ip_address_array, $row2{'IP_ADDRESS'});
+					}
+					
+					try {
+						$conn = db_connect::getInstance();
+						$result3 = $conn->db->query("SELECT ID, INET_NTOA(SUBNET) as SUBNET, INET_NTOA(NETMASK) as NETMASK, START_IP, END_IP, INET_NTOA(GATEWAY) as GATEWAY, VLAN from IP_POOL where ID='$ip_pool_id'");
+					} catch (PDOException $e) {
+						$error3 = "Connection 1 Failed:" . $e->getMessage() . "\n";
+						return $error3;
+					}		
+					while ($row3 = $result3->fetch(PDO::FETCH_ASSOC)) {
+						$subnet = $row3["SUBNET"];
+						$this->netmask = $row3["NETMASK"];
+						$start_ip = $row3["START_IP"];
+						$end_ip = $row3["END_IP"];
+						$this->gateway = $row3["GATEWAY"];
+						$this->vlan = $row3["VLAN"];					
+					}
+					if (!empty($this->old_onu_ip_address)) {
+						$this->onu_ip_address = $this->old_onu_ip_address;
+					}else{
 						$ip_pool_range = range($start_ip, $end_ip);
 						$free_ips = array_diff($ip_pool_range,$ip_address_array);
 						$free_ips = array_filter($free_ips);
@@ -455,97 +457,84 @@ class customers {
 							$this->onu_ip_address = array_values($free_ips)[0];
 						}
 					}
+					$onu_ip_address = "'" . $this->onu_ip_address . "'";
 				}
-			} else {
-				$pon_onu_id = "NULL";
-				$onu_ip_address = "NULL";
 			}
-		
-			// CHECK Serial Number for duplicates
-			try {
-				$conn = db_connect::getInstance();
-				$result = $conn->db->query("SELECT SN from CUSTOMERS where SN = '$this->sn' and ID != '$this->customers_id'");
-			} catch (PDOException $e) {
-				$error = "Connection Failed:" . $e->getMessage() . "\n";
-				return $error;
-			}
-			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				if ($row["SN"])
-				$error = "DUPLICATE SERIAL NUMBER";
-				return $error;
-			}
-			// UPDATE CUSTOMER	
-		
-			if (!empty($this->egn)) {
-				$egn = "'" . $this->egn . "'";
-			}else{
-				$egn = "NULL";
-			}
-			if (!empty($this->service)) {
-				$service = "'" . $this->service . "'";
-				try {
-					$conn = db_connect::getInstance();
-					$result = $conn->db->query("SELECT HGU from SERVICE_PROFILE LEFT JOIN SERVICES on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID WHERE SERVICES.ID = '$this->service'");
-				} catch (PDOException $e) {
-					$error = "Connection 3 Failed:" . $e->getMessage() . "\n";
-					return $error;
-				}
-				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				if ($row["HGU"] == "No" && !empty($this->olt)) {
-						$onu_ip_address = "'" . $this->onu_ip_address . "'";
-					}else{
-						$onu_ip_address = "NULL";
-					}
-				}
-			}else{
-				$service = "NULL";
-				$onu_ip_address = "NULL";
-			}
-			if (!empty($this->olt)) {
-				$olt = "'" . $this->olt . "'";
-			}else{
-				$olt = "NULL";
-			}
-			if (!empty($this->pon_port)) {
-				$pon_port = "'" . $this->pon_port . "'";
-			}else{
-				$pon_port = "NULL";
-			}
-			if (!empty($this->state_rf)) {
-				$state_rf = "'" . $this->state_rf . "'";
-			}else{
-				$state_rf = "NULL";
-			}
-			
-			
-			try {
-				$conn = db_connect::getInstance();
-				$result = $conn->db->query("UPDATE CUSTOMERS SET NAME = '$this->name', ADDRESS = '$this->address', EGN = $egn, OLT = $olt, PON_PORT = $pon_port, PON_ONU_ID = $pon_onu_id, SN = '$this->sn', IP_ADDRESS = $onu_ip_address, SERVICE = $service, AUTO = '$this->auto', STATE = '$this->state', STATE_RF = $state_rf  where ID = '$this->customers_id'");
-			} catch (PDOException $e) {
-				$error = "Connection Failed:" . $e->getMessage() . "\n";
-				return $error;	
-			}
-
-			//DELETE OLD ONU in OLT VIA SNMP
-			if (!empty($this->old_olt) && !empty($this->old_pon_port)	) {
-				$error = $this->delete_onu_via_snmp();
-				if (!empty($error)) {
-					return $error;
-				}
-				
-				//UNLINK OLD RRD
-			//	array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "*"));
-			}
-			sleep(1);
-			//ADD_ONU_VIA_SNMP	
-			if (!empty($this->olt) && !empty($this->pon_port)) {
-				$error = $this->add_onu_via_snmp($this->sn);
-				if (!empty($error)) {
-					return $error;
-				}
-			} 
+		} else {
+			$onu_ip_address = "NULL";
 		}
+		// CHECK Serial Number for duplicates
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT SN from CUSTOMERS where SN = '$this->sn' and ID != '$this->customers_id'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			if ($row["SN"])
+			$error = "DUPLICATE SERIAL NUMBER";
+			return $error;
+		}
+		// UPDATE CUSTOMER	
+	
+		if (!empty($this->egn)) {
+			$egn = "'" . $this->egn . "'";
+		}else{
+			$egn = "NULL";
+		}
+		if (!empty($this->service)) {
+			$service = "'" . $this->service . "'";
+		}else{
+			$service = "NULL";
+			$onu_ip_address = "NULL";
+		}
+		if (!empty($this->olt)) {
+			$olt = "'" . $this->olt . "'";
+		}else{
+			$olt = "NULL";
+		}
+		if (!empty($this->pon_port)) {
+			$pon_port = "'" . $this->pon_port . "'";
+		}else{
+			$pon_port = "NULL";
+		}
+		if (!empty($this->state_rf)) {
+			$state_rf = "'" . $this->state_rf . "'";
+		}else{
+			$state_rf = "NULL";
+		}
+		
+		
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("UPDATE CUSTOMERS SET NAME = '$this->name', ADDRESS = '$this->address', EGN = $egn, OLT = $olt, PON_PORT = $pon_port, PON_ONU_ID = $pon_onu_id, SN = '$this->sn', IP_ADDRESS = $onu_ip_address, SERVICE = $service, AUTO = '$this->auto', STATE = '$this->state', STATE_RF = $state_rf  where ID = '$this->customers_id'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;	
+		}
+
+		//DELETE OLD ONU in OLT VIA SNMP
+		if (!empty($this->old_olt) && !empty($this->old_pon_port)	) {
+			$error = $this->delete_onu_via_snmp();
+			if (!empty($error)) {
+				return $error;
+			}
+			
+			//UNLINK OLD RRD
+		//	array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "*"));
+		}
+		sleep(1);
+		//ADD_ONU_VIA_SNMP	
+		if (!empty($this->olt) && !empty($this->pon_port)) {
+			$error = $this->add_onu_via_snmp($this->sn);
+			if (!empty($error)) {
+				return $error;
+			}
+		} 	
 	}
+	
+	
 	function delete_customer() {
 		try {
 			$conn = db_connect::getInstance();
@@ -626,7 +615,7 @@ class customers {
 		
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, ADDRESS, EGN, PON_ONU_ID, OLT, PON_PORT, SN, SERVICE, AUTO, STATE, STATE_RF, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where " . $where);
+			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, ADDRESS, EGN, PON_ONU_ID, OLT, PON_PORT, SN, IP_ADDRESS, SERVICE, AUTO, STATE, STATE_RF, SERVICE_PROFILE.PORTS from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID where " . $where);
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -646,6 +635,7 @@ class customers {
 			$this->state = $row["STATE"];
 			$this->service = $row["SERVICE"];
 			$this->state_rf = $row["STATE_RF"];
+			$this->old_onu_ip_address = $row["IP_ADDRESS"];
 		}	
 	}
 	
