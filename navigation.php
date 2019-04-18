@@ -22,6 +22,7 @@
 						<li role="separator" class="divider"></li>
 						<li <?=echoActiveClassIfRequestMatches("olt")?>><a href="olt.php">OLT</a></li>
 						<li <?=echoActiveClassIfRequestMatches("pon")?>><a href="pon.php">PON</a></li>
+						<li <?=echoActiveClassIfRequestMatches("ip_pool")?>><a href="ip_pool.php">IP Pools</a></li>
 					</ul>
 				</li>
 				<li class="dropdown">

@@ -113,7 +113,32 @@ function getService_Profile(id) {
 		$('#tools').dropdown();
 	});
 }
-
+function get_ip_pool(id) {
+	jQuery.ajax({
+		url: "ip_pool_modal.php",
+		data: {id: id},
+		type: "POST"
+	}).done(function(data){
+		$('#modalbody').html(data);
+		$('#myModal').modal('show'); 
+		$('#xpon').dropdown();
+		$('#profiles').dropdown();
+		$('#tools').dropdown();
+	});
+}
+function olt_ip_pool(binding_id) {
+	jQuery.ajax({
+		url: "olt_ip_pool_modal.php",
+		data: {binding_id: binding_id},
+		type: "POST"
+	}).done(function(data){
+		$('#modalbody_binding').html(data);
+		$('#Modal_Binding').modal('show'); 
+		$('#xpon').dropdown();
+		$('#profiles').dropdown();
+		$('#tools').dropdown();
+	});
+}
 function getLine_profile(id) {
 	jQuery.ajax({
 		url: "line_profile_modal.php",

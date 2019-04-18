@@ -81,13 +81,14 @@ CREATE TABLE `CUSTOMERS` (
   `PON_ONU_ID` tinyint(4) DEFAULT NULL,
   `SERVICE` tinyint(4) DEFAULT NULL,
   `SN` varchar(255) NOT NULL,
+  `IP_ADDRESS` int(10) unsigned DEFAULT NULL,
   `AUTO` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `STATE` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `STATE_RF` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`ID`),
   KEY `OLT` (`OLT`),
   KEY `PON_PORT` (`PON_PORT`)
-) ENGINE=InnoDB AUTO_INCREMENT=266 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=283 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -106,7 +107,26 @@ CREATE TABLE `HISTORY` (
   `USER_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `CUSTOMERS_ID` (`CUSTOMERS_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=633 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=684 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `IP_POOL`
+--
+
+DROP TABLE IF EXISTS `IP_POOL`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `IP_POOL` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `SUBNET` int(10) unsigned NOT NULL,
+  `NETMASK` int(10) unsigned NOT NULL,
+  `START_IP` int(10) unsigned NOT NULL,
+  `END_IP` int(10) unsigned NOT NULL,
+  `GATEWAY` int(10) unsigned NOT NULL,
+  `VLAN` smallint(6) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -173,6 +193,21 @@ CREATE TABLE `OLT_CARDS` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
+-- Table structure for table `OLT_IP_POOLS`
+--
+
+DROP TABLE IF EXISTS `OLT_IP_POOLS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `OLT_IP_POOLS` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `OLT_ID` int(11) NOT NULL,
+  `IP_POOL_ID` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
 -- Table structure for table `OLT_MODEL`
 --
 
@@ -185,7 +220,7 @@ CREATE TABLE `OLT_MODEL` (
   `SLOTS` smallint(6) NOT NULL,
   `TYPE` enum('EPON','GPON','XPON') NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -219,7 +254,7 @@ CREATE TABLE `ONU_RX_POWER` (
   `CUSTOMERS_ID` int(11) NOT NULL,
   `RX_POWER` float NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=24 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -286,4 +321,4 @@ CREATE TABLE `SERVICE_PROFILE` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2019-03-07 20:34:38
+-- Dump completed on 2019-04-18 13:36:18

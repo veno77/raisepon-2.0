@@ -353,10 +353,12 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<tr><th>SW Version 1:</th><td>" . $raisecomSWFileVersion1 . " " . $raisecomSWFileCommit1 . " " . $raisecomSWFileActivate1 . "</th></tr>";
         print "<tr><th>SW Version 2:</th><td>" . $raisecomSWFileVersion2 . " " . $raisecomSWFileCommit2 . " " . $raisecomSWFileActivate2 . "</th></tr>";
 		print "<tr><th>Match State:</th><td>" . $match_state . "</td></tr>";
-		print "<tr><th>IP Address:</th><td><a href=\"http://" . $rcGponOnuNetIpAddr . "\" target=\"_blank\">" . $rcGponOnuNetIpAddr . "</a></td></tr>";
-		print "<tr><th>Net Mask:</th><td>" . $rcGponOnuNetIpMask . "</td></tr>";
-		print "<tr><th>Net Default Gateway:</th><td>" . $rcGponOnuNetDefaultGateway . "</td></tr>";
-		print "<tr><th>Net Vlan:</th><td>" . $rcGponOnuNetVlan . "</td></tr>";		
+		if ($pon_type == "GPON") {	
+			print "<tr><th>IP Address:</th><td><a href=\"http://" . $rcGponOnuNetIpAddr . "\" target=\"_blank\">" . $rcGponOnuNetIpAddr . "</a></td></tr>";
+			print "<tr><th>Net Mask:</th><td>" . $rcGponOnuNetIpMask . "</td></tr>";
+			print "<tr><th>Net Default Gateway:</th><td>" . $rcGponOnuNetDefaultGateway . "</td></tr>";
+			print "<tr><th>Net Vlan:</th><td>" . $rcGponOnuNetVlan . "</td></tr>";	
+		}
 		print "<tr><th>Line Profile ID:</th><td>" . $line_profile_id . "</td></tr>";
 		print "<tr><th>Line Profile Name:</th><td>" . $line_profile_name . "</td></tr>";
 		print "<tr><th>Service Profile ID:</th><td>" . $service_profile_id . "</td></tr>";
