@@ -263,7 +263,6 @@ class customers {
 							$this->onu_ip_address = array_values($free_ips)[0];
 						}
 					}
-					$onu_ip_address = "'" . $this->onu_ip_address . "'";
 				}
 			}
 		} else {
@@ -293,7 +292,7 @@ class customers {
 			$service = "'" . $this->service . "'";
 		}else{
 			$service = "NULL";
-			$onu_ip_address = "NULL";
+			$this->onu_ip_address = "NULL";
 		}
 		if (!empty($this->olt)) {
 			$olt = "'" . $this->olt . "'";
@@ -316,7 +315,11 @@ class customers {
 			$state_rf = "NULL";
 		}
 		
-		
+		if($this->onu_ip_address != "NULL") {
+			$onu_ip_address = "'" . $this->onu_ip_address . "'";
+		} else {
+			$onu_ip_address = $this->onu_ip_address;
+		}
 		
 		try {
 			$conn = db_connect::getInstance();
@@ -457,11 +460,10 @@ class customers {
 							$this->onu_ip_address = array_values($free_ips)[0];
 						}
 					}
-					$onu_ip_address = "'" . $this->onu_ip_address . "'";
 				}
 			}
 		} else {
-			$onu_ip_address = "NULL";
+			$this->onu_ip_address = "NULL";
 		}
 		// CHECK Serial Number for duplicates
 		try {
@@ -487,7 +489,7 @@ class customers {
 			$service = "'" . $this->service . "'";
 		}else{
 			$service = "NULL";
-			$onu_ip_address = "NULL";
+			$this->onu_ip_address = "NULL";
 		}
 		if (!empty($this->olt)) {
 			$olt = "'" . $this->olt . "'";
@@ -505,6 +507,11 @@ class customers {
 			$state_rf = "NULL";
 		}
 		
+		if($this->onu_ip_address != "NULL") {
+			$onu_ip_address = "'" . $this->onu_ip_address . "'";
+		} else {
+			$onu_ip_address = $this->onu_ip_address;
+		}
 		
 		try {
 			$conn = db_connect::getInstance();
