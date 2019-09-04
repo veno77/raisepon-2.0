@@ -23,9 +23,11 @@ Create database "raisepon" and load in it the supplied raisepon.sql file.
 Grant permissions to user for databse "raisepon". Modify classes/db_connect_class.php and dbconnect.php to match the mysql user,pass.
 
 
-Add the following to your crontab:
+Add the following to your crontab if you want to have graphs:
 
-*/5 * * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_rrd.php > /dev/null 2>&1
+*/5 * * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_rrd_data.php > /dev/null 2>&1
+*/15 * * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_rrd_power.php > /dev/null 2>&1
+
 
 Add also this if you want to use AUTO ONU registering based on Illegal ONUs found in OLT devices:
 

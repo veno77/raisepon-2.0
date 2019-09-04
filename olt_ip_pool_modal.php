@@ -45,7 +45,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					if($ip_pool_obj->getId() == $row{'ID'}) {
 						print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'SUBNET'} . "/" . $row{'NETMASK'} . "</option>";
 					} else {
-						print "<option value=\"" . $row{'ID'} ."\">" . $row{'SUBNET'} . "</option>";
+						print "<option value=\"" . $row{'ID'} ."\">" . $row{'SUBNET'} . "/" . $row{'NETMASK'} ."</option>";
 					}
 				}					
 				?>

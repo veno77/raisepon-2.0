@@ -68,13 +68,14 @@ Enter password:
 #set the crontab
 $sudo vi /etc/crontab 
 
-#add the following two lines at the bottom of the file
-*/5 * * * *     www-data     /usr/bin/php -f /var/www/html/raisepon-2.0/update_rrd.php > /dev/null 2>&1
+#add the following lines at the bottom of the file
+*/5 * * * *     www-data     /usr/bin/php -f /var/www/html/raisepon-2.0/update_rrd_data.php > /dev/null 2>&1
+*/15 * * * *     www-data     /usr/bin/php -f /var/www/html/raisepon-2.0/update_rrd_power.php > /dev/null 2>&1
 */5 * * * *     www-data     /usr/bin/php -f /var/www/html/raisepon-2.0/update_auto.php > /dev/null 2>&1
 
 #save the file esc : x enter
 
-#open your web browser and go to http://localhost/raisepon-2.0/
+#open your web browser and go to http://your-ip-address/raisepon-2.0/
 
 #login with default user/pass : admin/admin123
 

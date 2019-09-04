@@ -4,6 +4,11 @@ require_once("common.php");
 require_once("navigation.php");
 require_once("classes/index_class.php");
 require_once("classes/snmp_class.php");
+
+$snmpbulkget = "/usr/local/bin/snmpbulkget";
+if(!is_file($snmpbulkget)) {
+	$snmpbulkget = "/usr/bin/snmpbulkget";
+}
 //header('Cache-control: private', true);
 $index_obj = new index();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
@@ -18,8 +23,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$PORT_ID = $row{'PORT_ID'};
 		$PON_TYPE = $row{'PON_TYPE'};
 	}
-	
-	
 }else{
 ?>
 <div class="container">
@@ -124,19 +127,103 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						</tr>
 					</thead>
 				<?php
+				if ($index_obj->getSubmit() == "LOAD") {
+					$row = $index_obj->getPon_data();	
+					$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, "1");
+					$big_onu_id = $big_onu_id - 1;
+					$snmp_obj = new snmp_oid();
+					$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'});
+					$onu_status_oid_boi = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+					$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row{'PON_TYPE'});
+					$onu_offline_reason_oid_boi = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+					$onu_sn_oid = $snmp_obj->get_pon_oid("onu_sn_oid", $row{'PON_TYPE'});
+					$onu_sn_oid_boi = $snmp_obj->get_pon_oid("onu_sn_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+					exec("$snmpbulkget -Onq -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_status_oid_boi", $output , $return_var);
+					$onu_status = array();
+					foreach($output as $line) {
+						if (strpos($line, $onu_status_oid) !== false) {
+							$line = str_replace("." . $onu_status_oid . ".", "", $line);
+							$line = explode(" ", $line);
+							$onu_status[$line[0]] = $line[1];
+						}
+					}
+					exec("$snmpbulkget -Onq -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_offline_reason_oid_boi", $output , $return_var);
+					$onu_offline_reason = array();
+					foreach($output as $line) {
+						if (strpos($line, $onu_offline_reason_oid) !== false) {
+							$line = str_replace("." . $onu_offline_reason_oid . ".", "", $line);
+							$line = explode(" ", $line);
+							$onu_offline_reason[$line[0]] = $line[1];
+						}
+					}
+				
+					if ($row{'PON_TYPE'} == "GPON") {
+						exec("$snmpbulkget -OnqE -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_sn_oid_boi", $output , $return_var);
+						$onu_sn = array();
+						foreach($output as $line) {
+							if (strpos($line, $onu_sn_oid . ".") !== false) {
+								$line = str_replace("." . $onu_sn_oid . ".", "", $line);
+								$line = explode(" ", $line);
+								$onu_sn[$line[0]] = $line[1];
+							}
+						}
+						$onu_register_distance_oid = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row{'PON_TYPE'});
+						$onu_register_distance_oid_boi = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+						exec("$snmpbulkget -Onq -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_register_distance_oid_boi", $output , $return_var);
+						$onu_register_distance_arr = array();
+						foreach($output as $line) {
+							if (strpos($line, $onu_register_distance_oid . ".") !== false) {
+								$line = str_replace("." . $onu_register_distance_oid . ".", "", $line);
+								$line = explode(" ", $line);
+								$onu_register_distance_arr[$line[0]] = $line[1];
+							}
+						}				
+					}	
+					if ($row{'PON_TYPE'} == "EPON") {
+						exec("$snmpbulkget -On -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_sn_oid_boi", $output , $return_var);
+						$onu_sn = array();
+						foreach($output as $line) {
+							if (strpos($line, $onu_sn_oid . ".") !== false) {
+								$line = str_replace("." . $onu_sn_oid . ".", "", $line);
+								$line = explode(" = ", $line);
+								$line[1] = trim(str_replace('Hex-STRING: ', '', $line[1]));
+								$line[1] = str_replace(' ', '', $line[1]);
+								$onu_sn[$line[0]] = $line[1];	
+							}
+						}
+						$dot3MpcpRoundTripTime = $snmp_obj->get_pon_oid("dot3MpcpRoundTripTime", "OLT");
+						$dot3MpcpRoundTripTime_boi = $snmp_obj->get_pon_oid("dot3MpcpRoundTripTime", "OLT") . "." . $big_onu_id;
+						exec("$snmpbulkget -Onq -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $dot3MpcpRoundTripTime_boi", $output , $return_var);
+						$onu_register_distance_arr = array();
+						foreach($output as $line) {
+							if (strpos($line, $dot3MpcpRoundTripTime . ".") !== false) {
+								$line = str_replace("." . $dot3MpcpRoundTripTime . ".", "", $line);
+								$line = explode(" ", $line);
+								if ($line[1] <= '46')
+									$line[1] = '1';
+								if ($line[1] > '46')
+									$line[1] = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
+								$onu_register_distance_arr[$line[0]] = $line[1];
+							}
+						}				
+					}
+				}
 				$rows = $index_obj->build_table(); 
 				if(!empty($rows)) {	
+
 					foreach ($rows as $row) { 
 						$onu_register_distance = "";
 						if (isset($row{'PON_TYPE'})) {
 							$snmp_obj = new snmp_oid();
 							$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
-							if ($row{'PON_ONU_ID'} < 100) {
+						/*	if ($row{'PON_ONU_ID'} < 100) {
 								$big_onu_id_rx_gpon = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
 							}else{
 								$big_onu_id_rx_gpon = (3<<28)+(10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * ($row{'PON_ONU_ID'}%100) + 1);
 							}
+						
 							$big_onu_id_3 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
+						*/	
 							
 							$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 							$onu_last_online_oid = $snmp_obj->get_pon_oid("onu_last_online_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
@@ -145,39 +232,38 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							if ($row{'PON_TYPE'} == "GPON")
 								$onu_register_distance_oid = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 							$dot3MpcpRoundTripTime = $snmp_obj->get_pon_oid("dot3MpcpRoundTripTime", "OLT") . "." . $big_onu_id;
-							//GET ONU STATUS via SNMP
-							snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-							$status = $session->get($onu_status_oid);
+								//GET ONU STATUS via SNMP
+							if ($index_obj->getSubmit() == "LOAD") {
+								$status = $onu_status[$big_onu_id];
+							}else{
+								snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+								$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+								$status = $session->get($onu_status_oid);
+							}
 							$power = '';
 							$last_online = "Never";
 							$rf_state = "";
 							if ($status == '1') {
 								$status = "<font color=green>Online</font>";
 								//GET POWER/DISTANCE via SNMP
-								if ($row{'PON_TYPE'} == "GPON") {
-									/*
-									$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_rx_gpon;
-									$power = $session->get($onu_rx_power_oid);
-									if ($power > 32767)
-										$power = $power - 65535 - 1;
-									$power = round(($power-15000)/500,2);
-									*/
-									
-									$onu_register_distance = $session->get($onu_register_distance_oid);
+								if ($index_obj->getSubmit() == "LOAD") {
+									$onu_register_distance = $onu_register_distance_arr[$big_onu_id];
+								}else{
+									if ($row{'PON_TYPE'} == "GPON") {
+										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+										$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+										$onu_register_distance = $session->get($onu_register_distance_oid);
+									}
+									if ($row{'PON_TYPE'} == "EPON") {
+										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+										$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+										$dot3MpcpRoundTripTime = $session->get($dot3MpcpRoundTripTime);
+										if ($dot3MpcpRoundTripTime <= '46')
+											$onu_register_distance = '1';
+										if ($dot3MpcpRoundTripTime > '46')
+											$onu_register_distance = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
+									}
 								}
-								if ($row{'PON_TYPE'} == "EPON") {
-								//	$onu_rx_power_oid = $snmp_obj->get_pon_oid("onu_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id_3;
-								//	$power = $session->get($onu_rx_power_oid);
-								//	$power = round(10*log10($power/10000),2);
-									
-									$dot3MpcpRoundTripTime = $session->get($dot3MpcpRoundTripTime);
-									if ($dot3MpcpRoundTripTime <= '46')
-										$onu_register_distance = '1';
-									if ($dot3MpcpRoundTripTime > '46')
-										$onu_register_distance = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
-								}
-								
 								$power = $index_obj->get_rx_power($row{'ID'});
 								if ($power) {
 									if ($power < "-25") {
@@ -208,14 +294,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								$status = "<font color=red>Offline</font>";
 							}
 
-							//LAST ONLINE
-							//snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-							//$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-							//$last_online = $index_obj->calc_last_online($session->get($onu_last_online_oid));
 							//ONU OFFLINE REASON
-							snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-							$offline_reason = $session->get($onu_offline_reason_oid);
+							if ($index_obj->getSubmit() == "LOAD") {
+								$offline_reason = $onu_offline_reason[$big_onu_id];
+							}else{
+								snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+								$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+								$offline_reason = $session->get($onu_offline_reason_oid);
+							}
 							if ($row{'PON_TYPE'} == "GPON") {
 								if ($offline_reason == '1') {
 									$offline_reason = "unknown(1)" ;
@@ -256,21 +342,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 													
 							}
 							//SYNC CHCECK
-							
-							if ($row{'PON_TYPE'} == "EPON") {
-								snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-								$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-								$check_sn = $session->get($onu_sn_oid);
-								$check_sn = trim(str_replace('Hex-STRING: ', '', $check_sn));
-								$check_sn = str_replace('"', '', str_replace(' ', '', $check_sn));
-							} else {
-								$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-								$check_sn = $session->get($onu_sn_oid);	
+							if ($index_obj->getSubmit() == "LOAD") {
+								$check_sn = str_replace("\"", "", $onu_sn[$big_onu_id]);
+							}else{
+								if ($row{'PON_TYPE'} == "EPON") {
+									snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+									$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+									$check_sn = $session->get($onu_sn_oid);
+									$check_sn = trim(str_replace('Hex-STRING: ', '', $check_sn));
+									$check_sn = str_replace('"', '', str_replace(' ', '', $check_sn));
+								} else {
+									$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+									$check_sn = $session->get($onu_sn_oid);	
+								}
 							}
 						
 							//$check_sn = str_replace("52434D47","RCMG", $check_sn);
 							$db_sn = $row{'SN'};
-				
 							
 							if (strcasecmp($check_sn, $db_sn) == 0){
 								$sync = "<font color=green>OK</font>" ;

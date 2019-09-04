@@ -1061,7 +1061,7 @@ class customers {
 	
 	function onu_power_rrd() {
 		$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_power.rrd";
-		$opts = array( "--step", "300", "--start", "0",
+		$opts = array( "--step", "900", "--start", "0",
 		   "DS:input:GAUGE:600:U:U",
 		   "DS:output:GAUGE:600:U:U",
 		   "DS:rxolt:GAUGE:600:U:U",

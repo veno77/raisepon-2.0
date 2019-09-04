@@ -76,7 +76,7 @@ class index {
 	function getPon_data() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT PON.ID, PON.NAME, PON.OLT, PON.SLOT_ID, PON.PORT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.ID, CARDS_MODEL.PON_TYPE from PON LEFT JOIN CARDS_MODEL ON PON.CARDS_MODEL_ID=CARDS_MODEL.ID WHERE PON.ID=" . $this->pon_id);
+			$result = $conn->db->query("SELECT PON.ID, PON.NAME, PON.OLT, PON.SLOT_ID, PON.PORT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.ID, CARDS_MODEL.PON_TYPE, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO from PON LEFT JOIN CARDS_MODEL ON PON.CARDS_MODEL_ID=CARDS_MODEL.ID LEFT JOIN OLT ON PON.OLT=OLT.ID WHERE PON.ID=" . $this->pon_id);
 		} catch (PDOException $e) {
 			echo "Connection Failed:" . $e->getMessage() . "\n";
 			exit;

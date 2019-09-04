@@ -38,5 +38,4 @@ function type2ponid ($slot, $pon_port) {
 }
 
 
-
 ?>
