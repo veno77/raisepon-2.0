@@ -202,7 +202,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								if ($line[1] <= '46')
 									$line[1] = '1';
 								if ($line[1] > '46')
-									$line[1] = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
+									$line[1] = number_format(round(($line[1] - 46)*1.6));
 								$onu_register_distance_arr[$line[0]] = $line[1];
 							}
 						}				
