@@ -79,9 +79,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 			$status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 			$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
-			$status = $session->get($status_oid);		
-			
-			if ($status == "1") {
+			$status = $session->get($status_oid);				
+			if ($status == "1") {		
 				echo $sn . "\n";
 				//Power
 				$recv_power_oid = $snmp_obj->get_pon_oid("onu_recv_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
@@ -116,6 +115,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				} else {
 					$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:0"));
 				}
+				echo $recv_power . " " . $send_power ." " .$olt_rx_power . "\n" ;
 				if( $ret == 0 )
 				{
 					$err = rrd_error();
