@@ -323,6 +323,81 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				echo "ERROR occurred: $err\n";
 			}
 		}
+		$olt_temp_oid = $snmp_obj->get_pon_oid("olt_temp_oid", "OLT");
+		$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
+		$rrd_name_temp = dirname(__FILE__) . "/rrd/" . $ip_address . "_temp.rrd";
+		$rrd_name_cpu = dirname(__FILE__) . "/rrd/" . $ip_address . "_cpu.rrd";
+		$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+		$olt_temp = $session->get($olt_temp_oid);
+		if(!is_file($rrd_name_temp)){
+			$opts = array( "--step", "300", "--start", "0",
+			   "DS:temp:GAUGE:600:0:100",
+			   "RRA:AVERAGE:0.5:1:600",
+			   "RRA:AVERAGE:0.5:6:700",
+			   "RRA:AVERAGE:0.5:24:775",
+			   "RRA:AVERAGE:0.5:288:797",
+			   "RRA:MAX:0.5:1:600",
+			   "RRA:MAX:0.5:6:700",
+			   "RRA:MAX:0.5:24:775",
+			   "RRA:MAX:0.5:288:797"
+			);
+
+			$ret = rrd_create($rrd_name_temp, $opts);
+
+			if( $ret == 0 )
+			{
+				$err = rrd_error();
+				return $err;
+			}
+		}
+
+		$ret = rrd_update($rrd_name_temp, array("N:$olt_temp"));
+		if( $ret == 0 )
+		{
+			$err = rrd_error();
+				echo "ERROR occurred: $err\n";
+		}
+		
+		$opts = array( "--step", "300", "--start", "0");
+		snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
+		snmp_set_quick_print(TRUE);
+		snmp_set_enum_print(TRUE);
+		snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+		$session = new SNMP(SNMP::VERSION_1, $row{'IP_ADDRESS'}, $row{'RO'});
+		$cpus = $session->walk($olt_cpu_oid);
+		$olt_cpu = "";
+		foreach ($cpus as $cpu_oid => $cpu) {
+			$slot = str_replace($olt_cpu_oid, '', substr($cpu_oid, 0, -1));
+			$slot = str_replace('.','',$slot);
+			array_push($opts, "DS:cpu$slot:GAUGE:600:0:100");
+			$olt_cpu = $olt_cpu . ":" . $cpu;
+		}
+		array_push($opts,
+			   "RRA:AVERAGE:0.5:1:600",
+			   "RRA:AVERAGE:0.5:6:700",
+			   "RRA:AVERAGE:0.5:24:775",
+			   "RRA:AVERAGE:0.5:288:797",
+			   "RRA:MAX:0.5:1:600",
+			   "RRA:MAX:0.5:6:700",
+			   "RRA:MAX:0.5:24:775",
+			   "RRA:MAX:0.5:288:797"
+		);
+		if(!is_file($rrd_name_cpu)){
+			$ret = rrd_create($rrd_name_cpu, $opts);
+			if( $ret == 0 )
+			{
+				$err = rrd_error();
+				return $err;
+			}
+		}
+		//$boza = array("$olt_cpu");
+		//print_r($boza)	;
+		$ret = rrd_update($rrd_name_cpu, array("N$olt_cpu"));
+		if( $ret == 0 )
+		{
+			$err = rrd_error();
+				echo "ERROR occurred: $err\n";
+		}
 	}
 }
 // UPDATE PON PORTS GRAPHS

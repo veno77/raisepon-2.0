@@ -5,10 +5,7 @@ require_once("navigation.php");
 require_once("classes/index_class.php");
 require_once("classes/snmp_class.php");
 
-$snmpbulkget = "/usr/local/bin/snmpbulkget";
-if(!is_file($snmpbulkget)) {
-	$snmpbulkget = "/usr/bin/snmpbulkget";
-}
+
 //header('Cache-control: private', true);
 $index_obj = new index();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {

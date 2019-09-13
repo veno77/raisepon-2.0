@@ -14,6 +14,16 @@ $pon_dropdown = array();
 
 ini_set('display_errors','off');  
 
+$snmpbulkwalk = "/usr/local/bin/snmpbulkwalk";
+if(!is_file($snmpbulkwalk)) {
+	$snmpbulkwalk = "/usr/bin/snmpbulkwalk";
+}
+
+$snmpbulkget = "/usr/local/bin/snmpbulkget";
+if(!is_file($snmpbulkget)) {
+	$snmpbulkget = "/usr/bin/snmpbulkget";
+}
+
 function test_input($data) {
 	$data = trim($data);
 	$data = stripslashes($data);

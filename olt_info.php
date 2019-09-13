@@ -478,7 +478,69 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					print "</tr><tr>";
 				}
 			}	
+			$rrd_name_temp = dirname(__FILE__) . "/rrd/" . $ip_address . "_temp.rrd";
+			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=Temperature (°C)", "--title=OLT Temperature",
+				"DEF:temp=$rrd_name_temp:temp:AVERAGE",
+				"LINE2:temp#FF0000:Temp",
+				"GPRINT:temp:MAX:Max\: %8.0lf°C",
+				"COMMENT:  ",
+				"GPRINT:temp:MIN:Min\: %8.0lf°C",
+				"COMMENT:  ",
+				"GPRINT:temp:LAST:Last\: %8.0lf°C\\r"				
+			);
 		
+			$rrd_temp_url = $ip_address . "_temp.gif";
+			$rrd_temp = dirname(__FILE__) . "/rrd/" . $ip_address . "_temp.gif";		
+			$ret = rrd_graph($rrd_temp, $opts);
+			if( !is_array($ret) )
+			{
+				$err = rrd_error();
+				echo "rrd_graph() ERROR: $err\n";
+			}
+			print "<td><img src=\"rrd/" . $rrd_temp_url . "\"></img></td>";
+			$end++;
+			if ($end == "2") {
+				$end = "0";
+				print "</tr><tr>";
+			}
+			$rrd_name_cpu = dirname(__FILE__) . "/rrd/" . $ip_address . "_cpu.rrd";
+			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=Utilization %", "--title=OLT CPU");
+			$snmp_obj = new snmp_oid();
+			$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
+			snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
+			snmp_set_quick_print(TRUE);
+			snmp_set_enum_print(TRUE);
+			snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+			$session = new SNMP(SNMP::VERSION_1, $ip_address, $ro);
+			$cpus = $session->walk($olt_cpu_oid);
+			$olt_cpu = "";
+			foreach ($cpus as $cpu_oid => $cpu) {
+				$slot = str_replace($olt_cpu_oid, '', substr($cpu_oid, 0, -1));
+				$slot = str_replace('.','',$slot);
+				array_push($opts, "DEF:cpu$slot=$rrd_name_cpu:cpu$slot:AVERAGE");
+			}
+			foreach ($cpus as $cpu_oid => $cpu) {
+				$slot = str_replace($olt_cpu_oid, '', substr($cpu_oid, 0, -1));
+				$slot = str_replace('.','',$slot);
+				$color = "#" . substr(md5(mt_rand()), 0, 6);
+				array_push($opts,
+					"LINE2:cpu$slot$color:CPU$slot",
+					"GPRINT:cpu$slot:MAX:Max\: %8.0lf%%",
+					"COMMENT:  ",
+					"GPRINT:cpu$slot:MIN:Min\: %8.0lf%%",
+					"COMMENT:  ",
+					"GPRINT:cpu$slot:LAST:Last\: %8.0lf%% \\r"				
+				);
+			}
+			$rrd_cpu_url = $ip_address . "_cpu.gif";
+			$rrd_cpu = dirname(__FILE__) . "/rrd/" . $ip_address . "_cpu.gif";		
+			$ret = rrd_graph($rrd_cpu, $opts);
+			if( !is_array($ret) )
+			{
+				$err = rrd_error();
+				echo "rrd_graph() ERROR: $err\n";
+			}
+			print "<td><img src=\"rrd/" . $rrd_cpu_url . "\"></img></td>";
 			print "</tr>";
 			print "<table></div></div>";
 		}
