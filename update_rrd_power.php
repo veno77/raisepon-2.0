@@ -41,6 +41,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	$id = $row['ID'];
 	$pon_type = $row{'PON_TYPE'};
 	$hgu = $row{'HGU'};
+	
  	$catv_input_id = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'} * 1000 + 160;	
 	$rf = $row{'RF'};
 	$sn = $row["SN"];
@@ -50,11 +51,13 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		
 	
 	if ($row{'PON_TYPE'} == "GPON") {
+		
 		if ($row{'PON_ONU_ID'} < 100) {
 			$index_2 = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
 		}else{
 			$index_2 = (3<<28)+(10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * ($row{'PON_ONU_ID'}%100) + 1);
 		}
+		$catv_input_id = $index_2;
 	}
 	if ($row{'PON_TYPE'} == "EPON") {
 		$index_2 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
@@ -82,12 +85,12 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			$status = $session->get($status_oid);				
 			if ($status == "1") {		
 				echo $sn . "\n";
-				//Power
+				//Onu Power
 				$recv_power_oid = $snmp_obj->get_pon_oid("onu_recv_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
 				$send_power_oid = $snmp_obj->get_pon_oid("onu_send_power_oid", $row{'PON_TYPE'}) . "." . $index_2;
 				//OLT RX Power
 				$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
-				// RF Power
+				// RF Power 
 				$rf_input_power_oid = $snmp_obj->get_pon_oid("onu_rf_rx_power_oid", $row{'PON_TYPE'}) . "." . $catv_input_id;
 				$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
 				$olt_rx_power = $session->get($olt_rx_power_oid);
