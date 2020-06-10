@@ -53,7 +53,7 @@ class snmp_oid {
 		"rcGponOnuNetIpAddr" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.2",
 		"rcGponOnuNetIpMask" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.3",
 		"rcGponOnuNetDefaultGateway" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.4",
-		"rcGponOnuNetVlan" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.7",
+		"rcGponOnuNetVlan" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.7"
 	);
 	
 	private $epon_oid = array(
@@ -99,10 +99,7 @@ class snmp_oid {
 			"rcEponPONPortRegisteredONUNumber" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.4",
 			"rcEponPONPortDescription" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.23",
 			"rcEponPONPortSFPOperStatus" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.19",
-			"rcEponPONPortCreateONUNumber" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.27",
-
-
-	
+			"rcEponPONPortCreateONUNumber" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.27"
 	);
 	
 	private $olt_oid = array (
@@ -131,6 +128,16 @@ class snmp_oid {
 		"ifHCInBroadcastPkts" => "1.3.6.1.2.1.31.1.1.1.9",
 		"ifHCOutBroadcastPkts" => "1.3.6.1.2.1.31.1.1.1.13",
 		"dot3MpcpRoundTripTime" => "1.3.6.1.2.1.155.1.1.1.1.10",
+		"raisecomOnlineUpgradeV2Protocol" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.3",
+		"raisecomOnlineUpgradeV2OprType" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.4",
+		"raisecomOnlineUpgradeV2FileType" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.5",
+		"raisecomOnlineUpgradeV2ServerAddress" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.6",
+		"raisecomOnlineUpgradeV2FileName" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.7",
+		"raisecomOnlineUpgradeV2UserName" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.8",
+		"raisecomOnlineUpgradeV2UserPassword" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.9",
+		"raisecomOnlineUpgradeV2NotificationOnCompletion" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.10",
+		"raisecomOnlineUpgradeV2FailCause" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.14",
+		"raisecomOnlineUpgradeV2EntryRowStatus" => "1.3.6.1.4.1.8886.1.26.1.1.1.1.1.15"
 	);
 	
 	 

@@ -23,6 +23,7 @@
 						<li <?=echoActiveClassIfRequestMatches("olt")?>><a href="olt.php">OLT</a></li>
 						<li <?=echoActiveClassIfRequestMatches("pon")?>><a href="pon.php">PON</a></li>
 						<li <?=echoActiveClassIfRequestMatches("ip_pool")?>><a href="ip_pool.php">IP Pools</a></li>
+						<li <?=echoActiveClassIfRequestMatches("backup")?>><a href="backup.php">Backup</a></li>
 					</ul>
 				</li>
 				<li class="dropdown">

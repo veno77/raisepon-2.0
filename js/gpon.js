@@ -167,6 +167,34 @@ function getOlt(olt_id) {
 	});
 }
 
+function getBackup(id) {
+	jQuery.ajax({
+		url: "backup_modal.php",
+		data: {id: id},
+		type: "POST"
+	}).done(function(data){
+		$('#modalbody').html(data);
+		$('#myModal').modal('show'); 
+		$('#xpon').dropdown();
+		$('#profiles').dropdown();
+		$('#tools').dropdown();
+	});
+}
+
+function getBackupEmail(id) {
+	jQuery.ajax({
+		url: "backup_email_modal.php",
+		data: {email_id: id},
+		type: "POST"
+	}).done(function(data){
+		$('#modalbodyemail').html(data);
+		$('#myModalEmail').modal('show'); 
+		$('#xpon').dropdown();
+		$('#profiles').dropdown();
+		$('#tools').dropdown();
+	});
+}
+
 function getPon(pon_id, olt) {
 	jQuery.ajax({
 		url: "pon_modal.php",

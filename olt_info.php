@@ -116,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	if ($type == "info"){
 		try {
-			$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID where OLT.ID = '$olt_id'");
+			$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, BACKUP_STATUS.DATE, BACKUP_STATUS.REASON from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN BACKUP_STATUS on OLT.ID = BACKUP_STATUS.OLT where OLT.ID = '$olt_id'");
 
 			} catch (PDOException $e) {
 					echo "Connection Failed:" . $e->getMessage() . "\n";
@@ -128,9 +128,44 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$ro = $row['RO'];
 			$rw = $row['RW'];
 			$olt_type = $row['TYPE'];
+			$date = $row['DATE'];
+			$reason = $row['REASON'];
 		}
 		$index = 10000000;
-	
+		if ($reason == "1")
+			$reason = "noError(1)";
+		if ($reason == "2")
+			$reason = "badMethod(2)";
+		if ($reason == "3")
+			$reason = "badSourceAddress(3)";
+		if ($reason == "4")
+			$reason = "badDestAddress(4)";
+		if ($reason == "5")
+			$reason = "badPort(5)";
+		if ($reason == "6")
+			$reason = "badUserName(6)";
+		if ($reason == "7")
+			$reason = "badPassword(7)";
+		if ($reason == "8")
+			$reason = "badFileName(8)";
+		if ($reason == "9")
+			$reason = "fileOpenFail(9)(8)";
+		if ($reason == "10")
+			$reason = "fileWriteFail(10)";
+		if ($reason == "11")
+			$reason = "timeout(11)";
+		if ($reason == "12")
+			$reason = "noMem(12)";
+		if ($reason == "13")
+			$reason = "noConfig(13)";
+		if ($reason == "14")
+			$reason = "fileTooLarge(14)";
+		if ($reason == "15")
+			$reason = " unknown(15)";
+		if ($reason == "16")
+			$reason = "badSourceFileType(16)";
+		if ($reason == "17")
+			$reason = "badDestFileType(17)";
 		$sys_uptime_oid = $snmp_obj->get_pon_oid("sys_uptime_oid", "olt");
 		$olt_serial_number_oid = $snmp_obj->get_pon_oid("olt_serial_number_oid", "olt");
 		$olt_hw_version_oid = $snmp_obj->get_pon_oid("olt_hw_version_oid", "olt");
@@ -203,6 +238,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			print "<tr><th>Slots per System:</th><td>" . $olt_slot_num . "</td></tr>";
 			print "<tr><th>Uptime:</th><td>" . $sysuptime . "</td></tr>";
 			print "<tr><th>Status:</th><td><font color=green>Online</font></td></tr>";
+			print "<tr><th>Backup Status:</th><td>" . $reason . " - " . $date . "</td></tr>";
 			print "</table></div>";
 			print "<div class=\"form-group\"><form class=\"form-horizontal\" action=\"onu_info.php\" method=\"post\">";
 			print "<input type=\"hidden\" name=\"olt_id\" value=\"". $olt_id ."\">";

@@ -65,7 +65,24 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			</div>
 		</div>
 	</div>	
-
+	<div class=row>
+		<div class="col-md-4 col-md-offset-4">
+			<div class="form-group">
+				<label for="backup_id">BACKUP FTP</label>
+				<select class="form-control" id="backup_id" name="backup_id">
+					<option value="" class="rhth">Select</option>
+					<?php $rows = $olt_obj->get_Backup();
+					foreach ($rows as $row) {
+						if($olt_obj->getBackup_id() == $row{'ID'}) {
+							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
+						} else {
+								print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+						}
+					}?>
+				</select>
+			</div>
+		</div>
+	</div>	
 	<div class=row>
 		<div class="col-md-4 col-md-offset-4">
 			<div class="form-group">

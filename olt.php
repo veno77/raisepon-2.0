@@ -1,7 +1,6 @@
 <?php
 include ("header.php");
 include ("common.php");
-include ("dbconnect.php");
 include ("navigation.php");
 include ("classes/olt_class.php");
 include ("classes/snmp_class.php");
@@ -93,6 +92,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<th>Temp</th>
 						<th>CPU</th>
 						<th>Uptime</th>
+						<th>Backup</th>
 						<th>Info</th>
 						<th>Config</th>
 						<th>Edit</th>
@@ -162,6 +162,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<td><?php echo $temp; ?></td>
 							<td><?php echo $total_cpu; ?></td>
 							<td><?php echo $sysuptime; ?></td>
+							<td><?php echo $row{'BACKUP_NAME'}; ?></td>
 							<td><?php echo "<a href=\"olt_details.php?id=" . $row{'ID'} . "\">"; ?><button type="button" class="btn btn-default">INFO</button></a></td>
 							<td><?php echo $save; ?></td>
 							<td><button type="button" class="btn btn-default" onClick="getOlt('<?php echo $row{'ID'}; ?>');">EDIT</button></td>

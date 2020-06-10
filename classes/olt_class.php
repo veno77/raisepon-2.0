@@ -8,22 +8,26 @@ class olt {
 	public $olt_ip_address;
 	public $olt_old_ip;
 	public $snmp_community_rw;
+	public $backup_id;
 	private $submit;
 	
 	function __construct() {
-		if ($_SERVER["REQUEST_METHOD"] == "POST") {
-			$this->olt_id = isset($_POST['olt_id'])	? $this->test_input($_POST['olt_id']) : null;
-			$this->name = isset($_POST['name'])	? $this->test_input($_POST['name']) : null;
-			$this->olt_model = isset($_POST['olt_model'])	? $this->test_input($_POST['olt_model']) : null;
-			$this->snmp_community_ro = isset($_POST['ro'])	? $this->test_input($_POST['ro']) : null;
-			$this->olt_ip_address = isset($_POST['ip_address'])	? $this->test_input($_POST['ip_address']) : null;
-			$this->olt_old_ip = isset($_POST['old_ip'])	? $this->test_input($_POST['old_ip']) : null;
-			$this->snmp_community_rw = isset($_POST['rw']) ? $this->test_input($_POST['rw']) : null;
-			$this->submit = isset($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
-		}
-		
-		if ($_SERVER["REQUEST_METHOD"] == "GET") {
-			$this->olt_id = isset($_GET['id'])	? $this->test_input($_GET['id']) : null;
+		if (!empty($_SERVER["REQUEST_METHOD"])) {
+			if ($_SERVER["REQUEST_METHOD"] == "POST") {
+				$this->olt_id = isset($_POST['olt_id'])	? $this->test_input($_POST['olt_id']) : null;
+				$this->name = isset($_POST['name'])	? $this->test_input($_POST['name']) : null;
+				$this->olt_model = isset($_POST['olt_model'])	? $this->test_input($_POST['olt_model']) : null;
+				$this->snmp_community_ro = isset($_POST['ro'])	? $this->test_input($_POST['ro']) : null;
+				$this->olt_ip_address = isset($_POST['ip_address'])	? $this->test_input($_POST['ip_address']) : null;
+				$this->olt_old_ip = isset($_POST['old_ip'])	? $this->test_input($_POST['old_ip']) : null;
+				$this->snmp_community_rw = isset($_POST['rw']) ? $this->test_input($_POST['rw']) : null;
+				$this->backup_id = isset($_POST['backup_id']) ? $this->test_input($_POST['backup_id']) : null;
+				$this->submit = isset($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
+			}
+			
+			if ($_SERVER["REQUEST_METHOD"] == "GET") {
+				$this->olt_id = isset($_GET['id'])	? $this->test_input($_GET['id']) : null;
+			}
 		}
 	}
 	
@@ -54,6 +58,12 @@ class olt {
 	function getSnmp_community_rw() {
 		return $this->snmp_community_rw;
 	}
+	function getBackup_id() {
+		return $this->backup_id;
+	}
+	function setBackup_id($backup_id) {
+		$this->backup_id = $backup_id;
+	}
 	function create_olt() {
 		// CHECK IP ADDRESS for DUPLICATES
 		try {
@@ -68,10 +78,14 @@ class olt {
 				$error = "ERROR!  DUPLICATE IP ADDRESS!";
 			return $error;
 		}
-		
+		if (!empty($this->backup_id)) {
+			$backup_id = "'" . $this->backup_id . "'";
+		}else{
+			$backup_id = "NULL";
+		}
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("INSERT INTO OLT (NAME, MODEL, IP_ADDRESS, RO, RW) VALUES ('$this->name', '$this->olt_model', INET_ATON('$this->olt_ip_address'), '$this->snmp_community_ro', '$this->snmp_community_rw')");
+			$result = $conn->db->query("INSERT INTO OLT (NAME, MODEL, IP_ADDRESS, RO, RW, BACKUP_ID) VALUES ('$this->name', '$this->olt_model', INET_ATON('$this->olt_ip_address'), '$this->snmp_community_ro', '$this->snmp_community_rw', $backup_id)");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -135,10 +149,14 @@ class olt {
 				return $error;
 		}
 		
-		
+		if (!empty($this->backup_id)) {
+			$backup_id = "'" . $this->backup_id . "'";
+		}else{
+			$backup_id = "NULL";
+		}
 		try {
 			$conn = db_connect::getInstance();
-			$conn->db->query("UPDATE OLT SET NAME = '$this->name', MODEL = '$this->olt_model', IP_ADDRESS = INET_ATON('$this->olt_ip_address'), RO = '$this->snmp_community_ro', RW = '$this->snmp_community_rw' where ID = '$this->olt_id'");
+			$conn->db->query("UPDATE OLT SET NAME = '$this->name', MODEL = '$this->olt_model', IP_ADDRESS = INET_ATON('$this->olt_ip_address'), RO = '$this->snmp_community_ro', RW = '$this->snmp_community_rw', BACKUP_ID = $backup_id where ID = '$this->olt_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -237,7 +255,7 @@ class olt {
 	function build_table_olt() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT OLT.ID, OLT.NAME, OLT.MODEL, INET_NTOA(IP_ADDRESS) as IP_ADDRESS, RO, RW, OLT_MODEL.NAME as OLT_NAME,OLT_MODEL.TYPE as TYPE from OLT LEFT JOIN OLT_MODEL on OLT.MODEL = OLT_MODEL.ID");
+			$result = $conn->db->query("SELECT OLT.ID, OLT.NAME, OLT.MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, RO, RW, OLT_MODEL.NAME as OLT_NAME,OLT_MODEL.TYPE as TYPE, OLT.BACKUP_ID, BACKUP.NAME as BACKUP_NAME from OLT LEFT JOIN OLT_MODEL on OLT.MODEL = OLT_MODEL.ID LEFT JOIN BACKUP on OLT.BACKUP_ID = BACKUP.ID");
 		} catch (PDOException $e) {
 			$error =  "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -251,7 +269,7 @@ class olt {
 	function get_data_olt() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT ID, NAME, MODEL, INET_NTOA(IP_ADDRESS) as IP_ADDRESS, RO, RW from OLT where ID='$this->olt_id'");
+			$result = $conn->db->query("SELECT ID, NAME, MODEL, INET_NTOA(IP_ADDRESS) as IP_ADDRESS, RO, RW, BACKUP_ID from OLT where ID='$this->olt_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -263,11 +281,22 @@ class olt {
 			$this->snmp_community_ro = $row["RO"];
 			$this->snmp_community_rw = $row["RW"];
 			$this->olt_model = $row["MODEL"];
+			$this->backup_id = $row["BACKUP_ID"];
 		}	
 		
 		
 	}
-	
+	function get_data_backup() {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT ID, NAME, INET_NTOA(IP_ADDRESS) as IP_ADDRESS, USERNAME, PASSWORD, DIRECTORY from BACKUP where ID='$this->backup_id'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		$rows = $result->fetchAll();
+		return $rows;	
+	}
 	function get_Olt_model() {
 		try {
 			$conn = db_connect::getInstance();
@@ -279,7 +308,17 @@ class olt {
 		$rows = $result->fetchAll();
 		return $rows;
 	}
-	
+	function get_Backup() {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT * from BACKUP");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		$rows = $result->fetchAll();
+		return $rows;
+	}
 	function save_olt() {
 		$this->get_data_olt();
 		$save_oid = '1.3.6.1.4.1.8886.1.2.1.1.0';
@@ -295,9 +334,34 @@ class olt {
         $data = htmlspecialchars($data);
         return $data;
 	}
-
-
-	
+	function backup_status($olt_id, $reason) {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT OLT from BACKUP_STATUS where OLT = $olt_id");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			if ($row{'OLT'}) {
+				try {
+					$conn = db_connect::getInstance();
+					$conn->db->query("UPDATE BACKUP_STATUS SET DATE = NOW(), REASON = $reason where OLT = $olt_id");
+				} catch (PDOException $e) {
+					$error = "Connection Failed:" . $e->getMessage() . "\n";
+					return $error;
+				}
+				return;
+			}
+		}
+		try {
+			$conn = db_connect::getInstance();
+			$conn->db->query("INSERT INTO BACKUP_STATUS (OLT, DATE, REASON) VALUES ($olt_id, NOW(), $reason)");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+	}
 }
 
 
