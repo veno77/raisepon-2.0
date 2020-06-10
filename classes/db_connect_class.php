@@ -26,6 +26,12 @@ class db_connect {
         return self::$instance;
     }
 	
+	function getUsername() {
+		return $this->mysql_user;
+	}
+	function getPassword() {
+		return $this->mysql_pass;
+	}
 }
 
 
