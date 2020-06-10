@@ -12,8 +12,8 @@ I suggest using latest FreeBSD or Debian Stable Release.
 You need:
 
 Apache 2.4 or later
-PHP 5.6 or later 
-PHP 5.6 Extensions + Mysql PDO
+PHP 7.0 or later 
+PHP 7.x Extensions + Mysql PDO
 Mysql 5.6 or later 
 net-snmp + php-snmp
 rrdtool + pecl-rrd(php-rrd in Debian)
@@ -31,8 +31,12 @@ Add the following to your crontab if you want to have graphs:
 
 Add also this if you want to use AUTO ONU registering based on Illegal ONUs found in OLT devices:
 
+* * * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_auto.php > /dev/null 2>&1
 
-*/5 * * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_auto.php > /dev/null 2>&1
+Add this if you configure backup of the database and OLTs' startup-config via ftp:
+
+0 2 * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_auto.php > /dev/null 2>&1
+
 
 Configure your OLTs to send logs to your syslogd server. 
 
@@ -49,7 +53,7 @@ Usage:
 2. You can create also line-profile, service-profile and match them to Services ID in the web-interface. You need to pre-create the same profiles with same ids on the OLTs you are going to provision.
 3. Clicking on INFO in index.html when you load the customers on selected OLT and PON will give you more information.
 4. If you use AUTO assign of ONUs on certain OLT/PON port you can find created ONUs in UNASSIGNED before being automaticaly assigned by update_auto.php - executed every 5 minutes via crontab.
-
+5. If you want to have backup of the startup-config and raisepon database. Configure xPON->Backup. Add FTP details for upload of the startup-config files from the OLTs and email-address for raisepon's db backup.
 
 The software is provided under the MIT License. Read below:
 
