@@ -160,7 +160,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	if ($type == "info"){
 		try {
-			$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, SERVICES.ID, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID
+			$result = $db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME as NAME, SN, PON_ONU_ID, CUSTOMERS.SERVICE, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.NAME as OLT_NAME, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, PON.ID as PON_ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, SERVICES.ID, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, SERVICE_PROFILE.RF from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID
 where CUSTOMERS.ID = '$customer_id'");
                 } catch (PDOException $e) {
                         echo "Connection Failed:" . $e->getMessage() . "\n";
@@ -176,6 +176,7 @@ where CUSTOMERS.ID = '$customer_id'");
 			$rw = $row['RW'];
 			$pon_type = $row['PON_TYPE'];
 			$name = $row['NAME'];
+			$rf = $row['RF'];
 		}
 		$index = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id;
 		if ($pon_onu_id < 100) {
@@ -209,12 +210,14 @@ where CUSTOMERS.ID = '$customer_id'");
 		$onu_active_state_oid = $snmp_obj->get_pon_oid("onu_active_state_oid", $pon_type) . "." . $index_type2id;
 		$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $pon_type) . "." . $index_type2id;
 		$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
+		$onu_rf_rx_power_oid = $snmp_obj->get_pon_oid("onu_rf_rx_power_oid", $pon_type) . "." . $index_rf;
 		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 		$device_type = $session->get($device_type_oid);
 		$device_type = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $device_type);
         $hw_revision = $session->get($hw_revision_oid);
 		$match_state = $session->get($match_state_oid);	
+		$onu_rf_rx_power = $session->get($onu_rf_rx_power_oid);
 		function calc_last_online($last_online){
 			$last_online = str_replace('Hex-STRING: ', '', $last_online);
 			$loa = explode(' ', $last_online);
@@ -366,6 +369,8 @@ where CUSTOMERS.ID = '$customer_id'");
 		print "<tr><th>Onu Rx Power:</th><td>" . $onu_rx_power . "</td></tr>";
 		print "<tr><th>Onu Tx Power:</th><td>" . $onu_tx_power . "</td></tr>";
 		print "<tr><th>OLT Rx Power:</th><td>" . $olt_rx_power . "</td></tr>";
+		if ($rf == "Yes")
+			print "<tr><th>ONU RF Rx Power:</th><td>" . $onu_rf_rx_power . "</td></tr>";
 		print "<tr><th>Onu Pon Temperature:</th><td>" . $onu_pon_temp_value . "</td></tr>";
 		print "<tr><th>Last Online:</th><td>" . $last_online . "</td></tr>";
 		
