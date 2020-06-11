@@ -44,10 +44,8 @@ foreach ($rows as $row) {
 		$from_email = "raisepon@veno.org";
 		$reply_to_email = "raisepon@veno.org";
 		$recipient_email = $row{'EMAIL'};
-
-		$conn = db_connect::getInstance();
-		$sql_username = $conn->getUsername();
-		$sql_password = $conn->getPassword();
+		$sql_username = $backup_obj->get_username();
+		$sql_password = $backup_obj->get_password();
 		$date = date("Y-m-d-H-i");
 		exec("mysqldump -u " . $sql_username . " -p" . $sql_password . " raisepon > /tmp/" . $date . "_raisepon.sql");
 		$name = $date . "_raisepon.sql";

@@ -213,6 +213,11 @@ class backup {
 		return $sql_username;
 	}
 	
+	function get_password(){
+		$conn = db_connect::getInstance();
+		$sql_password = $conn->getPassword();
+		return $sql_password;
+	}
 	function get_data_email() {
 		try {
 			$conn = db_connect::getInstance();

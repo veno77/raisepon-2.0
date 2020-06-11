@@ -35,7 +35,7 @@ Add also this if you want to use AUTO ONU registering based on Illegal ONUs foun
 
 Add this if you configure backup of the database and OLTs' startup-config via ftp:
 
-0 2 * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_auto.php > /dev/null 2>&1
+0 2 * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_backup.php > /dev/null 2>&1
 
 
 Configure your OLTs to send logs to your syslogd server. 
