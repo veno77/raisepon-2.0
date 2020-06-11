@@ -41,8 +41,8 @@ $backup_obj = new backup();
 $rows = $backup_obj->build_table_email(); 
 foreach ($rows as $row) {
 	if ($row{'ID'} != "NULL") {
-		$from_email = "raisepon@veno.org";
-		$reply_to_email = "raisepon@veno.org";
+		$from_email = "raisepon@raisepon.org";
+		$reply_to_email = "raisepon@raisepon.org";
 		$recipient_email = $row{'EMAIL'};
 		$sql_username = $backup_obj->get_username();
 		$sql_password = $backup_obj->get_password();
@@ -56,7 +56,7 @@ foreach ($rows as $row) {
 		$encoded_content = chunk_split(base64_encode($contents)); 
 		$boundary = md5("random");
 		$file_type = filetype($filename);
-		$message = "Database Backup";
+		$message = "Raisepon Database Backup";
 		//header 
 		$headers = "MIME-Version: 1.0\r\n"; // Defining the MIME version 
 		$headers .= "From:".$from_email."\r\n"; // Sender Email 

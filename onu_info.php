@@ -133,7 +133,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		if ($pon_type == "EPON")
 		$index_uni = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + $port_num;						
 		if ($pon_type == "GPON")
-		$index_uni = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + $port_num;		
+			if ($pon_onu_id < 100) {
+				$index_uni = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + $port_num;		
+			}else{
+				$index_uni = (3<<28)+(10000000 * $slot_id + 100000 * $port_id + 1000 * ($pon_onu_id%100)) + $port_num;
+			}
+	
 	
 		$uni_port_admin_set = $snmp_obj->get_pon_oid("uni_port_admin_set_oid", $pon_type) . "." . $index_uni;
 		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
