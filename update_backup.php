@@ -38,18 +38,18 @@ foreach ($rows as $row) {
 }
 
 $backup_obj = new backup();
+$sql_username = $backup_obj->get_username();
+$sql_password = $backup_obj->get_password();
+$date = date("Y-m-d-H-i");
+$name = $date . "_raisepon.sql";
+$filename = "/tmp/" . $date . "_raisepon.sql";
+exec("mysqldump -u " . $sql_username . " -p" . $sql_password . " raisepon > " . $filename);	
 $rows = $backup_obj->build_table_email(); 
 foreach ($rows as $row) {
 	if ($row{'ID'} != "NULL") {
 		$from_email = "raisepon@raisepon.org";
 		$reply_to_email = "raisepon@raisepon.org";
-		$recipient_email = $row{'EMAIL'};
-		$sql_username = $backup_obj->get_username();
-		$sql_password = $backup_obj->get_password();
-		$date = date("Y-m-d-H-i");
-		exec("mysqldump -u " . $sql_username . " -p" . $sql_password . " raisepon > /tmp/" . $date . "_raisepon.sql");
-		$name = $date . "_raisepon.sql";
-		$filename = "/tmp/" . $date . "_raisepon.sql";
+		$recipient_email = $row{'EMAIL'};	
 		$handle = fopen($filename, "r");
 		$contents = fread($handle, filesize($filename));
 		fclose($handle);
@@ -80,7 +80,6 @@ foreach ($rows as $row) {
 		if($sentMailResult )  
 		{ 
 		   echo "File Sent Successfully."; 
-		   unlink($filename); // delete the file after attachment sent. 
 		} 
 		else
 		{ 
@@ -88,5 +87,6 @@ foreach ($rows as $row) {
 		} 
 	}
 }
+unlink($filename); // delete the file after attachment sent. 
 
 ?>
