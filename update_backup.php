@@ -36,14 +36,13 @@ foreach ($rows as $row) {
 		}
 	}	
 }
-
-$backup_obj = new backup();
-$sql_username = $backup_obj->get_username();
-$sql_password = $backup_obj->get_password();
+$sql_username = db_connect::getUsername();
+$sql_password = db_connect::getPassword();
 $date = date("Y-m-d-H-i");
 $name = $date . "_raisepon.sql";
 $filename = "/tmp/" . $date . "_raisepon.sql";
 exec("mysqldump -u " . $sql_username . " -p" . $sql_password . " raisepon > " . $filename);	
+$backup_obj = new backup();
 $rows = $backup_obj->build_table_email(); 
 foreach ($rows as $row) {
 	if ($row{'ID'} != "NULL") {

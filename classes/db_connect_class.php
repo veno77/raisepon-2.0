@@ -1,13 +1,13 @@
 <?php
 
 class db_connect {
-	private $mysql_user = "raisepon";
-	private $mysql_pass = "r41sepon";
+	private static $mysql_user = "raisepon";
+	private static $mysql_pass = "r41sepon";
 	public $db;
 	private static $instance;
 	private function __construct() {
 		try {
-			$this->db = new PDO('mysql:host=localhost;dbname=raisepon;charset=utf8', $this->mysql_user, $this->mysql_pass);
+			$this->db = new PDO('mysql:host=localhost;dbname=raisepon;charset=utf8', self::$mysql_user, self::$mysql_pass);
 			$this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		} catch (PDOException $e) {
 			echo 'Connection Failed: ' . $e->getMessage();
@@ -26,11 +26,11 @@ class db_connect {
         return self::$instance;
     }
 	
-	function getUsername() {
-		return $this->mysql_user;
+	public static function getUsername() {
+		return self::$mysql_user;
 	}
-	function getPassword() {
-		return $this->mysql_pass;
+	public static function getPassword() {
+		return self::$mysql_pass;
 	}
 }
 
