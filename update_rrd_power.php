@@ -111,9 +111,10 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				}
   
 			
-				if ($rf == "Yes" && $row{'PON_TYPE'} == "EPON") {
+				if ($rf == "Yes") {
 					$rf_input_power = $session->get($rf_input_power_oid);
-					$rf_input_power = round($rf_input_power/10,4);
+					if ($row{'PON_TYPE'} == "EPON")
+						$rf_input_power = round($rf_input_power/10,4);
 					$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:$rf_input_power"));
 				} else {
 					$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:0"));

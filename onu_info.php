@@ -223,6 +223,7 @@ where CUSTOMERS.ID = '$customer_id'");
         $hw_revision = $session->get($hw_revision_oid);
 		$match_state = $session->get($match_state_oid);	
 		$onu_rf_rx_power = $session->get($onu_rf_rx_power_oid);
+		$onu_rf_rx_power = $onu_rf_rx_power . " dBm";
 		function calc_last_online($last_online){
 			$last_online = str_replace('Hex-STRING: ', '', $last_online);
 			$loa = explode(' ', $last_online);
