@@ -119,7 +119,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				} else {
 					$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:0"));
 				}
-				echo $recv_power . " " . $send_power ." " .$olt_rx_power . "\n" ;
+				echo $recv_power . " " . $send_power ." " .$olt_rx_power . " " . $rf_input_power . "\n" ;
 				if( $ret == 0 )
 				{
 					$err = rrd_error();
