@@ -98,7 +98,7 @@ class index {
 		$rows = $result->fetchAll();
 		return $rows;		
 	}
-	function build_table() {
+	function build_table($count) {
 		if ($this->submit == "LOAD")
 			$where = "PON.ID='" . $this->pon_id ."' and OLT.ID='" . $this->olt_id . "'";
 		if ($this->submit == "SEARCH") {
@@ -113,8 +113,6 @@ class index {
 		}
 		if ($this->submit == "UNASSIGNED")
 			$where = "CUSTOMERS.OLT is NULL or CUSTOMERS.PON_PORT is NULL";
-
-		
 		try {
 			$conn = db_connect::getInstance();
 			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICES.NAME as SERVICE_NAME, OLT.ID as OLT_ID, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE as TYPE, PON.ID as PON_ID, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID WHERE " . $where ." order by PON_ONU_ID");
@@ -122,9 +120,13 @@ class index {
 			$error =  "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
 		}
-		$rows = $result->fetchAll();
-		return $rows;
+		if ($count == "true") {
+			$count = $result->rowCount();
+			return $count;
+		}
 			
+		$rows = $result->fetchAll();
+		return $rows;			
 	} 
 	
 	function calc_last_online($last_online){

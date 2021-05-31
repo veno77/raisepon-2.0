@@ -1,5 +1,5 @@
 <?php
-include("db_connect_class.php");
+include_once("db_connect_class.php");
 class olt {
 	private $olt_id;
 	private $name;

@@ -108,16 +108,16 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<!--		<th><input type="checkbox" id="selectall"></th> -->
 							<th>ONU</th>
 							<th>Name</th>
-							<th>Address</th>
-							<th>SERVICE</th>
+							<th class="hidden-xs hidden-sm">Address</th>
+							<th class="hidden-xs hidden-sm">SERVICE</th>
 							<!-- <th>RF</th> -->
-							<th>SN/MAC</th>
+							<th class="hidden-xs hidden-sm">SN/MAC</th>
 							<th>PWR<br>(db)</th>
-							<th>DIST<br>(m)</th>
+							<th class="hidden-xs hidden-sm">DIST<br>(m)</th>
 							
 							<th>STATUS</th>
 							<!--<th>LAST ONLINE</th> -->
-							<th>OFFLINE<br>REASON</th>
+							<th class="hidden-xs hidden-sm">OFFLINE<br>REASON</th>
 							<th>INFO</th>
 							<th>SYN</th>
 							<?php if ($user_class >= "6") { ?><th>EDIT</th><?php } ?>
@@ -205,7 +205,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						}				
 					}
 				}
-				$rows = $index_obj->build_table(); 
+				$rows = $index_obj->build_table(""); 
+				$count = $index_obj->build_table("true"); 
 				if(!empty($rows)) {	
 
 					foreach ($rows as $row) { 
@@ -385,15 +386,15 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<td><?php echo $row{'PON_ONU_ID'}; ?></td>
 						<?php } ?>
 						<td><?php echo $row{'NAME'}; ?></td>
-							<td><?php echo $row{'ADDRESS'}; ?></td>
-							<td><?php echo $row{'SERVICE_NAME'}; ?></td>
+							<td class="hidden-xs hidden-sm"><?php echo $row{'ADDRESS'}; ?></td>
+							<td class="hidden-xs hidden-sm"><?php echo $row{'SERVICE_NAME'}; ?></td>
 							<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
-							<td><?php echo $db_sn; ?></td>
+							<td class="hidden-xs hidden-sm"><?php echo $db_sn; ?></td>
 							<td><?php echo $power; ?></td>
-							<?php echo "<td>" . $onu_register_distance . "</td>"; ?>
+							<?php echo "<td class=\"hidden-xs hidden-sm\">" . $onu_register_distance . "</td>"; ?>
 							<td><?php echo $status; ?></td>
 							<!--	<td><?php echo $last_online; ?></td> -->
-							<td><?php echo $offline_reason; ?></td>
+							<td class="hidden-xs hidden-sm"><?php echo $offline_reason; ?></td>
 							<td><?php if ($index_obj->getSubmit() != "UNASSIGNED") { echo "<a href=\"onu_details.php?id=" . $row{'ID'} . "\">";} ?><button type="button" class="btn btn-default">INFO</button></а></td>
 							<td><?php echo $sync; ?></td>
 							<?php if ($user_class >= "6") { ?><td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row{'ID'}; ?>');">EDIT</button></td><?php } ?>
@@ -402,6 +403,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				} ?>
 			</table>
 		</div>
+		<div>Total: <?php echo $count; ?></div>
 	</div>
 	<!--
 		<div class="row justify-content-md-center">

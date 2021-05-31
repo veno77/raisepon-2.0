@@ -55,6 +55,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		}else{
 			$index_2 = (3<<28)+(10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * ($row{'PON_ONU_ID'}%100) + 1);
 		}
+		$catv_input_id = $index_2;
 	}
 	if ($row{'PON_TYPE'} == "EPON") {
 		$index_2 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
@@ -192,13 +193,14 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				}
   
 			
-				if ($rf == "Yes" && $row{'PON_TYPE'} == "EPON") {
+				if ($rf == "Yes") {
 					$rf_input_power = $session->get($rf_input_power_oid);
-					$rf_input_power = round($rf_input_power/10,4);
-					$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:$rf_input_power"));
+					if ($row{'PON_TYPE'} == "EPON")
+						$rf_input_power = round($rf_input_power/10,4);
 				} else {
-					$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:0"));
+					$rf_input_power = "0";
 				}
+				$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:$rf_input_power"));
 				if( $ret == 0 )
 				{
 					$err = rrd_error();

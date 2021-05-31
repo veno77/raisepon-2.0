@@ -4,7 +4,7 @@ include ("common.php");
 include ("dbconnect.php");
 include ("navigation.php");
 $page = $_SERVER['PHP_SELF'];
-$sec = "5";
+$sec = "15";
 header("Refresh: $sec; url=$page");
 
 
