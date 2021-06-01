@@ -1,12 +1,12 @@
 <?php
-require_once("header.php");
 require_once("common.php");
+
+require_once("header.php");
 require_once("navigation.php");
 require_once("classes/index_class.php");
 require_once("classes/snmp_class.php");
 
 
-//header('Cache-control: private', true);
 $index_obj = new index();
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	if (!empty($index_obj->getOlt_id())) {
@@ -46,6 +46,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<label for="pon_id">PON</label>
 						<select class="form-control" id="select-pon" name="pon_id">
 						<option value="">PON PORT</option></select>
+						<label><input type="checkbox" id="online" name="online" value="YES" checked>online</label>
+						<label><input type="checkbox" id="offline" name="offline" value="YES" checked>offline</label>
+						<label><input type="checkbox" id="pending" name="pending" value="YES" checked>pending</label>
 						<input type="hidden" name="SUBMIT" value="LOAD">
 						<button class="btn btn-basic" type="button" onClick="LoadIndex();">LOAD</button>	
 					</div>
@@ -205,24 +208,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						}				
 					}
 				}
-				$rows = $index_obj->build_table(""); 
-				$count = $index_obj->build_table("true"); 
+				$rows = $index_obj->build_table(); 
 				if(!empty($rows)) {	
-
+					$count = 0;
 					foreach ($rows as $row) { 
 						$onu_register_distance = "";
 						if (isset($row{'PON_TYPE'})) {
 							$snmp_obj = new snmp_oid();
 							$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
-						/*	if ($row{'PON_ONU_ID'} < 100) {
-								$big_onu_id_rx_gpon = 10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * $row{'PON_ONU_ID'} + 1;
-							}else{
-								$big_onu_id_rx_gpon = (3<<28)+(10000000 * $row{'SLOT_ID'} + 100000 * $row{'PORT_ID'} + 1000 * ($row{'PON_ONU_ID'}%100) + 1);
-							}
-						
-							$big_onu_id_3 = $row{'SLOT_ID'} * 10000000 + $row{'PORT_ID'} * 100000 + $row{'PON_ONU_ID'};
-						*/	
-							
 							$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 							$onu_last_online_oid = $snmp_obj->get_pon_oid("onu_last_online_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
 							$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
@@ -242,6 +235,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$last_online = "Never";
 							$rf_state = "";
 							if ($status == '1') {
+								if ($index_obj->getOnline() != "YES")
+									continue;
 								$status = "<font color=green>Online</font>";
 								//GET POWER/DISTANCE via SNMP
 								if ($index_obj->getSubmit() == "LOAD") {
@@ -287,8 +282,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								}
 								*/
 							}else if($status == '2'){
+								if ($index_obj->getPending() != "YES")
+									continue;
 								$status = "<font color=blue>Pending</font>";
 							}else if($status == '3'){
+								if ($index_obj->getOffline() != "YES")
+									continue;
 								$status = "<font color=red>Offline</font>";
 							}
 
@@ -399,7 +398,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<td><?php echo $sync; ?></td>
 							<?php if ($user_class >= "6") { ?><td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row{'ID'}; ?>');">EDIT</button></td><?php } ?>
 						</tr>
-					<?php }
+					<?php 
+					$count = $count + 1 ; 
+					}
 				} ?>
 			</table>
 		</div>

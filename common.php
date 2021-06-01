@@ -6,6 +6,7 @@ if (!isset($_SESSION["id"]) && false == strpos($_SERVER['REQUEST_URI'], 'login.p
 //	header("Location: login.php");
 	echo "<script>location='login.php'</script>";
 }
+//header('Cache-control: private');
 
 $user_class = isset($_SESSION["type"]) ? $_SESSION["type"] : null;
 $cur_user_id = isset($_SESSION["id"]) ? $_SESSION["id"] : null;

@@ -12,7 +12,9 @@ class index {
 	public $sn;
 	public $rf_state;
 	private $submit;
-	
+	public $online;
+	public $offline;
+	public $pending;
 	function __construct() {
 		if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$this->onu_id = isset($_POST['onu_id'])	? $this->test_input($_POST['onu_id']) : null;
@@ -23,6 +25,9 @@ class index {
 			$this->pon_port = isset($_POST['pon_port'])	? $this->test_input($_POST['pon_port']) : null;
 			$this->egn = isset($_POST['egn'])	? $this->test_input($_POST['egn']) : null;
 			$this->sn = isset($_POST['sn']) ? $this->test_input($_POST['sn']) : null;
+			$this->online = isset($_POST['online']) ? $this->test_input($_POST['online']) : null;
+			$this->offline = isset($_POST['offline']) ? $this->test_input($_POST['offline']) : null;
+			$this->pending = isset($_POST['pending']) ? $this->test_input($_POST['pending']) : null;
 			$this->submit = isset($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
 		
 		
@@ -58,7 +63,15 @@ class index {
 	function getPon_id() {
 		return $this->pon_id;
 	}
-
+	function getOnline() {
+		return $this->online;
+	}
+	function getOffline() {
+		return $this->offline;
+	}
+	function getPending() {
+		return $this->pending;
+	}
 	function getOlt_name() {
 		try {
 			$conn = db_connect::getInstance();
@@ -98,7 +111,7 @@ class index {
 		$rows = $result->fetchAll();
 		return $rows;		
 	}
-	function build_table($count) {
+	function build_table() {
 		if ($this->submit == "LOAD")
 			$where = "PON.ID='" . $this->pon_id ."' and OLT.ID='" . $this->olt_id . "'";
 		if ($this->submit == "SEARCH") {
@@ -119,10 +132,6 @@ class index {
 		} catch (PDOException $e) {
 			$error =  "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
-		}
-		if ($count == "true") {
-			$count = $result->rowCount();
-			return $count;
 		}
 			
 		$rows = $result->fetchAll();
