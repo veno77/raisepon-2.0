@@ -210,7 +210,6 @@ class customers {
 			$pon_onu_id = "NULL";
 		}
 		if (!empty($this->olt)) {
-
 			//FIND FREE IP if DEFINED IP_POOL to OLT
 			try {
 				$conn = db_connect::getInstance();
@@ -219,51 +218,64 @@ class customers {
 				$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
 				return $error;
 			}
-			if (empty($row))
+			if ($result->rowCount() == 0){
+				try {
+					$conn = db_connect::getInstance();
+					$result = $conn->db->query("SELECT IP_POOL_ID from OLT_IP_POOLS where OLT_ID='$this->olt' AND SERVICE_ID IS NULL");
+				} catch (PDOException $e) {
+					$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
+					return $error;
+				}
+			}
+			
+			if ($result->rowCount() == 0){
 				$this->onu_ip_address = "NULL";
-			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				$ip_pool_id = $row{'IP_POOL_ID'};
-				try {
-					$conn = db_connect::getInstance();
-					$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
-				} catch (PDOException $e) {
-					$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-					return $error2;
-				}		
+			}else{
+				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+					
+					$ip_pool_id = $row{'IP_POOL_ID'};
+					try {
+						$conn = db_connect::getInstance();
+						$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
+					} catch (PDOException $e) {
+						$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
+						return $error2;
+					}			
 
-				$ip_address_array = array();
-				while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
-					array_push($ip_address_array, $row2{'IP_ADDRESS'});
-				}
-				
-				try {
-					$conn = db_connect::getInstance();
-					$result3 = $conn->db->query("SELECT ID, INET_NTOA(SUBNET) as SUBNET, INET_NTOA(NETMASK) as NETMASK, START_IP, END_IP, INET_NTOA(GATEWAY) as GATEWAY, VLAN from IP_POOL where ID='$ip_pool_id'");
-				} catch (PDOException $e) {
-					$error3 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-					return $error3;
-				}		
-				while ($row3 = $result3->fetch(PDO::FETCH_ASSOC)) {
-					$subnet = $row3["SUBNET"];
-					$this->netmask = $row3["NETMASK"];
-					$start_ip = $row3["START_IP"];
-					$end_ip = $row3["END_IP"];
-					$this->gateway = $row3["GATEWAY"];
-					$this->vlan = $row3["VLAN"];					
-				}
-				if (!empty($this->old_onu_ip_address)) {
-					$this->onu_ip_address = $this->old_onu_ip_address;
-				}else{
-					$ip_pool_range = range($start_ip, $end_ip);
-					$free_ips = array_diff($ip_pool_range,$ip_address_array);
-					$free_ips = array_filter($free_ips);
-					if (empty($free_ips)) {
-						$error = "Not Free IP ADDRESS";
-						return $error;
-					}else{
-						$this->onu_ip_address = array_values($free_ips)[0];
+					$ip_address_array = array();
+					while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
+						array_push($ip_address_array, $row2{'IP_ADDRESS'});
 					}
-				}
+					
+					try {
+						$conn = db_connect::getInstance();
+						$result3 = $conn->db->query("SELECT ID, INET_NTOA(SUBNET) as SUBNET, INET_NTOA(NETMASK) as NETMASK, START_IP, END_IP, INET_NTOA(GATEWAY) as GATEWAY, VLAN from IP_POOL where ID='$ip_pool_id'");
+					} catch (PDOException $e) {
+						$error3 = "Connection 1 Failed:" . $e->getMessage() . "\n";
+						return $error3;
+					}		
+					while ($row3 = $result3->fetch(PDO::FETCH_ASSOC)) {
+						$subnet = $row3["SUBNET"];
+						$this->netmask = $row3["NETMASK"];
+						$start_ip = $row3["START_IP"];
+						$end_ip = $row3["END_IP"];
+						$this->gateway = $row3["GATEWAY"];
+						$this->vlan = $row3["VLAN"];					
+					}
+					if (!empty($this->old_onu_ip_address)) {
+						$this->onu_ip_address = $this->old_onu_ip_address;
+					}else{
+						$ip_pool_range = range($start_ip, $end_ip);
+						$free_ips = array_diff($ip_pool_range,$ip_address_array);
+						$free_ips = array_filter($free_ips);
+						if (empty($free_ips)) {
+							$error = "No Free IP ADDRESS";
+							return $error;
+						}else{
+							$this->onu_ip_address = array_values($free_ips)[0];
+						}
+					}
+				} 
 			}
 		} else {
 			$this->onu_ip_address = "NULL";
@@ -415,52 +427,65 @@ class customers {
 				$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
 				return $error;
 			}
-			if (empty($row))
+			if ($result->rowCount() == 0){
+				try {
+					$conn = db_connect::getInstance();
+					$result = $conn->db->query("SELECT IP_POOL_ID from OLT_IP_POOLS where OLT_ID='$this->olt' AND SERVICE_ID IS NULL");
+				} catch (PDOException $e) {
+					$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
+					return $error;
+				}
+			}
+			
+			if ($result->rowCount() == 0){
 				$this->onu_ip_address = "NULL";
-			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				$ip_pool_id = $row{'IP_POOL_ID'};
-				try {
-					$conn = db_connect::getInstance();
-					$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
-				} catch (PDOException $e) {
-					$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-					return $error2;
-				}		
+			}else{
+				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+					
+					$ip_pool_id = $row{'IP_POOL_ID'};
+					try {
+						$conn = db_connect::getInstance();
+						$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
+					} catch (PDOException $e) {
+						$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
+						return $error2;
+					}			
 
-				$ip_address_array = array();
-				while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
-					array_push($ip_address_array, $row2{'IP_ADDRESS'});
-				}
-				
-				try {
-					$conn = db_connect::getInstance();
-					$result3 = $conn->db->query("SELECT ID, INET_NTOA(SUBNET) as SUBNET, INET_NTOA(NETMASK) as NETMASK, START_IP, END_IP, INET_NTOA(GATEWAY) as GATEWAY, VLAN from IP_POOL where ID='$ip_pool_id'");
-				} catch (PDOException $e) {
-					$error3 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-					return $error3;
-				}		
-				while ($row3 = $result3->fetch(PDO::FETCH_ASSOC)) {
-					$subnet = $row3["SUBNET"];
-					$this->netmask = $row3["NETMASK"];
-					$start_ip = $row3["START_IP"];
-					$end_ip = $row3["END_IP"];
-					$this->gateway = $row3["GATEWAY"];
-					$this->vlan = $row3["VLAN"];					
-				}
-				if (!empty($this->old_onu_ip_address)) {
-					$this->onu_ip_address = $this->old_onu_ip_address;
-				}else{
-					$ip_pool_range = range($start_ip, $end_ip);
-					$free_ips = array_diff($ip_pool_range,$ip_address_array);
-					$free_ips = array_filter($free_ips);
-					if (empty($free_ips)) {
-						$error = "Not Free IP ADDRESS";
-						return $error;
-					}else{
-						$this->onu_ip_address = array_values($free_ips)[0];
+					$ip_address_array = array();
+					while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
+						array_push($ip_address_array, $row2{'IP_ADDRESS'});
 					}
-				}
-			} 
+					
+					try {
+						$conn = db_connect::getInstance();
+						$result3 = $conn->db->query("SELECT ID, INET_NTOA(SUBNET) as SUBNET, INET_NTOA(NETMASK) as NETMASK, START_IP, END_IP, INET_NTOA(GATEWAY) as GATEWAY, VLAN from IP_POOL where ID='$ip_pool_id'");
+					} catch (PDOException $e) {
+						$error3 = "Connection 1 Failed:" . $e->getMessage() . "\n";
+						return $error3;
+					}		
+					while ($row3 = $result3->fetch(PDO::FETCH_ASSOC)) {
+						$subnet = $row3["SUBNET"];
+						$this->netmask = $row3["NETMASK"];
+						$start_ip = $row3["START_IP"];
+						$end_ip = $row3["END_IP"];
+						$this->gateway = $row3["GATEWAY"];
+						$this->vlan = $row3["VLAN"];					
+					}
+					if (!empty($this->old_onu_ip_address)) {
+						$this->onu_ip_address = $this->old_onu_ip_address;
+					}else{
+						$ip_pool_range = range($start_ip, $end_ip);
+						$free_ips = array_diff($ip_pool_range,$ip_address_array);
+						$free_ips = array_filter($free_ips);
+						if (empty($free_ips)) {
+							$error = "No Free IP ADDRESS";
+							return $error;
+						}else{
+							$this->onu_ip_address = array_values($free_ips)[0];
+						}
+					}
+				} 
+			}
 		} else {
 			$this->onu_ip_address = "NULL";
 		}
