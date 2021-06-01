@@ -177,6 +177,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					  <tr>
 						<th>OLT</th>
 						<th>POOL</th>
+						<th>SERVICE</th>
 						<th>Edit</th>
 					  </tr>
 					</thead>
@@ -185,7 +186,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					// BUILD EXISTING TABLE
 					$rows = $ip_pool_obj->build_table_olt_ip_pool(); 
 					foreach ($rows as $row) {
-						print "<tr><td>" . $row{'OLT_NAME'} . "</td><td>" . $row{'SUBNET'} . "/" . $row{'NETMASK'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"olt_ip_pool('". $row{'BINDING_ID'} ."');\">EDIT</button></td></tr>";		
+						print "<tr><td>" . $row{'OLT_NAME'} . "</td><td>" . $row{'SUBNET'} . "/" . $row{'NETMASK'} . "</td><td>" . $row{'SERVICES_NAME'}	 . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"olt_ip_pool('". $row{'BINDING_ID'} ."');\">EDIT</button></td></tr>";		
 					}
 					?>
 					</tbody>

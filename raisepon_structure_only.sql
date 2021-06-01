@@ -1,8 +1,8 @@
--- MySQL dump 10.13  Distrib 5.6.48, for FreeBSD12.1 (amd64)
+-- MySQL dump 10.13  Distrib 5.6.51, for FreeBSD13.0 (amd64)
 --
 -- Host: localhost    Database: raisepon
 -- ------------------------------------------------------
--- Server version	5.6.45
+-- Server version	5.6.48
 
 /*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
 /*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
@@ -29,7 +29,7 @@ CREATE TABLE `ACCOUNTS` (
   `TYPE` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `USERNAME` (`USERNAME`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -136,7 +136,7 @@ CREATE TABLE `CUSTOMERS` (
   PRIMARY KEY (`ID`),
   KEY `OLT` (`OLT`),
   KEY `PON_PORT` (`PON_PORT`)
-) ENGINE=InnoDB AUTO_INCREMENT=299 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=330 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -155,7 +155,7 @@ CREATE TABLE `HISTORY` (
   `USER_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `CUSTOMERS_ID` (`CUSTOMERS_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=792 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=893 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -223,7 +223,7 @@ CREATE TABLE `OLT` (
   `RW` varchar(50) NOT NULL,
   `BACKUP_ID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=13 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -252,8 +252,9 @@ CREATE TABLE `OLT_IP_POOLS` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `OLT_ID` int(11) NOT NULL,
   `IP_POOL_ID` int(11) NOT NULL,
+  `SERVICE_ID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -303,7 +304,7 @@ CREATE TABLE `ONU_RX_POWER` (
   `CUSTOMERS_ID` int(11) NOT NULL,
   `RX_POWER` float NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=37 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=58 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -322,7 +323,7 @@ CREATE TABLE `PON` (
   `CARDS_MODEL_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `OLT` (`OLT`)
-) ENGINE=InnoDB AUTO_INCREMENT=53 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=54 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -370,4 +371,4 @@ CREATE TABLE `SERVICE_PROFILE` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2020-06-10 12:38:45
+-- Dump completed on 2021-06-01 14:29:17

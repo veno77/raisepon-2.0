@@ -214,7 +214,7 @@ class customers {
 			//FIND FREE IP if DEFINED IP_POOL to OLT
 			try {
 				$conn = db_connect::getInstance();
-				$result = $conn->db->query("SELECT IP_POOL_ID from OLT_IP_POOLS where OLT_ID='$this->olt'");
+				$result = $conn->db->query("SELECT IP_POOL_ID from OLT_IP_POOLS where OLT_ID='$this->olt' AND SERVICE_ID = '$this->service'");
 			} catch (PDOException $e) {
 				$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
 				return $error;
@@ -410,7 +410,7 @@ class customers {
 			//FIND FREE IP if DEFINED IP_POOL to OLT
 			try {
 				$conn = db_connect::getInstance();
-				$result = $conn->db->query("SELECT IP_POOL_ID from OLT_IP_POOLS where OLT_ID='$this->olt'");
+				$result = $conn->db->query("SELECT IP_POOL_ID from OLT_IP_POOLS where OLT_ID='$this->olt' AND SERVICE_ID = '$this->service'");
 			} catch (PDOException $e) {
 				$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
 				return $error;

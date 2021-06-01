@@ -5,6 +5,7 @@ class ip_pool {
 	private $id;
 	private $binding_id;
 	private $olt_id;
+	private $service_id;
 	public $subnet;
 	public $netmask;
 	public $start_ip;
@@ -18,6 +19,7 @@ class ip_pool {
 			$this->id = isset($_POST['id'])	? $this->test_input($_POST['id']) : null;
 			$this->binding_id = isset($_POST['binding_id'])	? $this->test_input($_POST['binding_id']) : null;
 			$this->olt_id = isset($_POST['olt_id'])	? $this->test_input($_POST['olt_id']) : null;
+			$this->service_id = isset($_POST['service_id'])	? $this->test_input($_POST['service_id']) : null;
 			$this->subnet = isset($_POST['subnet'])	? $this->test_input($_POST['subnet']) : null;
 			$this->netmask = isset($_POST['netmask'])	? $this->test_input($_POST['netmask']) : null;
 			$this->start_ip = isset($_POST['start_ip'])	? $this->test_input($_POST['start_ip']) : null;
@@ -34,7 +36,9 @@ class ip_pool {
 	function getOlt_id() {
 		return $this->olt_id;
 	}
-	
+	function getService_id() {
+		return $this->service_id;
+	}
 	function getId() {
 		return $this->id;
 	}
@@ -113,23 +117,32 @@ class ip_pool {
 	}
 	
 	function create_binding() {
-		//Check if Binding to this OLT already exists
+		//Check if Binding to this OLT and SERVICE already exists
+		if ($this->service_id == "") {
+			$where = "OLT_ID =  '$this->olt_id' AND SERVICE_ID IS NULL";
+		}else{
+			$where = "OLT_ID = '$this->olt_id' AND SERVICE_ID = '$this->service_id'";
+		}
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT OLT_ID from OLT_IP_POOLS where OLT_ID =  '$this->olt_id'");
+			$result = $conn->db->query("SELECT OLT_ID, SERVICE_ID from OLT_IP_POOLS where $where");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
 		}
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			if ($row["OLT_ID"])
-				$error = ("ERROR: THIS OLT have been ASSIGNED pool ALREADY, Please remove any existing bindings and try to create again!");
+				$error = ("ERROR: THIS OLT and this SERVICE have been ASSIGNED pool ALREADY, Please remove any existing bindings and try to create again!");
 				return $error;	
 		}
-		
+		if ($this->service_id == "") {
+			$service_id = "NULL";
+		}else{
+			$service_id = "'$this->service_id'";
+		}
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("INSERT INTO OLT_IP_POOLS (OLT_ID, IP_POOL_ID) VALUES ('$this->olt_id', '$this->id')");
+			$result = $conn->db->query("INSERT INTO OLT_IP_POOLS (OLT_ID, IP_POOL_ID, SERVICE_ID) VALUES ('$this->olt_id', '$this->id', $service_id)");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -138,9 +151,32 @@ class ip_pool {
 	 
 	
 	function edit_binding() {
+		//Check if Binding to this OLT and SERVICE already exists
+		if ($this->service_id == "") {
+			$where = "OLT_ID =  '$this->olt_id' AND SERVICE_ID IS NULL";
+		}else{
+			$where = "OLT_ID = '$this->olt_id' AND SERVICE_ID = '$this->service_id'";
+		}
 		try {
 			$conn = db_connect::getInstance();
-			$conn->db->query("UPDATE OLT_IP_POOLS SET OLT_ID = '$this->olt_id', IP_POOL_ID = '$this->id' where ID = '$this->binding_id'");
+			$result = $conn->db->query("SELECT OLT_ID, SERVICE_ID from OLT_IP_POOLS where $where");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			if ($row["OLT_ID"])
+				$error = ("ERROR: THIS OLT and this SERVICE have been ASSIGNED pool ALREADY, Please remove any existing bindings and try to create again!");
+				return $error;	
+		}
+		if ($this->service_id == "") {
+			$service_id = "NULL";
+		}else{
+			$service_id = "'$this->service_id'";
+		}
+		try {
+			$conn = db_connect::getInstance();
+			$conn->db->query("UPDATE OLT_IP_POOLS SET OLT_ID = '$this->olt_id', IP_POOL_ID = '$this->id', SERVICE_ID = $service_id where ID = '$this->binding_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -188,7 +224,7 @@ class ip_pool {
 	function build_table_olt_ip_pool() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT OLT_IP_POOLS.ID as BINDING_ID, OLT_IP_POOLS.OLT_ID, OLT_IP_POOLS.IP_POOL_ID, OLT.ID, OLT.NAME as OLT_NAME, IP_POOL.ID, INET_NTOA(IP_POOL.SUBNET) as SUBNET, INET_NTOA(IP_POOL.NETMASK) as NETMASK from OLT_IP_POOLS LEFT JOIN OLT on OLT_IP_POOLS.OLT_ID = OLT.ID LEFT JOIN IP_POOL on OLT_IP_POOLS.IP_POOL_ID=IP_POOL.ID");
+			$result = $conn->db->query("SELECT OLT_IP_POOLS.ID as BINDING_ID, OLT_IP_POOLS.OLT_ID, OLT_IP_POOLS.IP_POOL_ID, OLT_IP_POOLS.SERVICE_ID, OLT.ID, OLT.NAME as OLT_NAME, IP_POOL.ID, INET_NTOA(IP_POOL.SUBNET) as SUBNET, INET_NTOA(IP_POOL.NETMASK) as NETMASK, SERVICES.ID, SERVICES.NAME as SERVICES_NAME from OLT_IP_POOLS LEFT JOIN OLT on OLT_IP_POOLS.OLT_ID = OLT.ID LEFT JOIN IP_POOL on OLT_IP_POOLS.IP_POOL_ID=IP_POOL.ID LEFT JOIN SERVICES on OLT_IP_POOLS.SERVICE_ID=SERVICES.ID");
 		} catch (PDOException $e) {
 			$error =  "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -228,7 +264,7 @@ class ip_pool {
 	function get_data_olt_ip_pool() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT OLT_IP_POOLS.ID as BINDING_ID, OLT_IP_POOLS.OLT_ID as OLT_ID, OLT_IP_POOLS.IP_POOL_ID as IP_POOL_ID from OLT_IP_POOLS where ID='$this->binding_id'");
+			$result = $conn->db->query("SELECT OLT_IP_POOLS.ID as BINDING_ID, OLT_IP_POOLS.OLT_ID as OLT_ID, OLT_IP_POOLS.IP_POOL_ID as IP_POOL_ID, OLT_IP_POOLS.SERVICE_ID as SERVICE_ID from OLT_IP_POOLS where ID='$this->binding_id'");
 		} catch (PDOException $e) {
 			echo "Connection Failed:" . $e->getMessage() . "\n";
 			exit;
@@ -236,6 +272,7 @@ class ip_pool {
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			$this->olt_id = $row["OLT_ID"];
 			$this->id = $row["IP_POOL_ID"];
+			$this->service_id = $row["SERVICE_ID"];
 		}		
 	}
 

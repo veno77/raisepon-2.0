@@ -16,7 +16,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	}
 	?>
 <div class="row">
-	<div class="col-md-4 col-md-offset-1">
+	<div class="col-md-5 col-md-offset-1">
 		<div class="form-group">
 			<label for="OLT">OLT</label>
 			<select class="form-control" id="select-olt2" name="olt_id">
@@ -34,7 +34,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			</select>
 		</div>
 	</div>
-	<div class="col-md-6"> 
+</div>
+<div class="row">
+	<div class="col-md-4 col-md-offset-1">
+		<div class="form-group">
+			<label for="SERVICE">Service</label>
+			<select class="form-control" id="select-service" name="service_id">
+				<?php
+					print "	<option value=\"\">Select</option>";				
+					$rows = $customers_obj->get_Service();
+					foreach ($rows as $row) {
+						if($ip_pool_obj->getService_id() == $row{'ID'}) {
+							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} ." === ". $row{'ID'} ."</option>";
+						} else {
+							print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} ." === ". $row{'ID'} ."</option>";
+						}				
+					}
+				?>
+			</select>
+		</div>
+	</div>
+</div>
+<div class=row>
+	<div class="col-md-6 col-md-offset-1">
 		<div class="form-group">
 			<label for="ip_pool">IP_POOL</label>
 			<select class="form-control" id="select-ip-pool" name="id">
