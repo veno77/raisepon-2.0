@@ -87,8 +87,8 @@ class pon {
 		}
 		
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			$ip_address = $row{'IP_ADDRESS'} ;
-			$type = $row{'TYPE'};
+			$ip_address = $row['IP_ADDRESS'] ;
+			$type = $row['TYPE'];
 		}
 		
 		//CREATE RRD
@@ -160,8 +160,8 @@ class pon {
                 }
 
                 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-                        $ip_address = $row{'IP_ADDRESS'} ;
-                        $type = $row{'TYPE'};
+                        $ip_address = $row['IP_ADDRESS'] ;
+                        $type = $row['TYPE'];
                 }
 	
 		//DELETE RRD files
@@ -240,7 +240,7 @@ class pon {
 		}
 
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			return $row{'NAME'};
+			return $row['NAME'];
 		}
 	}
 	
@@ -254,7 +254,7 @@ class pon {
 		}
 
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			return $row{'NAME'};
+			return $row['NAME'];
 		}
 	}
 	function test_input($data) {

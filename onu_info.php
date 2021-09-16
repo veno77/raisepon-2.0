@@ -442,6 +442,7 @@ where CUSTOMERS.ID = '$customer_id'");
 							<th>Speed/Duplex</th>
 						<?php if ($pon_type == "GPON") { ?>
 							<th>Native Vlan</th>
+							<th>Trunk Vlans</th>
 							<th>DS_Policy_ID</th>
 							<th>US_Policy_ID</th>
 							<?php } ?>
@@ -467,6 +468,7 @@ where CUSTOMERS.ID = '$customer_id'");
 					snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 					$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 					$EthPortNativeVlan_oid = $snmp_obj->get_pon_oid("uni_port_nativevlan_oid", $pon_type) . "." . $gindex;
+					$rcGponOnuEthPortTrunkAllowedVlan_oid = $snmp_obj->get_pon_oid("rcGponOnuEthPortTrunkAllowedVlan", $pon_type) . "." . $gindex;
 					$rcGponOnuEthPortDSPolicingProfileId_oid = "1.3.6.1.4.1.8886.18.3.6.5.1.1.19." . $gindex;
 					$rcGponOnuEthPortUSPolicingProfileId_oid = "1.3.6.1.4.1.8886.18.3.6.5.1.1.18." . $gindex;
 					$EthPortNativeVlan = $session->get($EthPortNativeVlan_oid);
@@ -477,6 +479,9 @@ where CUSTOMERS.ID = '$customer_id'");
 					$mac_address_perport_number = $session->get($mac_address_perport_number_oid);
 					snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
 					$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
+					$rcGponOnuEthPortTrunkAllowedVlan = $session->get($rcGponOnuEthPortTrunkAllowedVlan_oid);
+					$EthPortTrunkVlans = $snmp_obj->trunk_vlans($rcGponOnuEthPortTrunkAllowedVlan);
+					$EthPortTrunkVlans = implode(",", $EthPortTrunkVlans);
 					$mac_address_perport = $session->get($mac_address_perport_oid);
 					$mac_address_perport = str_replace('Hex-STRING: ', '', $mac_address_perport);
 					$mac_address_perport = str_replace(' ', '', $mac_address_perport);
@@ -595,7 +600,7 @@ where CUSTOMERS.ID = '$customer_id'");
 				
 				print "<tr  align=center><td>" . $i . "</td><td>" . $port_admin . "</td><td>" . $port_link .  "</td><td>" . $port_flowctrl . "</td><td>" . $port_speed_duplex . "</td>";
 				if ($pon_type == "GPON") 
-					print "<td>" . $EthPortNativeVlan . "</td><td>" . $rcGponOnuEthPortDSPolicingProfileId . "</td><td>" . $rcGponOnuEthPortUSPolicingProfileId . "</td>"	;
+					print "<td>" . $EthPortNativeVlan . "</td><td>" . $EthPortTrunkVlans . "</td><td>" . $rcGponOnuEthPortDSPolicingProfileId . "</td><td>" . $rcGponOnuEthPortUSPolicingProfileId . "</td>"	;
 				if ($pon_type == "EPON")			
 					print "<td>" . $port_isolation . "</td>";
 				if ($user_class >= "6") { 

@@ -53,7 +53,8 @@ class snmp_oid {
 		"rcGponOnuNetIpAddr" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.2",
 		"rcGponOnuNetIpMask" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.3",
 		"rcGponOnuNetDefaultGateway" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.4",
-		"rcGponOnuNetVlan" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.7"
+		"rcGponOnuNetVlan" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.7",
+		"rcGponOnuEthPortTrunkAllowedVlan" => "1.3.6.1.4.1.8886.18.3.6.5.1.1.25"
 	);
 	
 	private $epon_oid = array(
@@ -171,6 +172,32 @@ class snmp_oid {
         $onu_id = str_pad(decbin($onu_id), 16, "0", STR_PAD_LEFT);
         $big_onu_id = bindec($vif . $slot . "0" . $pon_port . $onu_id);
         return $big_onu_id;
+	}
+	
+	function trunk_vlans($hex_string){
+		$output = str_replace('Hex-STRING: ', '', $hex_string);
+		$output = trim(preg_replace('/\s\s+/', ' ', $output));
+		$output = explode(' ', $output);
+		foreach ($output as $key => $value ){
+			if ($value != '00') {
+				$value = strrev(base_convert($value, 16, 2));
+				$value = str_split($value);
+				$vlans = array();
+				foreach ($value as $bit_key => $bitnumber){
+					if ($bitnumber != '0'){
+						$vlan = $key*8 + 8 - $bit_key;
+						$vlans[] = $vlan;
+					}
+				}
+				$vlans = array_reverse($vlans);
+				$all_vlans[] = $vlans;
+			}
+		}
+		$vlans_merged = array();
+		foreach ($all_vlans as $vlans){
+			$vlans_merged = array_merge($vlans_merged, $vlans);
+		}
+		return $vlans_merged;	
 	}
 }
 

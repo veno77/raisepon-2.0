@@ -116,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	if ($type == "info"){
 		try {
-			$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, BACKUP_STATUS.DATE, BACKUP_STATUS.REASON from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN BACKUP_STATUS on OLT.ID = BACKUP_STATUS.OLT where OLT.ID = '$olt_id'");
+			$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, OLT_MODEL.NAME as OLT_MODEL_NAME, BACKUP_STATUS.DATE, BACKUP_STATUS.REASON from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN BACKUP_STATUS on OLT.ID = BACKUP_STATUS.OLT where OLT.ID = '$olt_id'");
 
 			} catch (PDOException $e) {
 					echo "Connection Failed:" . $e->getMessage() . "\n";
@@ -128,10 +128,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$ro = $row['RO'];
 			$rw = $row['RW'];
 			$olt_type = $row['TYPE'];
+			$olt_model_name = $row['OLT_MODEL_NAME'];
 			$date = $row['DATE'];
 			$reason = $row['REASON'];
 		}
 		$index = 10000000;
+		if ($olt_model_name == "ISCOM6820-GP" || $olt_model_name == "ISCOM6820-EP")
+			$index = 30000000;
 		if ($reason == "1")
 			$reason = "noError(1)";
 		if ($reason == "2")

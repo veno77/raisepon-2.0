@@ -208,7 +208,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						}				
 					}
 				}
-				$rows = $index_obj->build_table(); 
+				$rows = $index_obj->build_table();
 				if(!empty($rows)) {	
 					$count = 0;
 					foreach ($rows as $row) { 
@@ -235,8 +235,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$last_online = "Never";
 							$rf_state = "";
 							if ($status == '1') {
-								if ($index_obj->getOnline() != "YES")
+								
+								if ($index_obj->getOnline() != "YES" && $index_obj->getSubmit() != "SEARCH")
 									continue;
+
 								$status = "<font color=green>Online</font>";
 								//GET POWER/DISTANCE via SNMP
 								if ($index_obj->getSubmit() == "LOAD") {

@@ -178,7 +178,7 @@ class customers {
 			}		
 			$arr2 = array();
 			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				array_push($arr2, $row{'PON_ONU_ID'});
+				array_push($arr2, $row['PON_ONU_ID']);
 			}
 			
 			
@@ -233,7 +233,7 @@ class customers {
 			}else{
 				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 					
-					$ip_pool_id = $row{'IP_POOL_ID'};
+					$ip_pool_id = $row['IP_POOL_ID'];
 					try {
 						$conn = db_connect::getInstance();
 						$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
@@ -244,7 +244,7 @@ class customers {
 
 					$ip_address_array = array();
 					while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
-						array_push($ip_address_array, $row2{'IP_ADDRESS'});
+						array_push($ip_address_array, $row2['IP_ADDRESS']);
 					}
 					
 					try {
@@ -388,7 +388,7 @@ class customers {
 				}
 				$arr2 = array();
 				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				array_push($arr2, $row{'PON_ONU_ID'});
+				array_push($arr2, $row['PON_ONU_ID']);
 				}
 				
 				try {
@@ -442,7 +442,7 @@ class customers {
 			}else{
 				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 					
-					$ip_pool_id = $row{'IP_POOL_ID'};
+					$ip_pool_id = $row['IP_POOL_ID'];
 					try {
 						$conn = db_connect::getInstance();
 						$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
@@ -453,7 +453,7 @@ class customers {
 
 					$ip_address_array = array();
 					while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
-						array_push($ip_address_array, $row2{'IP_ADDRESS'});
+						array_push($ip_address_array, $row2['IP_ADDRESS']);
 					}
 					
 					try {
@@ -802,7 +802,7 @@ class customers {
 			$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
 			$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
 			if ($status) {
-				if (($row{'TYPE'} == "EPON") || ($row{'TYPE'} == "XPON")) {
+				if (($row['TYPE'] == "EPON") || ($row['TYPE'] == "XPON")) {
 					//EPON
 					$illegal_onu_mac_address_oid = $snmp_obj->get_pon_oid("illegal_onu_mac_address_oid", "EPON");
 					$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "EPON");
@@ -838,7 +838,7 @@ class customers {
 						$all_olt_illegal[$row["ID"]] = $one_olt;				
 					}
 				}
-				if (($row{'TYPE'} == "GPON") || ($row{'TYPE'} == "XPON")) {
+				if (($row['TYPE'] == "GPON") || ($row['TYPE'] == "XPON")) {
 					//GPON
 					$illegal_onu_sn_oid = $snmp_obj->get_pon_oid("illegal_onu_sn_oid", "GPON");
 					$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "GPON");
