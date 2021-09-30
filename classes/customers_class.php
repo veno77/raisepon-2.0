@@ -132,15 +132,20 @@ class customers {
 	function getOld_olt() {
 		return $this->old_olt;
 	}
+	function setOld_olt($old_olt) {
+		$this->old_olt = $old_olt;
+	}
 	function getPon_port() {
 		return $this->pon_port;
 	}
 	function setPon_port($pon_port) {
 		$this->pon_port = $pon_port;
 	}
-	
 	function getOld_pon_port() {
 		return $this->old_pon_port;
+	}
+	function setOld_pon_port($old_pon_port) {
+		$this->old_pon_port = $old_pon_port;
 	}
 	function getOld_pon_onu_id() {
 		return $this->old_pon_onu_id;

@@ -73,7 +73,22 @@ function setUniPortStatus(customer_id, port_num, type) {
 		$('.dropdown-toggle').dropdown();
 	});
 }
+function RunServiceChange(run) {
+	var olt_selected = $('#select-olt option:selected');
+	var pon_selected = $('#select-pon option:selected');
+	var service_selected = $('#select-service option:selected');
+	var new_service_selected = $('#select-new-service option:selected');
 
+	$('#output').html('<center><img src="pic/loading.gif" /></center>');
+	jQuery.ajax({
+		url: "services.php",
+		data: {olt_id: olt_selected.val(), pon_id: pon_selected.val(), service_id: service_selected.val(), service_new_id: new_service_selected.val(), SUBMIT: run},
+		type: "POST"
+	}).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
+}
 function getService(service_id) {
 	jQuery.ajax({
 		url: "service_modal.php",
