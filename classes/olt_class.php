@@ -91,6 +91,7 @@ class olt {
 			return $error;
 		}
 		//CREATE RRD
+		/*
 		foreach (range(1, 18) as $port_number) {
 	        $rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->olt_ip_address . "_" . $port_number . "_traffic.rrd";
 	        $opts = array( "--step", "300", "--start", 0,
@@ -130,6 +131,7 @@ class olt {
 				return $err;
 			}	
 		}
+		*/
 	}
 	 
 	
@@ -163,6 +165,7 @@ class olt {
 		}
 		
 		//CREATE RRD
+		/*
 		if ($this->olt_old_ip != $this->olt_ip_address) {
 			foreach (range(1, 18) as $port_number) {
 				$old_rrd_file = dirname(dirname(__FILE__)) . "/rrd/" . $this->olt_old_ip . "_" . $port_number . "_traffic.rrd";
@@ -208,6 +211,7 @@ class olt {
 				}    
 			}
 		}
+		*/
 	}
 	
 	function delete_olt() {
@@ -343,7 +347,7 @@ class olt {
 			return $error;
 		}
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			if ($row{'OLT'}) {
+			if ($row['OLT']) {
 				try {
 					$conn = db_connect::getInstance();
 					$conn->db->query("UPDATE BACKUP_STATUS SET DATE = NOW(), REASON = $reason where OLT = $olt_id");

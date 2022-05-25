@@ -48,5 +48,12 @@ function type2ponid ($slot, $pon_port) {
         return $pon_id;
 }
 
+function id2type($id) {
+		$bin_id = decbin($id);
+		$onu_id = bindec(substr($bin_id, -16));
+		$pon_port = bindec(substr($bin_id, -22, 6));
+		$slot = bindec(substr($bin_id, -28, 5));
+		return array($slot, $pon_port, $onu_id);
+}
 
 ?>

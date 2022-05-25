@@ -77,7 +77,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<?php
 						$rows = $pon_obj->get_from_olt();
 						foreach ($rows as $row) { 
-										print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+										print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 						}
 						?>
 						</select>
@@ -115,11 +115,11 @@ if (!empty($pon_obj->getOlt())) {
 					foreach ($rows as $row) {
 												?>
 						<tr>
-							<td><?php echo $row{'NAME'}; ?></td>
-							<td><?php echo $row{'SLOT_ID'}; ?></td>
-							<td><?php echo $row{'PORT_ID'}; ?></td>
-							<td><?php echo $row{'CARDS_MODEL_NAME'}; ?></td>
-							<td><button type="button" class="btn btn-default" onClick="getPon('<?php echo $row{'ID'}; ?>','<?php echo $row{'OLT'}; ?>');">EDIT</button></td>
+							<td><?php echo $row['NAME']; ?></td>
+							<td><?php echo $row['SLOT_ID']; ?></td>
+							<td><?php echo $row['PORT_ID']; ?></td>
+							<td><?php echo $row['CARDS_MODEL_NAME']; ?></td>
+							<td><button type="button" class="btn btn-default" onClick="getPon('<?php echo $row['ID']; ?>','<?php echo $row['OLT']; ?>');">EDIT</button></td>
 						</tr>
 						<?php
 						}

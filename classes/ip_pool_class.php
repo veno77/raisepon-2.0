@@ -1,5 +1,6 @@
 <?php
-include ("db_connect_class.php");
+include_once("db_connect_class.php");
+include_once("customers_class.php");
 
 class ip_pool {
 	private $id;
@@ -276,6 +277,46 @@ class ip_pool {
 		}		
 	}
 
+	function apply_pool() {
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT OLT_ID, SERVICE_ID from OLT_IP_POOLS where IP_POOL_ID='$this->id'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			if (!empty($row['SERVICE_ID'])){
+				try {
+					$conn = db_connect::getInstance();
+					$result = $conn->db->query("SELECT ID, IP_ADDRESS from CUSTOMERS where OLT='$this->olt_id' AND SERVICE='this->service_id'");
+				} catch (PDOException $e) {
+					echo "Connection Failed:" . $e->getMessage() . "\n";
+					exit;
+				}
+	
+			}else{
+				try {
+					$conn = db_connect::getInstance();
+					$result = $conn->db->query("SELECT ID, NAME, IP_ADDRESS from CUSTOMERS where OLT='$this->olt_id'");
+				} catch (PDOException $e) {
+					echo "Connection Failed:" . $e->getMessage() . "\n";
+					exit;
+				}
+			}
+			while ($row2 = $result->fetch(PDO::FETCH_ASSOC)) {
+				if(empty($row2['IP_ADDRESS'])){
+					$customers_obj = new customers();
+					$customers_obj->find_free_ip($this->id);
+					$ip_address = $customers_obj->getOnu_ip_address();
+					if ($ip_address != "NULL") {
+						$customers_obj->set_ip($row2['ID']);
+						print $row2['NAME'] . " updated IP address<br>";
+					}
+				}
+			}	
+		}		
+	}
 	
 	function test_input($data) {
         $data = trim($data);

@@ -47,13 +47,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					<?php if (null == $pon_obj->getPon_id()) print "<option value=\"\">Select</option>"; ?>
 					<?php $rows = $pon_obj->get_Cards_model();
 					foreach ($rows as $row) {
-						if($pon_obj->getCards_model_id() == $row{'ID'}) {
-							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
+						if($pon_obj->getCards_model_id() == $row['ID']) {
+							print "<option value=\"" . $row['ID'] ."\" selected>" . $row['NAME'] . "</option>";
 						} else {
 								if (null !== $pon_obj->getPon_id()) { 
-								print "<option disabled=\"disabled\"  value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+								print "<option disabled=\"disabled\"  value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 								}else{
-								print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+								print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 								}
 						}
 					}?>

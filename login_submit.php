@@ -69,8 +69,8 @@ else
 
         /*** check for a result ***/
 		while ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-			$id = $row{'id'};
-			$type = $row{'type'};
+			$id = $row['id'];
+			$type = $row['type'];
 		}
 
         /*** if we have no result then fail boat ***/

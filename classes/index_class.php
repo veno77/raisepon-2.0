@@ -39,7 +39,9 @@ class index {
 	function getSubmit() {
 		return $this->submit;
 	}
-	
+	function setSubmit($submit) {
+		$this->submit = $submit;
+	}
 	function getName() {
 		return $this->name;
 	}
@@ -59,18 +61,32 @@ class index {
 	function getOlt_id() {
 		return $this->olt_id;
 	}
-	
+	function setOlt_id($olt_id) {
+		$this->olt_id = $olt_id;
+	}
 	function getPon_id() {
 		return $this->pon_id;
+	}
+	function setPon_id($pon_id) {
+		$this->pon_id = $pon_id;
 	}
 	function getOnline() {
 		return $this->online;
 	}
+	function setOnline($online) {
+		$this->online = $online;
+	}
 	function getOffline() {
 		return $this->offline;
 	}
+	function setOffline($offline) {
+		$this->offline = $offline;
+	}
 	function getPending() {
 		return $this->pending;
+	}
+	function setPending($pending) {
+		$this->pending = $pending;
 	}
 	function getOlt_name() {
 		try {
@@ -82,7 +98,7 @@ class index {
 		}
 
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			return $row{'NAME'};
+			return $row['NAME'];
 		}
 	}
 	
@@ -120,7 +136,7 @@ class index {
 			if(!empty($this->egn))
 				$where = "CUSTOMERS.EGN = '$this->egn'";
 			if(!empty($this->sn)) 
-				$where = "CUSTOMERS.SN = '$this->sn'";
+				$where = "CUSTOMERS.SN LIKE '%$this->sn%'";
 			if(!empty($this->address)) 
 				$where = "CUSTOMERS.ADDRESS LIKE '%$this->address%'";
 		}
@@ -133,7 +149,6 @@ class index {
 			$error =  "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
 		}
-			
 		$rows = $result->fetchAll();
 		return $rows;			
 	} 
@@ -162,7 +177,7 @@ class index {
 			return $error;
 		}
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			return $row{'RX_POWER'};
+			return $row['RX_POWER'];
 		}	
 	}
 	

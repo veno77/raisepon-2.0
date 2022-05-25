@@ -95,15 +95,15 @@ $rows = $customers_obj->get_Illegal_onus();
 							$olt_name = $row['NAME'];
 						}
 						foreach ($v as $roww) {
-							$pon_port = $customers_obj->get_Pon_port($k, $roww{'1'},$roww{'2'});
+							$pon_port = $customers_obj->get_Pon_port($k, $roww['1'],$roww['2']);
 							foreach ($pon_port as $pon) {
-								$pon_id = $pon{'ID'};
+								$pon_id = $pon['ID'];
 							}
-							$onu_id = $customers_obj->check_Sn($roww{'0'});
+							$onu_id = $customers_obj->check_Sn($roww['0']);
 							if (isset($onu_id)) {
-								print "<tr><td>" . $olt_name . "</td><td>" . $roww{'0'} . "</td><td>" . $roww{'1'} . "/"  . $roww{'2'} . "</td><td>" . $roww{'3'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"editCustomer('" . $k . "','" . $pon_id . "','" . $onu_id . "');\">EDIT</button></td></tr>";
+								print "<tr><td>" . $olt_name . "</td><td>" . $roww['0'] . "</td><td>" . $roww['1'] . "/"  . $roww['2'] . "</td><td>" . $roww['3'] . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"editCustomer('" . $k . "','" . $pon_id . "','" . $onu_id . "');\">EDIT</button></td></tr>";
 							} else {
-								print "<tr><td>" . $olt_name . "</td><td>" . $roww{'0'} . "</td><td>" . $roww{'1'} . "/"  . $roww{'2'} . "</td><td>" . $roww{'3'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"addCustomer('" . $k . "','" . $pon_id . "','" . $roww{'0'} . "');\">ADD</button></td></tr>";
+								print "<tr><td>" . $olt_name . "</td><td>" . $roww['0'] . "</td><td>" . $roww['1'] . "/"  . $roww['2'] . "</td><td>" . $roww['3'] . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"addCustomer('" . $k . "','" . $pon_id . "','" . $roww['0'] . "');\">ADD</button></td></tr>";
 							}
 						}
 					}

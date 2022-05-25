@@ -10,7 +10,7 @@ try {
 }
 
 while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
-	echo "<option value=\"" . $row2{'ID'} ."\">" . $row2{'NAME'} ." === ". $row2{'SLOT_ID'} ."/". $row2{'PORT_ID'} ."</option>";
+	echo "<option value=\"" . $row2['ID'] ."\">" . $row2['NAME'] ." === ". $row2['SLOT_ID'] ."/". $row2['PORT_ID'] ."</option>";
 }
 
 ?>

@@ -66,7 +66,9 @@ class customers {
 			}
 		}
 	}
-	
+	function getOnu_ip_address() {
+		return $this->onu_ip_address;
+	}
 	function getSubmit() {
 		return $this->submit;
 	}
@@ -172,48 +174,7 @@ class customers {
 		return $this->old_onu_ip_address;
 	}
 	function add_customer() {
-		if (!empty($this->olt) && !empty($this->pon_port)) {
-			// FIND FREE ID
-			try {
-				$conn = db_connect::getInstance();
-				$result = $conn->db->query("SELECT PON_ONU_ID from CUSTOMERS where OLT='$this->olt' and PON_PORT='$this->pon_port'");
-			} catch (PDOException $e) {
-				$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
-				return $error;
-			}		
-			$arr2 = array();
-			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				array_push($arr2, $row['PON_ONU_ID']);
-			}
-			
-			
-			//CHECK PON TYPE
-			try {
-				$conn = db_connect::getInstance();
-				$result = $conn->db->query("SELECT CARDS_MODEL.PON_TYPE from CARDS_MODEL LEFT JOIN PON on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where PON.ID='$this->pon_port'");
-			} catch (PDOException $e) {
-				$error = "Connection 2 Failed:" . $e->getMessage() . "\n";
-				return $error;
-			}
-			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				$this->pon_type = $row["PON_TYPE"];
-			}
-			
-			
-			if ($this->pon_type == "EPON")
-				$arr1 = range(1,64);
-			if ($this->pon_type == "GPON")
-				$arr1 = range(1,128);
-			$arr3 = array_diff($arr1,$arr2);
-			$arr3 = array_filter($arr3);
-			if (empty($arr3)) {
-				$error = "Not Free ONU IDs";
-				return $error;
-			}
-			$pon_onu_id = array_values($arr3)[0];
-		} else {
-			$pon_onu_id = "NULL";
-		}
+		$pon_onu_id = $this->find_next_onu_id();
 		if (!empty($this->olt)) {
 			//FIND FREE IP if DEFINED IP_POOL to OLT
 			try {
@@ -236,50 +197,9 @@ class customers {
 			if ($result->rowCount() == 0){
 				$this->onu_ip_address = "NULL";
 			}else{
-				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-					
+				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {				
 					$ip_pool_id = $row['IP_POOL_ID'];
-					try {
-						$conn = db_connect::getInstance();
-						$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
-					} catch (PDOException $e) {
-						$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-						return $error2;
-					}			
-
-					$ip_address_array = array();
-					while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
-						array_push($ip_address_array, $row2['IP_ADDRESS']);
-					}
-					
-					try {
-						$conn = db_connect::getInstance();
-						$result3 = $conn->db->query("SELECT ID, INET_NTOA(SUBNET) as SUBNET, INET_NTOA(NETMASK) as NETMASK, START_IP, END_IP, INET_NTOA(GATEWAY) as GATEWAY, VLAN from IP_POOL where ID='$ip_pool_id'");
-					} catch (PDOException $e) {
-						$error3 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-						return $error3;
-					}		
-					while ($row3 = $result3->fetch(PDO::FETCH_ASSOC)) {
-						$subnet = $row3["SUBNET"];
-						$this->netmask = $row3["NETMASK"];
-						$start_ip = $row3["START_IP"];
-						$end_ip = $row3["END_IP"];
-						$this->gateway = $row3["GATEWAY"];
-						$this->vlan = $row3["VLAN"];					
-					}
-					if (!empty($this->old_onu_ip_address)) {
-						$this->onu_ip_address = $this->old_onu_ip_address;
-					}else{
-						$ip_pool_range = range($start_ip, $end_ip);
-						$free_ips = array_diff($ip_pool_range,$ip_address_array);
-						$free_ips = array_filter($free_ips);
-						if (empty($free_ips)) {
-							$error = "No Free IP ADDRESS";
-							return $error;
-						}else{
-							$this->onu_ip_address = array_values($free_ips)[0];
-						}
-					}
+					$this->find_free_ip($ip_pool_id);
 				} 
 			}
 		} else {
@@ -383,45 +303,7 @@ class customers {
 			}
 		} else {
 			// FIND FREE ONU_ID
-			if (isset($this->olt) && isset($this->pon_port)) {
-				try {
-					$conn = db_connect::getInstance();
-					$result = $conn->db->query("SELECT PON_ONU_ID from CUSTOMERS where OLT='$this->olt' and PON_PORT='$this->pon_port'");
-				} catch (PDOException $e) {
-					$error = "Connection Failed:" . $e->getMessage() . "\n";
-					return $error;
-				}
-				$arr2 = array();
-				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-				array_push($arr2, $row['PON_ONU_ID']);
-				}
-				
-				try {
-					$conn = db_connect::getInstance();
-					$result = $conn->db->query("SELECT CARDS_MODEL.PON_TYPE from CARDS_MODEL LEFT JOIN PON on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where PON.ID='$this->pon_port'");
-				} catch (PDOException $e) {
-					$error = "Connection Failed:" . $e->getMessage() . "\n";
-					return $error;
-				}
-				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-					$this->pon_type = $row["PON_TYPE"];
-				}
-			
-			
-				if ($this->pon_type == "EPON")
-					$arr1 = range(1,64);
-				if ($this->pon_type == "GPON")
-					$arr1 = range(1,128);
-				$arr3 = array_diff($arr1,$arr2);
-        		$arr3 = array_filter($arr3);
-				if (empty($arr3)) {
-					$error = "Not Free ONU IDs";
-					return $error;
-				}
-				$pon_onu_id = array_values($arr3)[0];
-			}else {
-				$pon_onu_id = "NULL";
-			}
+			$pon_onu_id = $this->find_next_onu_id();
 		}
 		if (!empty($this->olt)) {
 			//FIND FREE IP if DEFINED IP_POOL to OLT
@@ -445,50 +327,9 @@ class customers {
 			if ($result->rowCount() == 0){
 				$this->onu_ip_address = "NULL";
 			}else{
-				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-					
+				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {		
 					$ip_pool_id = $row['IP_POOL_ID'];
-					try {
-						$conn = db_connect::getInstance();
-						$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$this->olt'");
-					} catch (PDOException $e) {
-						$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-						return $error2;
-					}			
-
-					$ip_address_array = array();
-					while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
-						array_push($ip_address_array, $row2['IP_ADDRESS']);
-					}
-					
-					try {
-						$conn = db_connect::getInstance();
-						$result3 = $conn->db->query("SELECT ID, INET_NTOA(SUBNET) as SUBNET, INET_NTOA(NETMASK) as NETMASK, START_IP, END_IP, INET_NTOA(GATEWAY) as GATEWAY, VLAN from IP_POOL where ID='$ip_pool_id'");
-					} catch (PDOException $e) {
-						$error3 = "Connection 1 Failed:" . $e->getMessage() . "\n";
-						return $error3;
-					}		
-					while ($row3 = $result3->fetch(PDO::FETCH_ASSOC)) {
-						$subnet = $row3["SUBNET"];
-						$this->netmask = $row3["NETMASK"];
-						$start_ip = $row3["START_IP"];
-						$end_ip = $row3["END_IP"];
-						$this->gateway = $row3["GATEWAY"];
-						$this->vlan = $row3["VLAN"];					
-					}
-					if (!empty($this->old_onu_ip_address)) {
-						$this->onu_ip_address = $this->old_onu_ip_address;
-					}else{
-						$ip_pool_range = range($start_ip, $end_ip);
-						$free_ips = array_diff($ip_pool_range,$ip_address_array);
-						$free_ips = array_filter($free_ips);
-						if (empty($free_ips)) {
-							$error = "No Free IP ADDRESS";
-							return $error;
-						}else{
-							$this->onu_ip_address = array_values($free_ips)[0];
-						}
-					}
+					$this->find_free_ip($ip_pool_id);
 				} 
 			}
 		} else {
@@ -927,7 +768,7 @@ class customers {
 			$slot_id = $row["SLOT_ID"];
 			$pon_type = $row["PON_TYPE"];
 		}
-		if ($pon_interface && $slot_id) {
+		if (!empty($pon_interface) && !empty($slot_id)) {
 			$this->old_big_onu_id = $this->type2id($slot_id, $pon_interface, $this->old_pon_onu_id);
 			$snmp_obj = new snmp_oid();
 			$destroy_oid = $snmp_obj->get_pon_oid("row_status_oid", $pon_type) . "." . $this->old_big_onu_id;
@@ -941,13 +782,55 @@ class customers {
 		}
 	}
 	
-	
+	function set_ip($id){
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("UPDATE CUSTOMERS SET IP_ADDRESS='$this->onu_ip_address' WHERE ID='$id'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			exit($error);
+		}
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT CUSTOMERS.ID as C_ID, CUSTOMERS.NAME, CUSTOMERS.SN, CUSTOMERS.STATE, CUSTOMERS.STATE_RF, CUSTOMERS.AUTO, PON_ONU_ID, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.SERVICE, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW as RW, PON.ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, LINE_PROFILE.LINE_PROFILE_ID, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS as PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.ID = $id");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			$this->olt_ip_address = $row["IP_ADDRESS"];
+			$olt_rw = $row["RW"];
+			$port_id = $row["PORT_ID"];
+			$this->pon_onu_id = $row["PON_ONU_ID"];
+			$this->sn = $row["SN"];
+			$slot_id = $row["SLOT_ID"];
+			$this->ports = $row["PORTS"];
+			$line_profile_id = $row["LINE_PROFILE_ID"];
+			$service_profile_id = $row["SERVICE_PROFILE_ID"];
+			$this->name = $row["NAME"];
+			$this->customers_id = $row["C_ID"];
+			$this->pon_type = $row["PON_TYPE"];
+		}
+
+		$snmp_obj = new snmp_oid();
+		$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
+		$index = $slot_id * 10000000 + $port_id * 100000 + $this->pon_onu_id;
+		$rcGponOnuNetIpAddr_oid = $snmp_obj->get_pon_oid("rcGponOnuNetIpAddr", "GPON") . "." . $index . ".1";
+		$onu_ip_address = long2ip($this->onu_ip_address);
+		$session->set($rcGponOnuNetIpAddr_oid, 'a', $onu_ip_address);
+		$rcGponOnuNetIpMask_oid = $snmp_obj->get_pon_oid("rcGponOnuNetIpMask", "GPON") . "." . $index . ".1";
+		$session->set($rcGponOnuNetIpMask_oid, 'a', $this->netmask);
+		$rcGponOnuNetDefaultGateway_oid = $snmp_obj->get_pon_oid("rcGponOnuNetDefaultGateway", "GPON") . "." . $index . ".1";
+		$session->set($rcGponOnuNetDefaultGateway_oid, 'a', $this->gateway);
+		$rcGponOnuNetVlan_oid = $snmp_obj->get_pon_oid("rcGponOnuNetVlan", "GPON") . "." . $index . ".1";
+		$session->set($rcGponOnuNetVlan_oid, 'i', $this->vlan);
+	}
 	
 	function add_onu_via_snmp($sn) {
 		// PREPARE SNMPSET TO ADD ONU
         try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT CUSTOMERS.ID as C_ID, CUSTOMERS.NAME, CUSTOMERS.SN, CUSTOMERS.STATE, CUSTOMERS.AUTO, PON_ONU_ID, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.SERVICE, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW as RW, PON.ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, LINE_PROFILE.LINE_PROFILE_ID, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS as PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.SN = '$sn'");
+			$result = $conn->db->query("SELECT CUSTOMERS.ID as C_ID, CUSTOMERS.NAME, CUSTOMERS.SN, CUSTOMERS.STATE, CUSTOMERS.STATE_RF, CUSTOMERS.AUTO, PON_ONU_ID, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.SERVICE, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW as RW, PON.ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, LINE_PROFILE.LINE_PROFILE_ID, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS as PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.SN = '$sn'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -967,6 +850,7 @@ class customers {
 			$this->pon_type = $row["PON_TYPE"];
 			$this->state = $row["STATE"];
 			$this->auto = $row["AUTO"];
+			$this->state_rf = $row["STATE_RF"];
 		}
 		$snmp_obj = new snmp_oid();
 		$index = $slot_id * 10000000 + $port_id * 100000 + $this->pon_onu_id;
@@ -986,8 +870,10 @@ class customers {
 			} else {
 				$session->set(array($sn_oid, $row_status_oid), array('s', 'i'), array($this->sn, '4'));
 			}
-			/*	if ($this->state == "NO" && $this->auto == "YES") {
+		/*	if ($this->state == "NO") {
 				$session->set($state_oid, 'i', '2');
+			}else{
+				$session->set($state_oid, 'i', '1');
 			} */
 			//SET IP_ADDRESS if configured.
 			if ($this->onu_ip_address != "NULL") {
@@ -1017,10 +903,11 @@ class customers {
 			}
 
 		}
+		
 		if ($session->getError()) {
 			try {
 				$conn = db_connect::getInstance();
-				$result = $conn->db->query("DELETE FROM CUSTOMERS where ID='$customer_id'");
+				$result = $conn->db->query("DELETE FROM CUSTOMERS where ID='$this->customers_id'");
 			} catch (PDOException $e) {
 				$error = "Connection Failed:" . $e->getMessage() . "\n";
 				return $error;
@@ -1028,10 +915,57 @@ class customers {
 			$error = var_dump($session->getError());
 			return $error;
 		}
+		
+		//SET THE NAME
 		$session->set($description_oid, 's', $this->name);
 		if ($session->getError()) {
 			$error = var_dump($session->getError());
 			return $error;
+		}
+		
+		//SET RF STATE
+		if (!empty($this->state_rf)) {
+			if ($this->pon_type == "EPON")
+				$index_rf = $slot_id * 10000000 + $port_id * 100000 + $this->pon_onu_id * 1000 + 162;						
+			if ($this->pon_type == "GPON") {
+				if ($this->pon_onu_id < 100) {
+					$index_rf = $slot_id * 10000000 + $port_id * 100000 + $this->pon_onu_id * 1000 + 1;		
+				}else{
+					$index_rf = (3<<28)+($slot_id * 10000000 + $port_id * 100000 + ($this->pon_onu_id%100) * 1000 + 1);
+				}
+			}
+			$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $this->pon_type) . "." . $index_rf;
+			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+			$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
+			$session->set($onu_rf_status_oid, 'i', $this->state_rf);
+			if ($session->getError())
+					return(var_dump($session->getError()));
+		}
+		//SET UNI STATE
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT UNI_PORT_ID, STATE FROM UNI where CUSTOMER_ID = '$this->customers_id'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {	
+			if ($this->pon_type == "EPON")
+				$index_uni = $slot_id * 10000000 + $port_id * 100000 + $this->pon_onu_id * 1000 + $row['UNI_PORT_ID'];						
+			if ($this->pon_type == "GPON") {
+				if ($this->pon_onu_id < 100) {
+					$index_uni = $slot_id * 10000000 + $port_id * 100000 + $this->pon_onu_id * 1000 + $row['UNI_PORT_ID'];		
+				}else{
+					$index_uni = (3<<28)+(10000000 * $slot_id + 100000 * $port_id + 1000 * ($this->pon_onu_id%100)) + $row['UNI_PORT_ID'];
+				}
+			}
+			$uni_port_admin_set = $snmp_obj->get_pon_oid("uni_port_admin_set_oid", $this->pon_type) . "." . $index_uni;
+			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+			$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
+			$session->set($uni_port_admin_set, 'i', $row['STATE']);
+			if ($session->getError())
+				return(var_dump($session->getError()));
 		}
 		$session->close();
 		
@@ -1127,6 +1061,19 @@ class customers {
         $onu_id = str_pad(decbin($onu_id), 16, "0", STR_PAD_LEFT);
         $big_onu_id = bindec($vif . $slot . "0" . $pon_port . $onu_id);
         return $big_onu_id;
+	}
+	function id2type($id) {
+		$bin_id = decbin($id);
+		$onu_id = bindec(substr($bin_id, -16));
+		$pon_port = bindec(substr($bin_id, -22, 6));
+		$slot = bindec(substr($bin_id, -28, 5));
+		return array($slot, $pon_port, $onu_id);
+	}
+	function type2ponid ($slot, $pon_port) {
+        $slot = decbin($slot);
+        $pon_port = str_pad(decbin($pon_port), 6, "0", STR_PAD_LEFT);
+        $pon_id = bindec($slot . $pon_port);
+        return $pon_id;
 	}
 	function update_rf_sql() {
 		try {
@@ -1236,6 +1183,125 @@ class customers {
 				exit;
 			}	
 		}	
+	}
+	function find_next_onu_id() {
+		// FIND FREE ONU_ID
+		if (isset($this->olt) && isset($this->pon_port)) {
+			try {
+				$conn = db_connect::getInstance();
+				$result = $conn->db->query("SELECT CARDS_MODEL.PON_TYPE, PON.OLT, PON.SLOT_ID, PON.PORT_ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW	from CARDS_MODEL LEFT JOIN PON on PON.CARDS_MODEL_ID=CARDS_MODEL.ID LEFT JOIN OLT on OLT.ID=PON.OLT where PON.ID='$this->pon_port'");
+			} catch (PDOException $e) {
+				$error = "Connection Failed:" . $e->getMessage() . "\n";
+				return $error;
+			}
+			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+				$this->pon_type = $row["PON_TYPE"];
+				$this->olt_ip_address = $row["IP_ADDRESS"];
+				$olt_rw = $row["RW"];
+				$slot_id = $row["SLOT_ID"];
+				$port_id = $row["PORT_ID"];
+			}
+			
+			try {
+				$conn = db_connect::getInstance();
+				$result = $conn->db->query("SELECT PON_ONU_ID from CUSTOMERS where OLT='$this->olt' and PON_PORT='$this->pon_port'");
+			} catch (PDOException $e) {
+				$error = "Connection Failed:" . $e->getMessage() . "\n";
+				return $error;
+			}
+			$arr2 = array();
+			while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			array_push($arr2, $row['PON_ONU_ID']);
+			}
+			
+			$pon_index = type2ponid($slot_id, $port_id);
+			$snmp_obj = new snmp_oid();
+			if ($this->pon_type == "EPON"){
+				$arr1 = range(1,64);
+				$PONPortMinOnuIndex = $snmp_obj->get_pon_oid("rcEponPONPortMinOnuIndex", $this->pon_type) . "." . $pon_index;
+			}
+			if ($this->pon_type == "GPON"){
+				$arr1 = range(1,128);
+				$PONPortMinOnuIndex = $snmp_obj->get_pon_oid("rcGponPONPortMinOnuIndex", $this->pon_type) . "." . $pon_index;
+			}
+			$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
+			$snmp_port_min_onu_index = $session->get($PONPortMinOnuIndex); 
+			if(!empty($snmp_port_min_onu_index)){
+				$pon_onu_id = $snmp_port_min_onu_index;
+			}else{
+				$arr3 = array_diff($arr1,$arr2);
+				$arr3 = array_filter($arr3);
+				if (empty($arr3)) {
+					$error = "Not Free ONU IDs";
+					return $error;
+				}
+				$pon_onu_id = array_values($arr3)[0];
+			}
+		}else {
+			$pon_onu_id = "NULL";
+		}
+		return $pon_onu_id;
+	}
+	function find_free_ip($ip_pool_id){
+		try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT OLT_ID, SERVICE_ID from OLT_IP_POOLS where IP_POOL_ID='$ip_pool_id'");
+		} catch (PDOException $e) {
+			$error = "Connection 1 Failed:" . $e->getMessage() . "\n";
+			exit($error);
+		}
+		$ip_address_array = array();
+		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {		
+			if (!empty($row["SERVICE_ID"])) { 
+				try {
+					$conn = db_connect::getInstance();
+					$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$row[OLT_ID]' and SERVICE_ID='$row[SERVICE_ID]'");
+				} catch (PDOException $e) {
+					$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
+					exit($error2);
+				}		
+			}else{
+				try {
+					$conn = db_connect::getInstance();
+					$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$row[OLT_ID]'");
+				} catch (PDOException $e) {
+					$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
+					exit($error2);
+				}		
+			}
+			while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
+				array_push($ip_address_array, $row2['IP_ADDRESS']);
+			}
+
+			try {
+				$conn = db_connect::getInstance();
+				$result3 = $conn->db->query("SELECT ID, INET_NTOA(SUBNET) as SUBNET, INET_NTOA(NETMASK) as NETMASK, START_IP, END_IP, INET_NTOA(GATEWAY) as GATEWAY, VLAN from IP_POOL where ID='$ip_pool_id'");
+			} catch (PDOException $e) {
+				$error3 = "Connection 1 Failed:" . $e->getMessage() . "\n";
+				exit($error3);
+			}		
+			while ($row3 = $result3->fetch(PDO::FETCH_ASSOC)) {
+				$subnet = $row3["SUBNET"];
+				$this->netmask = $row3["NETMASK"];
+				$start_ip = $row3["START_IP"];
+				$end_ip = $row3["END_IP"];
+				$this->gateway = $row3["GATEWAY"];
+				$this->vlan = $row3["VLAN"];					
+			}
+			if (!empty($this->old_onu_ip_address)) {
+				$this->onu_ip_address = $this->old_onu_ip_address;
+			}else{
+				$ip_pool_range = range($start_ip, $end_ip);
+				$free_ips = array_diff($ip_pool_range,$ip_address_array);
+				$free_ips = array_filter($free_ips);
+				if (empty($free_ips)) {
+					$error = "No Free IP ADDRESS";
+				//	exit($error);
+				}else{
+					$this->onu_ip_address = array_values($free_ips)[0];
+				}
+			}
+		}
 	}
 }
 

@@ -22,7 +22,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 
 		while ($row = $rst->fetch(PDO::FETCH_ASSOC)) {
-			$OLT_NAME = $row{'NAME'};
+			$OLT_NAME = $row['NAME'];
 		}
 
 	}
@@ -36,9 +36,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 
 		while ($row = $rst->fetch(PDO::FETCH_ASSOC)) {
-			$PON_NAME = $row{'NAME'};
-			$SLOT_ID = $row{'SLOT_ID'};
-			$PORT_ID = $row{'PORT_ID'};
+			$PON_NAME = $row['NAME'];
+			$SLOT_ID = $row['SLOT_ID'];
+			$PORT_ID = $row['PORT_ID'];
 		}
 
 	}
@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							}
 
 							while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-								print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+								print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 							}
 						?>
 					</select>
@@ -119,8 +119,8 @@ if ($PON_ID) {
 	$end = "0";
 	while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		$i++;	
-		$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});	
-		$pon_snmp_id = type2ponid($row{'SLOT_ID'},$row{'PORT_ID'});	
+		$big_onu_id = type2id($row['SLOT_ID'], $row['PORT_ID'], $row['PON_ONU_ID']);	
+		$pon_snmp_id = type2ponid($row['SLOT_ID'],$row['PORT_ID']);	
 		$olt_ip_address = $row["IP_ADDRESS"];
 		$sn = $row["SN"];
 		
@@ -182,11 +182,11 @@ if ($PON_ID) {
 				echo "rrd_graph() ERROR: $err\n";
 			}
 			if($i == '1') {
-				print "<td colspan=\"2\">PON:" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "</p>" ;
+				print "<td colspan=\"2\">PON:" . $row['SLOT_ID'] . "/" . $row['PORT_ID'] . "</p>" ;
 				print "<p><p onClick=\"graph_pon('". $PON_ID . "', 'traffic');\"><img src=\"rrd/" . $pon_traffic_url . "\"></img></p></td></tr><tr>";
 			}
-			print "<td><p> ONU:" . $row{'PON_ONU_ID'} . "</p>" ;
-			print "<p onClick=\"graph_onu('". $row{'ID'} . "', 'traffic');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
+			print "<td><p> ONU:" . $row['PON_ONU_ID'] . "</p>" ;
+			print "<p onClick=\"graph_onu('". $row['ID'] . "', 'traffic');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
 		}
 		
 		
@@ -231,11 +231,11 @@ if ($PON_ID) {
 					echo "rrd_graph() ERROR: $err\n";
 			}
 			if($i == '1') {
-					print "<td colspan=\"2\">PON:" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} ;
+					print "<td colspan=\"2\">PON:" . $row['SLOT_ID'] . "/" . $row['PORT_ID'] ;
 					print "<p onClick=\"graph_pon('". $PON_ID . "', '" . $graph . "');\"><img src=\"rrd/" . $pon_traffic_url . "\"></img></p></td></tr><tr>";
 			}
-			print "<td>ONU:" . $row{'PON_ONU_ID'};
-			print "<p onClick=\"graph_onu('". $row{'ID'} . "', '" . $graph . "');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
+			print "<td>ONU:" . $row['PON_ONU_ID'];
+			print "<p onClick=\"graph_onu('". $row['ID'] . "', '" . $graph . "');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
 		}
 
 
@@ -261,8 +261,8 @@ if ($PON_ID) {
 				$err = rrd_error();
 				echo "rrd_graph() ERROR: $err\n";
   			}
-			print "<td>ONU:" . $row{'PON_ONU_ID'};
-			print "<p onClick=\"graph_onu('". $row{'ID'} . "', 'power');\"><img src=\"rrd/" . $rrd_power_url . "\"></img></p></td>";
+			print "<td>ONU:" . $row['PON_ONU_ID'];
+			print "<p onClick=\"graph_onu('". $row['ID'] . "', 'power');\"><img src=\"rrd/" . $rrd_power_url . "\"></img></p></td>";
 		}
 		
 		$end++;

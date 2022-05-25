@@ -27,9 +27,9 @@ foreach ($rows as $olt => $values) {
 					$obj->setOlt($olt);
 					$obj->get_data_customer();
 					$error = $obj->edit_customer();
-					if (null !== $obj->getState_rf()) {
-						$obj->update_rf_snmp();
-					}
+					//if (null !== $obj->getState_rf()) {
+					//	$obj->update_rf_snmp();
+					//}
 				}
 			}
 		}

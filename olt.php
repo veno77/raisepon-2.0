@@ -104,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					foreach ($rows as $row) {
 						$snmp_obj = new snmp_oid();
 						snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-						$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'}, 100000, 2);
+						$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 100000, 2);
 						$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
 						$temp = '';
 						$save = '';
@@ -114,7 +114,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						$total_cpu = "";
 						if ($status) {
 							$status = "<font color=green>Online</font>";
-							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+							$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 							$temp = $session->get($snmp_obj->get_pon_oid("olt_temp_oid", "OLT"));
 							if ($temp > '65') {
 								$temp = "<font color=red>" . $temp . "\xc2\xb0C</font>";
@@ -125,7 +125,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							snmp_set_quick_print(TRUE);
 							snmp_set_enum_print(TRUE);
 							snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-							$session = new SNMP(SNMP::VERSION_1, $row{'IP_ADDRESS'}, $row{'RO'});
+							$session = new SNMP(SNMP::VERSION_1, $row['IP_ADDRESS'], $row['RO']);
 							$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
 							$cpus = $session->walk($olt_cpu_oid);
 							foreach ($cpus as $cpu_oid => $cpu) {
@@ -139,13 +139,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								$total_cpu = $total_cpu . $cpu . "<br>";
 							}
 							snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-							$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+							$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 							$sysuptime = $session->get($snmp_obj->get_pon_oid("sys_uptime_oid", "OLT"));
 							$sysuptime_days = floor($sysuptime/(100*3600*24));
 							$sysuptime_hours = $sysuptime/(100*3600)%24;
 							$sysuptime_minutes = $sysuptime/(100*60)%60;
 							$sysuptime = $sysuptime_days . " day(s) " . $sysuptime_hours . " hour(s) " . $sysuptime_minutes . " minutes";
-							$save = '<form action="olt.php" method="post"><input type="hidden" name="olt_id" value="' . $row{'ID'} .'"><button type="submit" class="btn btn-default" name="SUBMIT" value="SAVE">SAVE</button></form>';
+							$save = '<form action="olt.php" method="post"><input type="hidden" name="olt_id" value="' . $row['ID'] .'"><button type="submit" class="btn btn-default" name="SUBMIT" value="SAVE">SAVE</button></form>';
 						}else{
 							$status = "<font color=red>Offline</font>";
 						}
@@ -153,19 +153,19 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						//	print "<tr><td>" . $row{'NAME'} . "</td><td>" .$row{'OLT_NAME'} . "</td><td>" . $row{'IP_ADDRESS'} . "</td><td>" . $row{'RO'} . "</td><td>" . $row{'RW'} . "</td><td>" . $status . "</td><td>" . $temp .  "</td><td>" . $cpu . "</td><td>" . $save . "</td></tr>";
 						?>
 						<tr>
-							<td><?php echo $row{'NAME'}; ?></td>
-							<td><?php echo $row{'OLT_NAME'}; ?></td>
-							<td><?php echo $row{'IP_ADDRESS'}; ?></td>
-							<td><?php echo $row{'RO'}; ?></td>
-							<td><?php echo $row{'RW'}; ?></td>
+							<td><?php echo $row['NAME']; ?></td>
+							<td><?php echo $row['OLT_NAME']; ?></td>
+							<td><?php echo $row['IP_ADDRESS']; ?></td>
+							<td><?php echo $row['RO']; ?></td>
+							<td><?php echo $row['RW']; ?></td>
 							<td><?php echo $status; ?></td>
 							<td><?php echo $temp; ?></td>
 							<td><?php echo $total_cpu; ?></td>
 							<td><?php echo $sysuptime; ?></td>
-							<td><?php echo $row{'BACKUP_NAME'}; ?></td>
-							<td><?php echo "<a href=\"olt_details.php?id=" . $row{'ID'} . "\">"; ?><button type="button" class="btn btn-default">INFO</button></a></td>
+							<td><?php echo $row['BACKUP_NAME']; ?></td>
+							<td><?php echo "<a href=\"olt_details.php?id=" . $row['ID'] . "\">"; ?><button type="button" class="btn btn-default">INFO</button></a></td>
 							<td><?php echo $save; ?></td>
-							<td><button type="button" class="btn btn-default" onClick="getOlt('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
+							<td><button type="button" class="btn btn-default" onClick="getOlt('<?php echo $row['ID']; ?>');">EDIT</button></td>
 						</tr>
 						<?php
 						}

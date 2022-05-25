@@ -1,8 +1,8 @@
 <?php
-include ("header.php");
-include ("common.php");
-include ("classes/ip_pool_class.php");
-include ("navigation.php");
+include_once("header.php");
+include_once("common.php");
+include_once("classes/ip_pool_class.php");
+include_once("navigation.php");
 
 if ($user_class < "6")
 	exit();
@@ -129,7 +129,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					// BUILD EXISTING TABLE
 					$rows = $ip_pool_obj->build_table_ip_pool(); 
 					foreach ($rows as $row) {
-						print "<tr><td>" . $row{'SUBNET'} . "</td><td>" . $row{'NETMASK'} . "</td><td>" . $row{'START_IP'} . "</td><td>" . $row{'END_IP'} . "</td><td>" . $row{'GATEWAY'} . "</td><td>" . $row{'VLAN'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"get_ip_pool('". $row{'ID'} ."');\">EDIT</button></td></tr>";		
+						print "<tr><td>" . $row['SUBNET'] . "</td><td>" . $row['NETMASK'] . "</td><td>" . $row['START_IP'] . "</td><td>" . $row['END_IP'] . "</td><td>" . $row['GATEWAY'] . "</td><td>" . $row['VLAN'] . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"get_ip_pool('". $row['ID'] ."');\">EDIT</button></td></tr>";		
 					}
 					?>
 					</tbody>
@@ -178,6 +178,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<th>OLT</th>
 						<th>POOL</th>
 						<th>SERVICE</th>
+						<th>APPLY</th>
 						<th>Edit</th>
 					  </tr>
 					</thead>
@@ -186,7 +187,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					// BUILD EXISTING TABLE
 					$rows = $ip_pool_obj->build_table_olt_ip_pool(); 
 					foreach ($rows as $row) {
-						print "<tr><td>" . $row{'OLT_NAME'} . "</td><td>" . $row{'SUBNET'} . "/" . $row{'NETMASK'} . "</td><td>" . $row{'SERVICES_NAME'}	 . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"olt_ip_pool('". $row{'BINDING_ID'} ."');\">EDIT</button></td></tr>";		
+						print "<tr><td>" . $row['OLT_NAME'] . "</td><td>" . $row['SUBNET'] . "/" . $row['NETMASK'] . "</td><td>" . $row['SERVICES_NAME']	 . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"apply_pool('". $row['BINDING_ID'] ."');\">APPLY</button></td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"olt_ip_pool('". $row['BINDING_ID'] ."');\">EDIT</button></td></tr>";		
 					}
 					?>
 					</tbody>
@@ -220,4 +221,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		</div>
 	</div>
 </div>			
-
+<div class="container" >
+	<div id="output" class="text-center">
+	</div>
+</div>

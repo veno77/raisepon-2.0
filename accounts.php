@@ -94,7 +94,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$type = "Operator";
 						if ($row['TYPE'] == '3')
 							$type = "Visitor";
-						print "<tr><td>" . $row{'ID'} . "</td><td>" . $row{'USERNAME'} . "</td><td>" . $type . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"getAccount('". $row{'ID'} ."');\">EDIT</button></td></tr>";		
+						print "<tr><td>" . $row['ID'] . "</td><td>" . $row['USERNAME'] . "</td><td>" . $type . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"getAccount('". $row['ID'] ."');\">EDIT</button></td></tr>";		
 					}
 					?>
 					</tbody>

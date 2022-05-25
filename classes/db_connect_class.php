@@ -7,7 +7,7 @@ class db_connect {
 	private static $instance;
 	private function __construct() {
 		try {
-			$this->db = new PDO('mysql:host=localhost;dbname=raisepon;charset=utf8', self::$mysql_user, self::$mysql_pass);
+			$this->db = new PDO('mysql:host=localhost;dbname=raisepon-dev;charset=utf8', self::$mysql_user, self::$mysql_pass);
 			$this->db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 		} catch (PDOException $e) {
 			echo 'Connection Failed: ' . $e->getMessage();

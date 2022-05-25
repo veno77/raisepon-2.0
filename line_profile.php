@@ -82,7 +82,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					// BUILD EXISTING TABLE
 					$rows = $line_profile_obj->build_table_line_profile(); 
 					foreach ($rows as $row) {
-						print "<tr><td>" . $row{'NAME'} . "</td><td>" . $row{'LINE_PROFILE_ID'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"getLine_profile('". $row{'ID'} ."');\">EDIT</button></td></tr>";		
+						print "<tr><td>" . $row['NAME'] . "</td><td>" . $row['LINE_PROFILE_ID'] . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"getLine_profile('". $row['ID'] ."');\">EDIT</button></td></tr>";		
 					}
 					?>
 					</tbody>

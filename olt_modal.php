@@ -31,10 +31,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					<option value="" class="rhth">Select</option>
 					<?php $rows = $olt_obj->get_Olt_model();
 					foreach ($rows as $row) {
-						if($olt_obj->getOlt_model() == $row{'ID'}) {
-							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
+						if($olt_obj->getOlt_model() == $row['ID']) {
+							print "<option value=\"" . $row['ID'] ."\" selected>" . $row['NAME'] . "</option>";
 						} else {
-								print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+								print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 						}
 					}?>
 				</select>
@@ -73,10 +73,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					<option value="" class="rhth">Select</option>
 					<?php $rows = $olt_obj->get_Backup();
 					foreach ($rows as $row) {
-						if($olt_obj->getBackup_id() == $row{'ID'}) {
-							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
+						if($olt_obj->getBackup_id() == $row['ID']) {
+							print "<option value=\"" . $row['ID'] ."\" selected>" . $row['NAME'] . "</option>";
 						} else {
-								print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+								print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 						}
 					}?>
 				</select>

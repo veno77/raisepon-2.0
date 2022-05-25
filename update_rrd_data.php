@@ -25,6 +25,8 @@ $broadcast_out_oid = $snmp_obj->get_pon_oid("ifHCOutBroadcastPkts", "OLT");
 //Multicast
 $multicast_in_oid = $snmp_obj->get_pon_oid("ifHCInMulticastPkts", "OLT") ;
 $multicast_out_oid = $snmp_obj->get_pon_oid("ifHCOutMulticastPkts", "OLT") ;
+$sn_list_full= array();
+$mysql_dump_full = array();
 
 
 
@@ -36,16 +38,23 @@ try {
 	return $error;
 }
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-	
-	$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'TYPE'});
-	$octets_in_ethernet_oid = $snmp_obj->get_pon_oid("uni_octets_in_ethernet_oid", $row{'TYPE'}) ;
-	$octets_out_ethernet_oid = $snmp_obj->get_pon_oid("uni_octets_out_ethernet_oid", $row{'TYPE'}) ;
-
+	$mysql_dump = array();
+	$sn_list = array();
+	//Line Profiles
+	$line_profile_oid = $snmp_obj->get_pon_oid("line_profile_oid", $row['TYPE']);
+	$service_profile_oid = $snmp_obj->get_pon_oid("service_profile_oid", $row['TYPE']);
+	$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row['TYPE']);
+	$octets_in_ethernet_oid = $snmp_obj->get_pon_oid("uni_octets_in_ethernet_oid", $row['TYPE']) ;
+	$octets_out_ethernet_oid = $snmp_obj->get_pon_oid("uni_octets_out_ethernet_oid", $row['TYPE']) ;
+	//Description
+	$description_oid = $snmp_obj->get_pon_oid("description_oid", $row['TYPE']) ;	
+	//SN
+	$onu_sn_oid = $snmp_obj->get_pon_oid("onu_sn_oid", $row['TYPE']) ;
 	$olt = $row["ID"];
 	$ip_address = $row["IP_ADDRESS"];
 	$olt_status_oid = $snmp_obj->get_pon_oid("olt_status_oid", "OLT");
 	snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-	$session = new SNMP(SNMP::VERSION_2C, $ip_address, $row{'RO'});
+	$session = new SNMP(SNMP::VERSION_2C, $ip_address, $row['RO']);
 	$olt_status = $session->get($olt_status_oid);
 	$customers_obj = new customers();
 	if ($olt_status) {
@@ -77,7 +86,57 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				$onu_status[$line[0]] = $line[1];
 			}
 		}
-		if ($row{'TYPE'} == "EPON") {
+		//collect line_profile ids for each onu
+		exec("$snmpbulkwalk -Onq -Cc -v2c -c $row[RO] $ip_address $line_profile_oid", $output , $return_var);
+		$line_profiles = array();
+		foreach($output as $line) {
+			if (strpos($line, $line_profile_oid) !== false) {
+				$line = str_replace("." . $line_profile_oid . ".", "", $line);
+				$line = explode(" ", $line);
+				$line_profiles[$line[0]] = $line[1];
+			}
+		}
+		//collect service_profiles for each onu
+		exec("$snmpbulkwalk -Onq -Cc -v2c -c $row[RO] $ip_address $service_profile_oid", $output , $return_var);
+		$service_profiles = array();
+		foreach($output as $line) {
+			if (strpos($line, $service_profile_oid) !== false) {
+				$line = str_replace("." . $service_profile_oid . ".", "", $line);
+				$line = explode(" ", $line);
+				$service_profiles[$line[0]] = $line[1];
+			}
+		}
+		//collect description for each onu
+		exec("$snmpbulkwalk -Onq -Cc -v2c -c $row[RO] $ip_address $description_oid", $output , $return_var);
+		$descriptions = array();
+		foreach($output as $line) {
+			if (strpos($line, $description_oid) !== false) {
+				$line = str_replace("." . $description_oid . ".", "", $line);
+				$line = explode(" ", $line);
+				$descriptions[$line[0]] = trim($line[1],"\"");
+			}
+		}
+		unset($output);
+		exec("$snmpbulkwalk -Onq -Cc -v2c -c $row[RO] $ip_address $onu_sn_oid", $output , $return_var);
+		foreach($output as $line) {
+			if (strpos($line, $onu_sn_oid) !== false) {
+				$line = str_replace("." . $onu_sn_oid . ".", "", $line);
+				$line = explode("\"", $line);
+				$key = trim($line[0]," ");
+				$line_profile = $line_profiles[$key];
+				$service_profile = $service_profiles[$key];
+				$description = $descriptions[$key];
+				if ($line_profile == "65535"){
+					$line_profile = "";
+				}
+				if ($service_profile == "65535")
+					$service_profile = "";
+				$sn_list[str_replace(" ", "",$line[1])] = array(intval($line[0]), $line_profile, $service_profile, $description);
+			}
+		}
+		$sn_list_full[$olt] = $sn_list;
+		
+		if ($row['TYPE'] == "EPON") {
 			exec("$snmpbulkwalk -Onq -Cc -v2c -c $row[RO] $ip_address $traffic_in_oid", $output , $return_var);
 			$traffic_in = array();
 			foreach($output as $line) {
@@ -152,16 +211,17 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			}
 		}
 		try {
-			$result2 = $db->query("SELECT CUSTOMERS.ID as ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICE_PROFILE.PORTS, SERVICE_PROFILE.HGU, SERVICE_PROFILE.RF, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.OLT='$olt'");
+			$result2 = $db->query("SELECT CUSTOMERS.ID as ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS, SERVICE_PROFILE.HGU, SERVICE_PROFILE.RF, LINE_PROFILE.LINE_PROFILE_ID, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.OLT='$olt'");
 		} catch (PDOException $e) {
 			echo "Connection Failed:" . $e->getMessage() . "\n";
 			exit;
 		}
 		while ($row2 = $result2->fetch(PDO::FETCH_ASSOC)) {
-			$hgu = $row2{'HGU'};
+			$hgu = $row2['HGU'];
 			$sn = $row2["SN"];
 			$customers_obj = new customers();
-			$big_onu_id = $customers_obj->type2id($row2{'SLOT_ID'}, $row2{'PORT_ID'}, $row2{'PON_ONU_ID'});
+			$big_onu_id = $customers_obj->type2id($row2['SLOT_ID'], $row2['PORT_ID'], $row2['PON_ONU_ID']);
+			$mysql_dump[$row2["SN"]] = array($big_onu_id, $row2["LINE_PROFILE_ID"], $row2["SERVICE_PROFILE_ID"], $row2["NAME"]);
 			$olt_ip_address = $row2["IP_ADDRESS"];	
 			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd"; 
 			$error = "0";
@@ -192,7 +252,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			
 			if ($onu_status[$big_onu_id] == "1") {
 				echo $sn . "\n";
-				if ($row2{'PON_TYPE'} == "EPON") {
+				if ($row2['PON_TYPE'] == "EPON") {
 					$ret = rrd_update($rrd_traffic, array("N:$traffic_in[$big_onu_id]:$traffic_out[$big_onu_id]"));
 					if( $ret == 0 )
 					{
@@ -222,12 +282,12 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 					}		
 				}
 				if ($hgu !== "Yes") {
-					for ($i=1; $i <= $row2{'PORTS'}; $i++) {
+					for ($i=1; $i <= $row2['PORTS']; $i++) {
 						// $ethernet_id = $row2{'SLOT_ID'} * 10000000 + $row2{'PORT_ID'} * 100000 + $row2{'PON_ONU_ID'} * 1000 + $i;
-						if ($row2{'PON_ONU_ID'} < 100) {
-							$ethernet_id = 10000000 * $row2{'SLOT_ID'} + 100000 * $row2{'PORT_ID'} + 1000 * $row2{'PON_ONU_ID'} + $i;
+						if ($row2['PON_ONU_ID'] < 100) {
+							$ethernet_id = 10000000 * $row2['SLOT_ID'] + 100000 * $row2['PORT_ID'] + 1000 * $row2['PON_ONU_ID'] + $i;
 						}else{
-							$ethernet_id = (3<<28)+(10000000 * $row2{'SLOT_ID'} + 100000 * $row2{'PORT_ID'} + 1000 * ($row2{'PON_ONU_ID'}%100) + $i);
+							$ethernet_id = (3<<28)+(10000000 * $row2['SLOT_ID'] + 100000 * $row2['PORT_ID'] + 1000 * ($row2['PON_ONU_ID']%100) + $i);
 						}
 						$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".rrd";
 						if(!is_file($octets_ethernet)) {
@@ -264,8 +324,126 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				}
 			}
 		}
+		$mysql_dump_full[$olt] = $mysql_dump;
 	}else {
 		$ip_address_state[$ip_address] = "down";
+	}
+}
+
+//print_r($sn_list_full);
+//print_r($mysql_dump_full);
+
+function array_diff_assoc_recursive(array $array, array ...$arrays)
+{
+	$func  = function($array1, $array2) use (&$func){
+		$difference = [];
+		foreach ($array1 as $key => $value) {
+			if (is_array($value)) {
+				if (!isset($array2[$key]) || !is_array($array2[$key])) {
+					$difference[$key] = $value;
+				} else {
+					$new_diff = $func($value, $array2[$key]);
+					if (!empty($new_diff)) {
+						$difference[$key] = $new_diff;
+					}
+				}
+			} else {
+				if (!array_key_exists($key, $array2) || $array2[$key] !== $value) {
+					$difference[$key] = $value;
+				}
+			}
+		}
+		return $difference;
+	};
+	$diffs = $array;
+	foreach ($arrays as $_array) {
+		$diffs = $func($diffs, $_array);
+	}
+	return $diffs;
+}
+
+$difference = array_diff_assoc_recursive($sn_list_full, $mysql_dump_full);
+
+print_r($difference);
+
+//exit();
+
+if (!empty($difference)){
+	foreach ($difference as $olt_id_key=>$value){
+		foreach($value as $sn_key=>$snmp_data){
+			$service = "";
+			if (!empty($snmp_data[0])){
+				try {
+					$pon_port_info = $customers_obj->id2type($snmp_data[0]);
+					$result = $db->query("SELECT ID from PON where OLT='$olt_id_key' AND SLOT_ID='$pon_port_info[0]' AND PORT_ID='$pon_port_info[1]'");
+				} catch (PDOException $e) {
+					echo "Connection Failed:" . $e->getMessage() . "\n";
+					exit;
+				}
+				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+					$pon_port_id = $row["ID"];
+				}
+			}
+
+			if (!empty($snmp_data[1]) && !empty($snmp_data[2])){
+				try {
+					$result = $db->query("SELECT SERVICES.ID from SERVICES LEFT JOIN LINE_PROFILE on LINE_PROFILE.ID=SERVICES.LINE_PROFILE_ID LEFT JOIN SERVICE_PROFILE on SERVICE_PROFILE.ID=SERVICES.SERVICE_PROFILE_ID where LINE_PROFILE.LINE_PROFILE_ID='$snmp_data[1]' AND SERVICE_PROFILE.SERVICE_PROFILE_ID='$snmp_data[2]'");
+				} catch (PDOException $e) {
+					echo "Connection Failed:" . $e->getMessage() . "\n";
+					exit;
+				}
+				while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+					$service = $row["ID"];
+				}
+			}	
+			if(!empty($mysql_dump_full[$olt_id_key][$sn_key][0])){
+				if (!empty($service)) {
+					try {
+						$conn = db_connect::getInstance();
+						$result = $conn->db->query("UPDATE CUSTOMERS SET SERVICE = '$service' where SN = '$sn_key'");
+					} catch (PDOException $e) {
+						$error = "Connection Failed:" . $e->getMessage() . "\n";
+						exit($error);	
+					}
+				}
+				if(!empty($snmp_data[0])){
+					try {
+						$conn = db_connect::getInstance();
+						$result = $conn->db->query("UPDATE CUSTOMERS SET OLT = '$olt_id_key', PON_PORT = '$pon_port_id', PON_ONU_ID = '$pon_port_info[2]' where SN = '$sn_key'");
+					} catch (PDOException $e) {
+						$error = "Connection Failed:" . $e->getMessage() . "\n";
+						return $error;	
+					}
+				}
+				if(!empty($snmp_data[3])){
+					try {
+						$conn = db_connect::getInstance();
+						$result = $conn->db->query("UPDATE CUSTOMERS SET NAME = '$snmp_data[3]' where SN = '$sn_key'");
+					} catch (PDOException $e) {
+						$error = "Connection Failed:" . $e->getMessage() . "\n";
+						return $error;	
+					}
+				}
+			}else{
+				if (!empty($service)) {
+					try {
+						$conn = db_connect::getInstance();
+						$result = $conn->db->query("INSERT INTO CUSTOMERS (NAME, ADDRESS, EGN, OLT, PON_PORT, PON_ONU_ID, SN, SERVICE) VALUES ('$snmp_data[3]', '', NULL, '$olt_id_key', '$pon_port_id', '$pon_port_info[2]', '$sn_key', '$service')");
+					} catch (PDOException $e) {
+						$error = "Connection Failed:" . $e->getMessage() . "\n";
+						echo $error;
+					}
+				}else{
+					try {
+						$conn = db_connect::getInstance();
+						$result = $conn->db->query("INSERT INTO CUSTOMERS (NAME, ADDRESS, EGN, OLT, PON_PORT, PON_ONU_ID, SN) VALUES ('$snmp_data[3]', '', NULL, '$olt_id_key', '$pon_port_id', '$pon_port_info[2]', '$sn_key')");
+					} catch (PDOException $e) {
+						$error = "Connection Failed:" . $e->getMessage() . "\n";
+						echo $error;
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -289,11 +467,11 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	if ($ip_address_state[$ip_address] == "up") {
 		$ethernet_port_info = array(); 
 		$dot3StatsIndex = $snmp_obj->get_pon_oid("dot3StatsIndex", "OLT");
-		$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+		$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 		$output = $session->walk($dot3StatsIndex);
 		foreach ($output as $oid => $index) {
 			$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $index . "_traffic.rrd";
-			$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+			$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 			$ifHCInOctets = $session->get($snmp_obj->get_pon_oid("ifHCInOctets", "OLT"). "." . $index);
 			$ifHCOutOctets = $session->get($snmp_obj->get_pon_oid("ifHCOutOctets", "OLT"). "." . $index);
 			if(!is_file($rrd_name)){
@@ -327,7 +505,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
 		$rrd_name_temp = dirname(__FILE__) . "/rrd/" . $ip_address . "_temp.rrd";
 		$rrd_name_cpu = dirname(__FILE__) . "/rrd/" . $ip_address . "_cpu.rrd";
-		$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+		$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 		$olt_temp = $session->get($olt_temp_oid);
 		if(!is_file($rrd_name_temp)){
 			$opts = array( "--step", "300", "--start", "0",
@@ -363,7 +541,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		snmp_set_quick_print(TRUE);
 		snmp_set_enum_print(TRUE);
 		snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-		$session = new SNMP(SNMP::VERSION_1, $row{'IP_ADDRESS'}, $row{'RO'});
+		$session = new SNMP(SNMP::VERSION_1, $row['IP_ADDRESS'], $row['RO']);
 		$cpus = $session->walk($olt_cpu_oid);
 		$olt_cpu = "";
 		foreach ($cpus as $cpu_oid => $cpu) {
@@ -408,10 +586,10 @@ try {
 	exit;
 }
 while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-	$ip_address = $row{'IP_ADDRESS'};
+	$ip_address = $row['IP_ADDRESS'];
 	if ($ip_address_state[$ip_address] == "up") {
 		$pon_obj = new pon();
-		$port = $pon_obj->type2ponid($row{'SLOT_ID'},$row{'PORT_ID'});	
+		$port = $pon_obj->type2ponid($row['SLOT_ID'],$row['PORT_ID']);	
 		$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_traffic.rrd";
 		$rrd_unicast = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_unicast.rrd";
 		$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_broadcast.rrd";
@@ -482,7 +660,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		}
 		
 		
-		$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+		$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 		$total_input_traffic = $session->get($ifHCInOctets);
 		$total_output_traffic = $session->get($ifHCOutOctets);
 		$ret = rrd_update($rrd_name, array("N:$total_input_traffic:$total_output_traffic"));

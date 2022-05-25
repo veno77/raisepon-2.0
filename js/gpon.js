@@ -59,6 +59,20 @@ function getPageRF(customer_id, type) {
 		$('.dropdown-toggle').dropdown();
 	});
 }
+function delete_selected(olt, pon_port) {
+	var selected = $('.case:checked').map(function(){
+      return $(this).val();
+    });;
+	$('#modalbody').html('<center><img src="pic/loading.gif" /></center>');
+	jQuery.ajax({
+		url: "delete_selected_onus.php",
+		data: {olt_id: olt, pon_id: pon_port, data: selected.get()},
+		type: "POST"
+	}).done(function(data) {
+		$('#modalbody').html(data);
+		$('#myModal').modal('show'); 
+	});
+}
 
 function setUniPortStatus(customer_id, port_num, type) {
 	var boza = port_num
@@ -152,6 +166,17 @@ function olt_ip_pool(binding_id) {
 		$('#xpon').dropdown();
 		$('#profiles').dropdown();
 		$('#tools').dropdown();
+	});
+}
+function apply_pool(binding_id) {
+	jQuery.ajax({
+		url: "ip_pool_apply.php",
+		data: {binding_id: binding_id},
+		type: "POST",
+		success:function(data){$('#output').html(data);}
+	}).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
 	});
 }
 function getLine_profile(id) {
@@ -337,6 +362,7 @@ function LoadIndex() {
 		$('.dropdown-toggle').dropdown();
 	});
 }
+
 function SearchIndex() {
 	$('#output').html('<img src="pic/loading.gif" />');
 	jQuery.ajax({
@@ -361,11 +387,25 @@ function UnassignedIndex() {
 		$('.dropdown-toggle').dropdown();
 	});
 }
+function ConfirmDelete() {
+	jQuery.ajax({
+		url: "index.php",
+		data: $('form#confirm_delete').serialize(),
+		type: "POST",
+		success:function(data){$('#output').html(data);}
+	}).done(function(data) {
+		$('#myModal').modal('hide'); 
+		$(document.body).removeClass('modal-open');
+		$('.modal-backdrop').remove();
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
+}
 function ShowSamePon(olt_id, pon_id, onu_id) {
 	$('#output').html('<img src="pic/loading.gif" />');
 	jQuery.ajax({
 		url: "index.php",
-		data: {olt_id: olt_id, pon_id: pon_id, onu_id: onu_id, SUBMIT: "LOAD"},
+		data: {olt_id: olt_id, pon_id: pon_id, onu_id: onu_id, online: "YES", offline: "YES", pending: "YES", SUBMIT: "LOAD"},
 		type: "POST",
 		success:function(data){$('#output').html(data);}
 	}).done(function(data) {

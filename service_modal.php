@@ -29,10 +29,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					<option value="" class="rhth">Select</option>
 					<?php $rows = $services_obj->get_Line_profile_info();
 					foreach ($rows as $row) {
-						if($services_obj->getLine_profile_id() == $row{'ID'}) {
-							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
+						if($services_obj->getLine_profile_id() == $row['ID']) {
+							print "<option value=\"" . $row['ID'] ."\" selected>" . $row['NAME'] . "</option>";
 						} else {
-								print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+								print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 						}
 					}?>
 				</select>
@@ -47,10 +47,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					<option value="" class="rhth">Select</option>
 					<?php $rows = $services_obj->get_Service_profile_info();
 					foreach ($rows as $row) {
-						if($services_obj->getService_profile_id() == $row{'ID'}) {
-							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
+						if($services_obj->getService_profile_id() == $row['ID']) {
+							print "<option value=\"" . $row['ID'] ."\" selected>" . $row['NAME'] . "</option>";
 						} else {
-								print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+								print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 						}
 					}?>
 				</select>

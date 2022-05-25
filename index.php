@@ -5,6 +5,7 @@ require_once("header.php");
 require_once("navigation.php");
 require_once("classes/index_class.php");
 require_once("classes/snmp_class.php");
+require_once("classes/customers_class.php");
 
 
 $index_obj = new index();
@@ -15,10 +16,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	
 	if (!empty($index_obj->getPon_id())) {
 		$row = $index_obj->getPon_data();	
-		$PON_NAME = $row{'NAME'};
-		$SLOT_ID = $row{'SLOT_ID'};
-		$PORT_ID = $row{'PORT_ID'};
-		$PON_TYPE = $row{'PON_TYPE'};
+		$PON_NAME = $row['NAME'];
+		$SLOT_ID = $row['SLOT_ID'];
+		$PORT_ID = $row['PORT_ID'];
+		$PON_TYPE = $row['PON_TYPE'];
 	}
 }else{
 ?>
@@ -39,7 +40,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<?php
 						$rows = $index_obj->get_from_olt();
 						foreach ($rows as $row) { 
-										print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+										print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 						}
 						?>
 						</select>
@@ -108,7 +109,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				<table class="table table-bordered table-condensed table-hover">
 					<thead>
 						<tr align=center style=font-weight:bold>
-						<!--		<th><input type="checkbox" id="selectall"></th> -->
+							<th><input type="checkbox" id="selectall"></th>
 							<th>ONU</th>
 							<th>Name</th>
 							<th class="hidden-xs hidden-sm">Address</th>
@@ -127,17 +128,33 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						</tr>
 					</thead>
 				<?php
+				if ($index_obj->getSubmit() == "CONFIRM_DELETE") {
+					foreach($_POST['data'] as $customers_id){
+						$customers_obj = new customers();
+						$customers_obj->setCustomer_id($customers_id);
+						$customers_obj->get_data_customer();
+						$error = $customers_obj->delete_customer();
+						if(!empty($error))
+							print $error;
+					}
+					$index_obj->setOlt_id($_POST['olt_id']);
+					$index_obj->setPon_id($_POST['pon_id']);
+					$index_obj->setOnline("YES");
+					$index_obj->setOffline("YES");
+					$index_obj->setPending("YES");
+					$index_obj->setSubmit("LOAD");
+				}
 				if ($index_obj->getSubmit() == "LOAD") {
 					$row = $index_obj->getPon_data();	
-					$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, "1");
+					$big_onu_id = type2id($row['SLOT_ID'], $row['PORT_ID'], "1");
 					$big_onu_id = $big_onu_id - 1;
 					$snmp_obj = new snmp_oid();
-					$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'});
-					$onu_status_oid_boi = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
-					$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row{'PON_TYPE'});
-					$onu_offline_reason_oid_boi = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
-					$onu_sn_oid = $snmp_obj->get_pon_oid("onu_sn_oid", $row{'PON_TYPE'});
-					$onu_sn_oid_boi = $snmp_obj->get_pon_oid("onu_sn_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+					$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row['PON_TYPE']);
+					$onu_status_oid_boi = $snmp_obj->get_pon_oid("onu_status_oid", $row['PON_TYPE']) . "." . $big_onu_id;
+					$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row['PON_TYPE']);
+					$onu_offline_reason_oid_boi = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row['PON_TYPE']) . "." . $big_onu_id;
+					$onu_sn_oid = $snmp_obj->get_pon_oid("onu_sn_oid", $row['PON_TYPE']);
+					$onu_sn_oid_boi = $snmp_obj->get_pon_oid("onu_sn_oid", $row['PON_TYPE']) . "." . $big_onu_id;
 					exec("$snmpbulkget -Onq -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_status_oid_boi", $output , $return_var);
 					$onu_status = array();
 					foreach($output as $line) {
@@ -157,7 +174,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						}
 					}
 				
-					if ($row{'PON_TYPE'} == "GPON") {
+					if ($row['PON_TYPE'] == "GPON") {
 						exec("$snmpbulkget -OnqE -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_sn_oid_boi", $output , $return_var);
 						$onu_sn = array();
 						foreach($output as $line) {
@@ -167,8 +184,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								$onu_sn[$line[0]] = $line[1];
 							}
 						}
-						$onu_register_distance_oid = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row{'PON_TYPE'});
-						$onu_register_distance_oid_boi = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+						$onu_register_distance_oid = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row['PON_TYPE']);
+						$onu_register_distance_oid_boi = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row['PON_TYPE']) . "." . $big_onu_id;
 						exec("$snmpbulkget -Onq -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_register_distance_oid_boi", $output , $return_var);
 						$onu_register_distance_arr = array();
 						foreach($output as $line) {
@@ -179,7 +196,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							}
 						}				
 					}	
-					if ($row{'PON_TYPE'} == "EPON") {
+					if ($row['PON_TYPE'] == "EPON") {
 						exec("$snmpbulkget -On -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_sn_oid_boi", $output , $return_var);
 						$onu_sn = array();
 						foreach($output as $line) {
@@ -209,33 +226,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					}
 				}
 				$rows = $index_obj->build_table();
+				$count = 0;
 				if(!empty($rows)) {	
-					$count = 0;
-					foreach ($rows as $row) { 
+					foreach ($rows as $row) {
 						$onu_register_distance = "";
-						if (isset($row{'PON_TYPE'})) {
+						if (isset($row['PON_TYPE'])) {
 							$snmp_obj = new snmp_oid();
-							$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
-							$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
-							$onu_last_online_oid = $snmp_obj->get_pon_oid("onu_last_online_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
-							$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
-							$onu_sn_oid = $snmp_obj->get_pon_oid("onu_sn_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
-							if ($row{'PON_TYPE'} == "GPON")
-								$onu_register_distance_oid = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row{'PON_TYPE'}) . "." . $big_onu_id;
+							$big_onu_id = type2id($row['SLOT_ID'], $row['PORT_ID'], $row['PON_ONU_ID']);
+							$onu_status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row['PON_TYPE']) . "." . $big_onu_id;
+							$onu_last_online_oid = $snmp_obj->get_pon_oid("onu_last_online_oid", $row['PON_TYPE']) . "." . $big_onu_id;
+							$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $row['PON_TYPE']) . "." . $big_onu_id;
+							$onu_sn_oid = $snmp_obj->get_pon_oid("onu_sn_oid", $row['PON_TYPE']) . "." . $big_onu_id;
+							if ($row['PON_TYPE'] == "GPON")
+								$onu_register_distance_oid = $snmp_obj->get_pon_oid("onu_register_distance_oid", $row['PON_TYPE']) . "." . $big_onu_id;
 							$dot3MpcpRoundTripTime = $snmp_obj->get_pon_oid("dot3MpcpRoundTripTime", "OLT") . "." . $big_onu_id;
 								//GET ONU STATUS via SNMP
 							if ($index_obj->getSubmit() == "LOAD") {
 								$status = $onu_status[$big_onu_id];
 							}else{
 								snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-								$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+								$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 								$status = $session->get($onu_status_oid);
 							}
 							$power = '';
 							$last_online = "Never";
 							$rf_state = "";
-							if ($status == '1') {
-								
+							if ($status == '1') {								
 								if ($index_obj->getOnline() != "YES" && $index_obj->getSubmit() != "SEARCH")
 									continue;
 
@@ -244,14 +260,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								if ($index_obj->getSubmit() == "LOAD") {
 									$onu_register_distance = $onu_register_distance_arr[$big_onu_id];
 								}else{
-									if ($row{'PON_TYPE'} == "GPON") {
+									if ($row['PON_TYPE'] == "GPON") {
 										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-										$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+										$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 										$onu_register_distance = $session->get($onu_register_distance_oid);
 									}
-									if ($row{'PON_TYPE'} == "EPON") {
+									if ($row['PON_TYPE'] == "EPON") {
 										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-										$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+										$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 										$dot3MpcpRoundTripTime = $session->get($dot3MpcpRoundTripTime);
 										if ($dot3MpcpRoundTripTime <= '46')
 											$onu_register_distance = '1';
@@ -259,7 +275,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 											$onu_register_distance = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
 									}
 								}
-								$power = $index_obj->get_rx_power($row{'ID'});
+								$power = $index_obj->get_rx_power($row['ID']);
 								if ($power) {
 									if ($power < "-25") {
 										$power = "<font color=red>" . $power . "</font>" ;
@@ -283,12 +299,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 									}
 								}
 								*/
-							}else if($status == '2'){
-								if ($index_obj->getPending() != "YES")
+							}
+							
+							if($status == '2'){
+								if ($index_obj->getPending() != "YES" && $index_obj->getSubmit() != "SEARCH")
 									continue;
 								$status = "<font color=blue>Pending</font>";
 							}else if($status == '3'){
-								if ($index_obj->getOffline() != "YES")
+								if ($index_obj->getOffline() != "YES" && $index_obj->getSubmit() != "SEARCH")
 									continue;
 								$status = "<font color=red>Offline</font>";
 							}
@@ -298,10 +316,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								$offline_reason = $onu_offline_reason[$big_onu_id];
 							}else{
 								snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-								$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+								$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 								$offline_reason = $session->get($onu_offline_reason_oid);
 							}
-							if ($row{'PON_TYPE'} == "GPON") {
+							if ($row['PON_TYPE'] == "GPON") {
 								if ($offline_reason == '1') {
 									$offline_reason = "unknown(1)" ;
 								} else if($offline_reason == '6') {
@@ -322,7 +340,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 									$offline_reason = "duplicatedOnuId(11)" ;
 								}
 							}
-							if ($row{'PON_TYPE'} == "EPON") {
+							if ($row['PON_TYPE'] == "EPON") {
 								if ($offline_reason == '1') {
 									$offline_reason = "unknown(1)" ;
 								} else if($offline_reason == '2') {
@@ -344,20 +362,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							if ($index_obj->getSubmit() == "LOAD") {
 								$check_sn = str_replace("\"", "", $onu_sn[$big_onu_id]);
 							}else{
-								if ($row{'PON_TYPE'} == "EPON") {
+								if ($row['PON_TYPE'] == "EPON") {
 									snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-									$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+									$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 									$check_sn = $session->get($onu_sn_oid);
 									$check_sn = trim(str_replace('Hex-STRING: ', '', $check_sn));
 									$check_sn = str_replace('"', '', str_replace(' ', '', $check_sn));
 								} else {
-									$session = new SNMP(SNMP::VERSION_2C, $row{'IP_ADDRESS'}, $row{'RO'});
+									$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 									$check_sn = $session->get($onu_sn_oid);	
 								}
 							}
-						
+
 							//$check_sn = str_replace("52434D47","RCMG", $check_sn);
-							$db_sn = $row{'SN'};
+							$db_sn = $row['SN'];
 							
 							if (strcasecmp($check_sn, $db_sn) == 0){
 								$sync = "<font color=green>OK</font>" ;
@@ -371,34 +389,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							$status = NULL;
 							$last_online = NULL;
 							$offline_reason = NULL;
-							$db_sn = $row{'SN'};
+							$db_sn = $row['SN'];
 							$sync = NULL;
 						}
-						if ($row{'ID'} == $index_obj->getOnu_id()) {
+
+						if ($row['ID'] == $index_obj->getOnu_id()) {
 							echo "<tr class=\"bg-danger\" align=\"right\">";
 						}else{
 							echo "<tr align=\"right\">";
 						}
+
 						if ($index_obj->getSubmit() == "SEARCH") {
+											
 						?>
-							<!-- <td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row{'ID'}; ?>"></td> -->							
-							<td><button type="button" class="btn btn-default" onClick="ShowSamePon('<?php echo $row{'OLT_ID'} . "','" . $row{'PON_ID'} . "','" . $row{'ID'}; ?>');"><?php echo $row{'OLT_NAME'} . "/" . $row{'SLOT_ID'} . "/" . $row{'PORT_ID'} . "/"	; echo $row{'PON_ONU_ID'}; ?></button></td>
+							<td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row['ID']; ?>"></td>	
+							<td><button type="button" class="btn btn-default" onClick="ShowSamePon('<?php echo $row['OLT_ID'] . "','" . $row['PON_ID'] . "','" . $row['ID']; ?>');"><?php echo $row['OLT_NAME'] . "/" . $row['SLOT_ID'] . "/" . $row['PORT_ID'] . "/"	; echo $row['PON_ONU_ID']; ?></button></td>
 						<?php }else{ ?>
-							<td><?php echo $row{'PON_ONU_ID'}; ?></td>
+							<td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row['ID']; ?>"></td>
+							<td><?php echo $row['PON_ONU_ID']; ?></td>
 						<?php } ?>
-						<td><?php echo $row{'NAME'}; ?></td>
-							<td class="hidden-xs hidden-sm"><?php echo $row{'ADDRESS'}; ?></td>
-							<td><?php echo $row{'SERVICE_NAME'}; ?></td>
-							<!--	<td><a href="onu_details.php?id=<?php echo $row{'ID'}; ?>"><?php echo $rf_state; ?></a></td> -->
+						<td><?php echo $row['NAME']; ?></td>
+							<td class="hidden-xs hidden-sm"><?php echo $row['ADDRESS']; ?></td>
+							<td><?php echo $row['SERVICE_NAME']; ?></td>
 							<td class="hidden-xs hidden-sm"><?php echo $db_sn; ?></td>
 							<td><?php echo $power; ?></td>
 							<?php echo "<td class=\"hidden-xs hidden-sm\">" . $onu_register_distance . "</td>"; ?>
 							<td><?php echo $status; ?></td>
 							<!--	<td><?php echo $last_online; ?></td> -->
 							<td class="hidden-xs hidden-sm"><?php echo $offline_reason; ?></td>
-							<td><?php if ($index_obj->getSubmit() != "UNASSIGNED") { echo "<a href=\"onu_details.php?id=" . $row{'ID'} . "\">";} ?><button type="button" class="btn btn-default">INFO</button></а></td>
+							<td><?php if ($index_obj->getSubmit() != "UNASSIGNED") { echo "<a href=\"onu_details.php?id=" . $row['ID'] . "\">";} ?><button type="button" class="btn btn-default">INFO</button></а></td>
 							<td class="hidden-xs hidden-sm"><?php echo $sync; ?></td>
-							<?php if ($user_class >= "6") { ?><td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row{'ID'}; ?>');">EDIT</button></td><?php } ?>
+							<?php if ($user_class >= "6") { ?><td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row['ID']; ?>');">EDIT</button></td><?php } ?>
 						</tr>
 					<?php 
 					$count = $count + 1 ; 
@@ -406,32 +427,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				} ?>
 			</table>
 		</div>
-		<div>Total: <?php echo $count; ?></div>
-	</div>
-	<!--
-		<div class="row justify-content-md-center">
-			<div class="text-center">
-				<div class="form-group">
-					<label for="olt_port">OLT</label>
-					<select class="form-control" id="select-olt-2" name="olt_port">
-						<option value="" class="rhth">Select OLT</option>
-						<?php
-						$rows = $index_obj->get_from_olt();
-						foreach ($rows as $row) { 
-							print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
-						}
-						?>
-					</select>
-					<select class="form-control" id="select-pon-2" name="pon_port">
-						<option value="">PON PORT</option>
-					</select>
-					<button class="btn btn-info" type="submit" name="SUBMIT" value="MOVE SELECTED">MOVE SELECTED</button>					
-				</div>
-			</div>
-		</div>
-	</form>
-	-->
+	<div>Total: <?php echo $count; ?></div>
+	<div><button type="button" class="btn btn-danger" onClick="delete_selected('<?php echo $row['OLT_ID']; ?>','<?php echo $row['PON_ID']; ?>');">DELETE SELECTED</button></div>
+	<div>&nbsp;</div>
 </div>
+<div></div>
 <div class="container">
 	<div class="modal fade" id="myModal" role="dialog">
 		<div class="modal-dialog"> 

@@ -100,7 +100,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					// BUILD EXISTING TABLE
 					$rows = $services_obj->build_table_services(); 
 					foreach ($rows as $row) {
-						print "<tr><td>" . $row{'NAME'} . "</td><td>" . $row{'LINE_PROFILE_NAME'} . "</td><td>" . $row{'SERVICE_PROFILE_NAME'} . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"getService('". $row{'ID'} ."');\">EDIT</button></td></tr>";		
+						print "<tr><td>" . $row['NAME'] . "</td><td>" . $row['LINE_PROFILE_NAME'] . "</td><td>" . $row['SERVICE_PROFILE_NAME'] . "</td><td><button type=\"button\" class=\"btn btn-default\" onClick=\"getService('". $row['ID'] ."');\">EDIT</button></td></tr>";		
 					}
 					?>
 					</tbody>
@@ -154,7 +154,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						$index_obj = new index();
 						$rows = $index_obj->get_from_olt();
 						foreach ($rows as $row) { 
-										print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+										print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 						}
 						?>
 						</select>
@@ -168,7 +168,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						$index_obj = new index();
 						$rows = $services_obj->build_table_services(); 
 						foreach ($rows as $row) { 
-										print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+										print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 						}
 						?>
 						</select>
@@ -179,7 +179,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						$index_obj = new index();
 						$rows = $services_obj->build_table_services(); 
 						foreach ($rows as $row) { 
-										print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+										print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 						}
 						?>
 						</select>

@@ -146,6 +146,30 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$set_uni = $session->set($uni_port_admin_set, 'i', $uni_val);
 		if ($session->getError())
 			return(var_dump($session->getError()));
+		//UPDATE DB
+		try {
+			$result = $db->query("SELECT COUNT(*) FROM UNI where CUSTOMER_ID = '$customer_id' AND UNI_PORT_ID = '$port_num'");
+		} catch (PDOException $e) {
+			echo "Connection Failed:" . $e->getMessage() . "\n";
+			exit;
+		}
+		$count = $result->fetchColumn();
+		if ($count == "0"){
+			try {
+				$result = $db->query("INSERT INTO UNI (CUSTOMER_ID, UNI_PORT_ID, STATE) VALUES ('$customer_id', '$port_num', '$uni_val')");
+			} catch (PDOException $e) {
+				$error = "Connection Failed:" . $e->getMessage() . "\n";
+				return $error;
+			}
+		}else{
+			try {
+				$result = $db->query("UPDATE UNI SET STATE = '$uni_val' where CUSTOMER_ID = '$customer_id' AND UNI_PORT_ID = '$port_num'");
+			} catch (PDOException $e) {
+				echo "Connection Failed:" . $e->getMessage() . "\n";
+				return $error;
+			}
+		}
+		
 		if ($uni_val == "1")
 			$customer_obj->update_history("set UNI port " . $port_num . " ENABLED", $cur_user_id);
 			if ($uni_val == "2")
@@ -191,10 +215,10 @@ where CUSTOMERS.ID = '$customer_id'");
 		}
 		$index_type2id = type2id($slot_id, $port_id, $pon_onu_id);
 		if ($pon_type == "EPON")
-			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 162;						
+			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 160;						
 		if ($pon_type == "GPON")
 			$index_rf = $slot_id * 10000000 + $port_id * 100000 + $pon_onu_id * 1000 + 1;		
-		//	$version_oid = $snmp_obj->get_pon_oid("onu_version_oid", $row{'PON_TYPE'}) . "." . $index;
+		//	$version_oid = $snmp_obj->get_pon_oid("onu_version_oid", $row['PON_TYPE']) . "." . $index;
 		//	$firmware_oid = "1.3.6.1.4.1.8886.18.2.6.1.1.1.7." . $index;
 		$onu_last_online_oid = $snmp_obj->get_pon_oid("onu_last_online_oid", $pon_type) . "." . $index_type2id;
 		$device_type_oid = $snmp_obj->get_pon_oid("onu_device_type_oid", $pon_type) . "." . $index;
@@ -223,7 +247,10 @@ where CUSTOMERS.ID = '$customer_id'");
         $hw_revision = $session->get($hw_revision_oid);
 		$match_state = $session->get($match_state_oid);	
 		$onu_rf_rx_power = $session->get($onu_rf_rx_power_oid);
-		$onu_rf_rx_power = $onu_rf_rx_power . " dBm";
+		if ($pon_type == "EPON")
+			$onu_rf_rx_power = round($onu_rf_rx_power/10,4) . " dBm";
+		if ($pon_type == "GPON")
+			$onu_rf_rx_power = $onu_rf_rx_power . " dBm";
 		function calc_last_online($last_online){
 			$last_online = str_replace('Hex-STRING: ', '', $last_online);
 			$loa = explode(' ', $last_online);
@@ -481,7 +508,11 @@ where CUSTOMERS.ID = '$customer_id'");
 					$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 					$rcGponOnuEthPortTrunkAllowedVlan = $session->get($rcGponOnuEthPortTrunkAllowedVlan_oid);
 					$EthPortTrunkVlans = $snmp_obj->trunk_vlans($rcGponOnuEthPortTrunkAllowedVlan);
-					$EthPortTrunkVlans = implode(",", $EthPortTrunkVlans);
+					if (!empty($EthPortTrunkVlans)){					
+						$EthPortTrunkVlans = implode(",", $EthPortTrunkVlans);
+					}else{
+						$EthPortTrunkVlans = "--";
+					}
 					$mac_address_perport = $session->get($mac_address_perport_oid);
 					$mac_address_perport = str_replace('Hex-STRING: ', '', $mac_address_perport);
 					$mac_address_perport = str_replace(' ', '', $mac_address_perport);
@@ -700,11 +731,11 @@ where CUSTOMERS.ID = '$customer_id'");
 				exit;
 		}
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			$ports = $row{'PORTS'};
-			$customer_name = $row{'NAME'};
-			$olt_name = $row{'OLT_NAME'};
+			$ports = $row['PORTS'];
+			$customer_name = $row['NAME'];
+			$olt_name = $row['OLT_NAME'];
 			$sn = $row["SN"];
-			$big_onu_id = type2id($row{'SLOT_ID'}, $row{'PORT_ID'}, $row{'PON_ONU_ID'});
+			$big_onu_id = type2id($row['SLOT_ID'], $row['PORT_ID'], $row['PON_ONU_ID']);
 			$olt_ip_address = $row["IP_ADDRESS"];
 			$rf = $row["RF"];
 			$hgu = $row["HGU"];
@@ -748,7 +779,7 @@ where CUSTOMERS.ID = '$customer_id'");
 				);
 			}
 			if ($hgu !== "Yes") {
-				for ($i=1; $i <= $row{'PORTS'}; $i++) {
+				for ($i=1; $i <= $row['PORTS']; $i++) {
 					$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".rrd";
 					${$i."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=b/s", "--title=Daily Traffic UNI $i",
 					"DEF:inoctets=$octets_ethernet:input:AVERAGE",
@@ -803,21 +834,21 @@ where CUSTOMERS.ID = '$customer_id'");
 				);
 			}
 
-			$rrd_traffic_url = $sn . "_traffic.gif";
-			$unicast_url =  $sn . "_unicast.gif";
-			$broadcast_url =  $sn . "_broadcast.gif";
-			$multicast_url =  $sn . "_multicast.gif";
+//			$rrd_traffic_url = $sn . "_traffic.gif";
+//			$unicast_url =  $sn . "_unicast.gif";
+//			$broadcast_url =  $sn . "_broadcast.gif";
+//			$multicast_url =  $sn . "_multicast.gif";
 			$rrd_power_url = $sn . "_power.gif";
-			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.gif";
+//			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.gif";
 			$rrd_power = dirname(__FILE__) . "/rrd/" . $sn . "_power.gif";
-			$unicast = dirname(__FILE__) . "/rrd/" . $sn . "_unicast.gif";
-			$broadcast = dirname(__FILE__) . "/rrd/" . $sn . "_broadcast.gif";
-			$multicast = dirname(__FILE__) . "/rrd/" . $sn . "_multicast.gif";
-			$ret = rrd_graph($rrd_traffic, $opts);
+//			$unicast = dirname(__FILE__) . "/rrd/" . $sn . "_unicast.gif";
+//			$broadcast = dirname(__FILE__) . "/rrd/" . $sn . "_broadcast.gif";
+//			$multicast = dirname(__FILE__) . "/rrd/" . $sn . "_multicast.gif";
+//			$ret = rrd_graph($rrd_traffic, $opts);
 			$ret = rrd_graph($rrd_power, $opts4);
-			$ret = rrd_graph($unicast, $unicast_opts);
-			$ret = rrd_graph($broadcast, $broadcast_opts);
-			$ret = rrd_graph($multicast, $multicast_opts);
+//			$ret = rrd_graph($unicast, $unicast_opts);
+//			$ret = rrd_graph($broadcast, $broadcast_opts);
+//			$ret = rrd_graph($multicast, $multicast_opts);
 
 
 			if( !is_array($ret) )
@@ -828,7 +859,7 @@ where CUSTOMERS.ID = '$customer_id'");
 
 		}
 		print "<div class=\"text-center\"><div class=\"table-responsive col-lg-11\"><table class=\"table text-center \"><tr>";
-		print "<td><p onClick=\"graph('". $customer_id . "', 'traffic');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
+//		print "<td><p onClick=\"graph('". $customer_id . "', 'traffic');\"><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p></td>";
 		$end = "1";
 		if ($hgu !== "Yes") {
 			for ($i=1; $i <= $ports; $i++) {
@@ -842,9 +873,9 @@ where CUSTOMERS.ID = '$customer_id'");
 			}
 		}
 		print "</tr>";
-		print "<tr><td><p onClick=\"graph('". $customer_id . "', 'unicast');\"><img src=\"rrd/" . $unicast_url . "\"></img></p></td>";
-		print "<td><p onClick=\"graph('". $customer_id . "', 'broadcast');\"><img src=\"rrd/" . $broadcast_url . "\"></img></p></td></tr>";
-		print "<tr><td><p onClick=\"graph('". $customer_id . "', 'multicast');\"><img src=\"rrd/" . $multicast_url . "\"></img></p></td>";
+//		print "<tr><td><p onClick=\"graph('". $customer_id . "', 'unicast');\"><img src=\"rrd/" . $unicast_url . "\"></img></p></td>";
+//		print "<td><p onClick=\"graph('". $customer_id . "', 'broadcast');\"><img src=\"rrd/" . $broadcast_url . "\"></img></p></td></i//tr>";
+//		print "<tr><td><p onClick=\"graph('". $customer_id . "', 'multicast');\"><img src=\"rrd/" . $multicast_url . "\"></img></p></td>";
 		print "<td><p onClick=\"graph('". $customer_id . "', 'power');\"><img src=\"rrd/" . $rrd_power_url . "\"></img></p></td></tr>";
 		print "</table></div></div>";
 	}

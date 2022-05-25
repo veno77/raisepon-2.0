@@ -125,12 +125,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					foreach ($rows as $row) {
 						?>
 						<tr>
-							<td><?php echo $row{'NAME'}; ?></td>
-							<td><?php echo $row{'IP_ADDRESS'}; ?></td>
-							<td><?php echo $row{'USERNAME'}; ?></td>
-							<td><?php echo $row{'PASSWORD'}; ?></td>
-							<td><?php echo $row{'DIRECTORY'}; ?></td>
-							<td><button type="button" class="btn btn-default" onClick="getBackup('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
+							<td><?php echo $row['NAME']; ?></td>
+							<td><?php echo $row['IP_ADDRESS']; ?></td>
+							<td><?php echo $row['USERNAME']; ?></td>
+							<td><?php echo $row['PASSWORD']; ?></td>
+							<td><?php echo $row['DIRECTORY']; ?></td>
+							<td><button type="button" class="btn btn-default" onClick="getBackup('<?php echo $row['ID']; ?>');">EDIT</button></td>
 						</tr>
 						<?php
 						}
@@ -187,8 +187,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					foreach ($rows as $row) {
 						?>
 						<tr>
-							<td><?php echo $row{'EMAIL'}; ?></td>
-							<td><button type="button" class="btn btn-default" onClick="getBackupEmail('<?php echo $row{'ID'}; ?>');">EDIT</button></td>
+							<td><?php echo $row['EMAIL']; ?></td>
+							<td><button type="button" class="btn btn-default" onClick="getBackupEmail('<?php echo $row['ID']; ?>');">EDIT</button></td>
 						</tr>
 						<?php
 						}

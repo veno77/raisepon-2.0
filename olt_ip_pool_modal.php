@@ -1,7 +1,7 @@
 <?php
-include ("common.php");
-include ("classes/ip_pool_class.php");
-include ("classes/customers_class.php");
+include_once("common.php");
+include_once("classes/ip_pool_class.php");
+include_once("classes/customers_class.php");
 
 if ($user_class < "9")
 	exit();
@@ -24,10 +24,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				print "	<option value=\"\">Select</option>";
 				$rows = $customers_obj->get_Olt_models();
 				foreach ($rows as $row) {
-					if($ip_pool_obj->getOlt_id() == $row{'ID'}) {
-						print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} . "</option>";
+					if($ip_pool_obj->getOlt_id() == $row['ID']) {
+						print "<option value=\"" . $row['ID'] ."\" selected>" . $row['NAME'] . "</option>";
 					} else {
-						print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} . "</option>";
+						print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] . "</option>";
 					}
 				}					
 				?>
@@ -44,10 +44,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					print "	<option value=\"\">Select</option>";				
 					$rows = $customers_obj->get_Service();
 					foreach ($rows as $row) {
-						if($ip_pool_obj->getService_id() == $row{'ID'}) {
-							print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'NAME'} ." === ". $row{'ID'} ."</option>";
+						if($ip_pool_obj->getService_id() == $row['ID']) {
+							print "<option value=\"" . $row['ID'] ."\" selected>" . $row['NAME'] ." === ". $row['ID'] ."</option>";
 						} else {
-							print "<option value=\"" . $row{'ID'} ."\">" . $row{'NAME'} ." === ". $row{'ID'} ."</option>";
+							print "<option value=\"" . $row['ID'] ."\">" . $row['NAME'] ." === ". $row['ID'] ."</option>";
 						}				
 					}
 				?>
@@ -64,10 +64,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				print "	<option value=\"\">Select</option>";
 				$rows = $ip_pool_obj->get_IP_pools();
 				foreach ($rows as $row) {
-					if($ip_pool_obj->getId() == $row{'ID'}) {
-						print "<option value=\"" . $row{'ID'} ."\" selected>" . $row{'SUBNET'} . "/" . $row{'NETMASK'} . "</option>";
+					if($ip_pool_obj->getId() == $row['ID']) {
+						print "<option value=\"" . $row['ID'] ."\" selected>" . $row['SUBNET'] . "/" . $row['NETMASK'] . "</option>";
 					} else {
-						print "<option value=\"" . $row{'ID'} ."\">" . $row{'SUBNET'} . "/" . $row{'NETMASK'} ."</option>";
+						print "<option value=\"" . $row['ID'] ."\">" . $row['SUBNET'] . "/" . $row['NETMASK'] ."</option>";
 					}
 				}					
 				?>

@@ -54,7 +54,8 @@ class snmp_oid {
 		"rcGponOnuNetIpMask" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.3",
 		"rcGponOnuNetDefaultGateway" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.4",
 		"rcGponOnuNetVlan" => "1.3.6.1.4.1.8886.18.3.6.6.1.1.7",
-		"rcGponOnuEthPortTrunkAllowedVlan" => "1.3.6.1.4.1.8886.18.3.6.5.1.1.25"
+		"rcGponOnuEthPortTrunkAllowedVlan" => "1.3.6.1.4.1.8886.18.3.6.5.1.1.25",
+		"rcGponPONPortMinOnuIndex" => "1.3.6.1.4.1.8886.18.3.1.2.1.1.21"
 	);
 	
 	private $epon_oid = array(
@@ -100,7 +101,8 @@ class snmp_oid {
 			"rcEponPONPortRegisteredONUNumber" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.4",
 			"rcEponPONPortDescription" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.23",
 			"rcEponPONPortSFPOperStatus" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.19",
-			"rcEponPONPortCreateONUNumber" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.27"
+			"rcEponPONPortCreateONUNumber" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.27",
+			"rcEponPONPortMinOnuIndex" => "1.3.6.1.4.1.8886.18.2.1.2.1.1.34"
 	);
 	
 	private $olt_oid = array (
@@ -193,11 +195,13 @@ class snmp_oid {
 				$all_vlans[] = $vlans;
 			}
 		}
-		$vlans_merged = array();
-		foreach ($all_vlans as $vlans){
-			$vlans_merged = array_merge($vlans_merged, $vlans);
+		if (!empty($all_vlans)){
+			$vlans_merged = array();
+			foreach ($all_vlans as $vlans){
+				$vlans_merged = array_merge($vlans_merged, $vlans);
+			}
+			return $vlans_merged;	
 		}
-		return $vlans_merged;	
 	}
 }
 
