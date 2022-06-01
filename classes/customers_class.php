@@ -1227,7 +1227,7 @@ class customers {
 			$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
 			$snmp_port_min_onu_index = $session->get($PONPortMinOnuIndex); 
 			if(!empty($snmp_port_min_onu_index)){
-				$pon_onu_id = $snmp_port_min_onu_index;
+				$pon_onu_id = str_replace("INTEGER: ", "", $snmp_port_min_onu_index);
 			}else{
 				$arr3 = array_diff($arr1,$arr2);
 				$arr3 = array_filter($arr3);
