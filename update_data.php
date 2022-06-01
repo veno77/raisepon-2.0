@@ -78,15 +78,16 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			}
 		}
 		//collect description for each onu
-		exec("$snmpbulkwalk -Onq -Cc -v2c -c $row[RO] $ip_address $description_oid", $output , $return_var);
+		exec("$snmpbulkwalk -OnQ -Cc -v2c -c $row[RO] $ip_address $description_oid", $output , $return_var);
 		$descriptions = array();
 		foreach($output as $line) {
 			if (strpos($line, $description_oid) !== false) {
 				$line = str_replace("." . $description_oid . ".", "", $line);
-				$line = explode(" ", $line);
-				$descriptions[$line[0]] = trim($line[1],"\"");
+				$line = explode("=", $line);
+				$descriptions[trim($line[0])] = trim(trim($line[1]),"\"");
 			}
 		}
+		print_r($descriptions);
 		unset($output);
 		exec("$snmpbulkwalk -Onq -Cc -v2c -c $row[RO] $ip_address $onu_sn_oid", $output , $return_var);
 		foreach($output as $line) {
