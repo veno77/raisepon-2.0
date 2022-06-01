@@ -1255,7 +1255,7 @@ class customers {
 			if (!empty($row["SERVICE_ID"])) { 
 				try {
 					$conn = db_connect::getInstance();
-					$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$row[OLT_ID]' and SERVICE_ID='$row[SERVICE_ID]'");
+					$result2 = $conn->db->query("SELECT IP_ADDRESS from CUSTOMERS where OLT='$row[OLT_ID]' and SERVICE='$row[SERVICE_ID]'");
 				} catch (PDOException $e) {
 					$error2 = "Connection 1 Failed:" . $e->getMessage() . "\n";
 					exit($error2);
@@ -1304,6 +1304,8 @@ class customers {
 		}
 	}
 }
+
+
 
 
 
