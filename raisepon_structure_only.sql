@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.6.51, for FreeBSD13.0 (amd64)
 --
--- Host: localhost    Database: raisepon
+-- Host: localhost    Database: raisepon-dev
 -- ------------------------------------------------------
 -- Server version	5.6.48
 
@@ -130,13 +130,13 @@ CREATE TABLE `CUSTOMERS` (
   `SERVICE` tinyint(4) DEFAULT NULL,
   `SN` varchar(255) NOT NULL,
   `IP_ADDRESS` int(10) unsigned DEFAULT NULL,
-  `AUTO` enum('YES','NO') NOT NULL DEFAULT 'NO',
-  `STATE` enum('YES','NO') NOT NULL DEFAULT 'NO',
+  `AUTO` enum('YES','NO') NOT NULL DEFAULT 'YES',
+  `STATE` enum('YES','NO') NOT NULL DEFAULT 'YES',
   `STATE_RF` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`ID`),
   KEY `OLT` (`OLT`),
   KEY `PON_PORT` (`PON_PORT`)
-) ENGINE=InnoDB AUTO_INCREMENT=353 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=532 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -155,7 +155,7 @@ CREATE TABLE `HISTORY` (
   `USER_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `CUSTOMERS_ID` (`CUSTOMERS_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1026 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1163 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,7 +190,7 @@ CREATE TABLE `LINE_PROFILE` (
   `LINE_PROFILE_ID` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `TEMPLATE_ID` (`LINE_PROFILE_ID`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -223,7 +223,7 @@ CREATE TABLE `OLT` (
   `RW` varchar(50) NOT NULL,
   `BACKUP_ID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -254,7 +254,7 @@ CREATE TABLE `OLT_IP_POOLS` (
   `IP_POOL_ID` int(11) NOT NULL,
   `SERVICE_ID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -304,7 +304,7 @@ CREATE TABLE `ONU_RX_POWER` (
   `CUSTOMERS_ID` int(11) NOT NULL,
   `RX_POWER` float NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=76 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=119 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -323,7 +323,7 @@ CREATE TABLE `PON` (
   `CARDS_MODEL_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `OLT` (`OLT`)
-) ENGINE=InnoDB AUTO_INCREMENT=55 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -339,7 +339,7 @@ CREATE TABLE `SERVICES` (
   `LINE_PROFILE_ID` int(11) NOT NULL,
   `SERVICE_PROFILE_ID` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=12 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -359,7 +359,23 @@ CREATE TABLE `SERVICE_PROFILE` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `OLT` (`HGU`),
   KEY `TEMPLATE_ID` (`SERVICE_PROFILE_ID`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `UNI`
+--
+
+DROP TABLE IF EXISTS `UNI`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `UNI` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `CUSTOMER_ID` int(11) NOT NULL,
+  `UNI_PORT_ID` tinyint(4) NOT NULL,
+  `STATE` enum('1','2') NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -371,4 +387,4 @@ CREATE TABLE `SERVICE_PROFILE` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-05-25 13:45:02
+-- Dump completed on 2022-06-01 10:09:22
