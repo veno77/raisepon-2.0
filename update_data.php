@@ -87,7 +87,6 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				$descriptions[trim($line[0])] = trim(trim($line[1]),"\"");
 			}
 		}
-		print_r($descriptions);
 		unset($output);
 		exec("$snmpbulkwalk -Onq -Cc -v2c -c $row[RO] $ip_address $onu_sn_oid", $output , $return_var);
 		foreach($output as $line) {
