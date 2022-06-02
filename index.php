@@ -428,7 +428,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			</table>
 		</div>
 	<div>Total: <?php echo $count; ?></div>
+	<?php if ($user_class >= "6") { ?>
 	<div><button type="button" class="btn btn-danger" onClick="delete_selected('<?php echo $row['OLT_ID']; ?>','<?php echo $row['PON_ID']; ?>');">DELETE SELECTED</button></div>
+	<?php } ?>
 	<div>&nbsp;</div>
 </div>
 <div></div>

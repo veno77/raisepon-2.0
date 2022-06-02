@@ -1,6 +1,6 @@
 -- MySQL dump 10.13  Distrib 5.6.51, for FreeBSD13.0 (amd64)
 --
--- Host: localhost    Database: raisepon-dev
+-- Host: localhost    Database: raisepon
 -- ------------------------------------------------------
 -- Server version	5.6.48
 
@@ -24,8 +24,8 @@ DROP TABLE IF EXISTS `ACCOUNTS`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ACCOUNTS` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `USERNAME` varchar(20) CHARACTER SET latin1 NOT NULL,
-  `PASSWORD` char(40) CHARACTER SET latin1 NOT NULL,
+  `USERNAME` varchar(20) NOT NULL,
+  `PASSWORD` char(40) NOT NULL,
   `TYPE` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `USERNAME` (`USERNAME`)
@@ -41,13 +41,13 @@ DROP TABLE IF EXISTS `BACKUP`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `BACKUP` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `NAME` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `NAME` varchar(255) NOT NULL,
   `IP_ADDRESS` int(10) unsigned NOT NULL,
-  `USERNAME` varchar(50) CHARACTER SET utf8 NOT NULL,
-  `PASSWORD` varchar(50) CHARACTER SET utf8 NOT NULL,
-  `DIRECTORY` varchar(50) CHARACTER SET utf8 NOT NULL,
+  `USERNAME` varchar(50) NOT NULL,
+  `PASSWORD` varchar(50) NOT NULL,
+  `DIRECTORY` varchar(50) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -59,9 +59,9 @@ DROP TABLE IF EXISTS `BACKUP_EMAIL`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `BACKUP_EMAIL` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `EMAIL` varchar(75) CHARACTER SET utf8 NOT NULL,
+  `EMAIL` varchar(75) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -77,7 +77,7 @@ CREATE TABLE `BACKUP_STATUS` (
   `DATE` datetime NOT NULL,
   `REASON` int(11) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=3 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -93,7 +93,7 @@ CREATE TABLE `CARDS` (
   `SLOT` smallint(6) NOT NULL,
   `CARDS_MODEL_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -109,7 +109,7 @@ CREATE TABLE `CARDS_MODEL` (
   `PON_TYPE` enum('EPON','GPON') NOT NULL,
   `PORTS` smallint(6) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -130,13 +130,13 @@ CREATE TABLE `CUSTOMERS` (
   `SERVICE` tinyint(4) DEFAULT NULL,
   `SN` varchar(255) NOT NULL,
   `IP_ADDRESS` int(10) unsigned DEFAULT NULL,
-  `AUTO` enum('YES','NO') NOT NULL DEFAULT 'YES',
+  `AUTO` enum('YES','NO') NOT NULL DEFAULT 'NO',
   `STATE` enum('YES','NO') NOT NULL DEFAULT 'YES',
   `STATE_RF` tinyint(4) DEFAULT NULL,
   PRIMARY KEY (`ID`),
   KEY `OLT` (`OLT`),
   KEY `PON_PORT` (`PON_PORT`)
-) ENGINE=InnoDB AUTO_INCREMENT=532 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=541 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -150,12 +150,12 @@ CREATE TABLE `HISTORY` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `CUSTOMERS_ID` int(11) NOT NULL,
   `DATE` datetime NOT NULL,
-  `ACTION` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `ACTION` varchar(255) NOT NULL,
   `SN` varchar(255) NOT NULL,
   `USER_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `CUSTOMERS_ID` (`CUSTOMERS_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1163 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=1184 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -190,7 +190,7 @@ CREATE TABLE `LINE_PROFILE` (
   `LINE_PROFILE_ID` tinyint(4) NOT NULL,
   PRIMARY KEY (`id`) USING BTREE,
   KEY `TEMPLATE_ID` (`LINE_PROFILE_ID`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=6 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -202,9 +202,9 @@ DROP TABLE IF EXISTS `NOT_PAID`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `NOT_PAID` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `SN` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `SN` varchar(255) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -223,7 +223,7 @@ CREATE TABLE `OLT` (
   `RW` varchar(50) NOT NULL,
   `BACKUP_ID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=11 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -238,7 +238,7 @@ CREATE TABLE `OLT_CARDS` (
   `OLT_MODEL_ID` int(11) NOT NULL,
   `CARDS_MODEL_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=9 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -254,7 +254,7 @@ CREATE TABLE `OLT_IP_POOLS` (
   `IP_POOL_ID` int(11) NOT NULL,
   `SERVICE_ID` int(11) DEFAULT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -270,7 +270,7 @@ CREATE TABLE `OLT_MODEL` (
   `SLOTS` smallint(6) NOT NULL,
   `TYPE` enum('EPON','GPON','XPON') NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=7 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -282,14 +282,14 @@ DROP TABLE IF EXISTS `ONU`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `ONU` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `NAME` varchar(50) CHARACTER SET utf8 NOT NULL,
+  `NAME` varchar(50) NOT NULL,
   `PORTS` tinyint(4) NOT NULL,
   `RF` tinyint(1) NOT NULL,
   `PSE` tinyint(1) NOT NULL,
   `HGU` tinyint(1) NOT NULL,
   `PON_TYPE` enum('EPON','GPON') NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=29 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -304,7 +304,7 @@ CREATE TABLE `ONU_RX_POWER` (
   `CUSTOMERS_ID` int(11) NOT NULL,
   `RX_POWER` float NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=119 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=120 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -316,14 +316,14 @@ DROP TABLE IF EXISTS `PON`;
 /*!40101 SET character_set_client = utf8 */;
 CREATE TABLE `PON` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
-  `NAME` varchar(255) CHARACTER SET utf8 NOT NULL,
+  `NAME` varchar(255) NOT NULL,
   `OLT` int(11) NOT NULL,
   `SLOT_ID` tinyint(4) NOT NULL,
   `PORT_ID` tinyint(4) NOT NULL,
   `CARDS_MODEL_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `OLT` (`OLT`)
-) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=45 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -339,7 +339,7 @@ CREATE TABLE `SERVICES` (
   `LINE_PROFILE_ID` int(11) NOT NULL,
   `SERVICE_PROFILE_ID` int(11) NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=14 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -359,7 +359,7 @@ CREATE TABLE `SERVICE_PROFILE` (
   PRIMARY KEY (`id`) USING BTREE,
   KEY `OLT` (`HGU`),
   KEY `TEMPLATE_ID` (`SERVICE_PROFILE_ID`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=16 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
@@ -375,7 +375,7 @@ CREATE TABLE `UNI` (
   `UNI_PORT_ID` tinyint(4) NOT NULL,
   `STATE` enum('1','2') NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=latin1;
+) ENGINE=InnoDB AUTO_INCREMENT=4 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
 
@@ -387,4 +387,4 @@ CREATE TABLE `UNI` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2022-06-01 10:09:22
+-- Dump completed on 2022-06-02 12:22:37

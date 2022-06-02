@@ -17,10 +17,10 @@ foreach ($rows as $olt => $values) {
 			foreach($row_auto as $row) {
 				if ($row["AUTO"] == "YES") {
 					$obj->setCustomer_id($row["ID"]);
-					$pon_port = $obj->get_Pon_port($olt, $roww{'1'},$roww{'2'});
+					$pon_port = $obj->get_Pon_port($olt, $roww['1'],$roww['2']);
 					if($pon_port) {	
 						foreach ($pon_port as $pon) {						
-							$pon_id = $pon{'ID'};
+							$pon_id = $pon['ID'];
 							$obj->setPon_port($pon_id);
 						}
 					}
