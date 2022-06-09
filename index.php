@@ -134,7 +134,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<th><input type="checkbox" id="selectall"></th>
 							<th>ONU</th>
 							<th>Name</th>
-							<th class="hidden-xs hidden-sm" onClick="orderby('ADDRESS','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Address</th>
+							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('ADDRESS','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Address</th>
 							<th>SERVICE</th>
 							<!-- <th>RF</th> -->
 							<th class="hidden-xs hidden-sm">SN/MAC</th>
