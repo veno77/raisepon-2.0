@@ -15,6 +15,7 @@ class index {
 	public $online;
 	public $offline;
 	public $pending;
+	private $orderby;
 	function __construct() {
 		if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$this->onu_id = isset($_POST['onu_id'])	? $this->test_input($_POST['onu_id']) : null;
@@ -28,6 +29,7 @@ class index {
 			$this->online = isset($_POST['online']) ? $this->test_input($_POST['online']) : null;
 			$this->offline = isset($_POST['offline']) ? $this->test_input($_POST['offline']) : null;
 			$this->pending = isset($_POST['pending']) ? $this->test_input($_POST['pending']) : null;
+			$this->orderby = isset($_POST['orderby']) ? $this->test_input($_POST['orderby']) : null;
 			$this->submit = isset($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
 		
 		
@@ -105,7 +107,7 @@ class index {
 	function getPon_data() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT PON.ID, PON.NAME, PON.OLT, PON.SLOT_ID, PON.PORT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.ID, CARDS_MODEL.PON_TYPE, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO from PON LEFT JOIN CARDS_MODEL ON PON.CARDS_MODEL_ID=CARDS_MODEL.ID LEFT JOIN OLT ON PON.OLT=OLT.ID WHERE PON.ID=" . $this->pon_id);
+			$result = $conn->db->query("SELECT PON.ID, PON.NAME, PON.OLT, PON.SLOT_ID, PON.PORT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO from PON LEFT JOIN CARDS_MODEL ON PON.CARDS_MODEL_ID=CARDS_MODEL.ID LEFT JOIN OLT ON PON.OLT=OLT.ID WHERE PON.ID=" . $this->pon_id);
 		} catch (PDOException $e) {
 			echo "Connection Failed:" . $e->getMessage() . "\n";
 			exit;
@@ -129,6 +131,11 @@ class index {
 	}
 	function build_table() {
 		if ($this->submit == "LOAD")
+			if (!empty($this->orderby)){
+				$order_by = $this->orderby;
+			}else{
+				$order_by = "PON_ONU_ID";
+			}
 			$where = "PON.ID='" . $this->pon_id ."' and OLT.ID='" . $this->olt_id . "'";
 		if ($this->submit == "SEARCH") {
 			if(!empty($this->name))
@@ -144,7 +151,7 @@ class index {
 			$where = "CUSTOMERS.OLT is NULL or CUSTOMERS.PON_PORT is NULL";
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICES.NAME as SERVICE_NAME, OLT.ID as OLT_ID, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE as TYPE, PON.ID as PON_ID, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID WHERE " . $where ." order by PON_ONU_ID");
+			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, SN, SERVICES.NAME as SERVICE_NAME, OLT.ID as OLT_ID, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE as TYPE, PON.ID as PON_ID, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID WHERE " . $where ." order by " . $order_by);
 		} catch (PDOException $e) {
 			$error =  "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;

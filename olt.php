@@ -104,7 +104,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					foreach ($rows as $row) {
 						$snmp_obj = new snmp_oid();
 						snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-						$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 100000, 2);
+						$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 1500000, 3);
 						$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
 						$temp = '';
 						$save = '';

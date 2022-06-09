@@ -22,7 +22,7 @@ if ($_GET) {
 			$pon_onu_id = $row["PON_ONU_ID"];
 			$olt_name = $row["OLT_NAME"];
 			$customer_name = $row["NAME"];
-			$rf = $row{'RF'};
+			$rf = $row['RF'];
 			$rrd_name = dirname(__FILE__) . "/rrd/" . $sn . "_" . $type . ".rrd";
 			if ($type == "unicast" || $type == "broadcast" || $type == "multicast") {	
 				$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=pkts/s", "--title=Daily $type",
@@ -123,6 +123,25 @@ if ($_GET) {
 				"COMMENT:  ",
 				"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
 				);
+				$opts4 = array( "--start", "-1y", "--lower-limit=0", "--vertical-label=B/s", "--title=Yearly $type",
+				"DEF:inoctets=$rrd_name:input:AVERAGE",
+				"DEF:outoctets=$rrd_name:output:AVERAGE",
+				"CDEF:inbits=inoctets,8,*",
+				"CDEF:outbits=outoctets,8,*",
+				"AREA:inbits#00FF00:In traffic",
+				"LINE1:outbits#0000FF:Out traffic\\r",
+				"GPRINT:inbits:MAX:IN Max\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:inbits:AVERAGE:Avg\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:inbits:LAST:Last\: %6.2lf%Sbps\\r",
+				"COMMENT:\\n",
+				"GPRINT:outbits:MAX:OUT Max\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:outbits:AVERAGE:Avg\: %6.2lf%Sbps",
+				"COMMENT:  ",
+				"GPRINT:outbits:LAST:Last\: %6.2lf%Sbps\\r"
+				);
 			}
 			
 			if ($type == "power") {	
@@ -156,6 +175,20 @@ if ($_GET) {
 					"GPRINT:rf_in:MIN:Min\: %6.2lf dBm\\r",
 					);
 					$opts3 = array( "--start", "-1m", "--vertical-label=dBm", "--title=Monthly Power",
+					"DEF:inoctets=$rrd_name:input:AVERAGE",
+					"DEF:outoctets=$rrd_name:output:AVERAGE",
+					"DEF:rx_olt=$rrd_name:rxolt:AVERAGE",
+					"DEF:rf_in=$rrd_name:rfin:AVERAGE",
+					"LINE2:rx_olt#D6213B:RX@OLT",
+					"GPRINT:rx_olt:MIN:Min\: %6.2lf dBm\\r",
+					"LINE2:outoctets#C6913B:TX@ONU",
+					"GPRINT:outoctets:MIN:Min\: %6.2lf dBm\\r",
+					"LINE2:inoctets#7FB37C:RX@ONU",
+					"GPRINT:inoctets:MIN:Min\: %6.2lf dBm\\r",
+					"LINE2:rf_in#FFD87C:RF@ONU",
+					"GPRINT:rf_in:MIN:Min\: %6.2lf dBm\\r",
+					);
+					$opts4 = array( "--start", "-1y", "--vertical-label=dBm", "--title=Yearly Power",
 					"DEF:inoctets=$rrd_name:input:AVERAGE",
 					"DEF:outoctets=$rrd_name:output:AVERAGE",
 					"DEF:rx_olt=$rrd_name:rxolt:AVERAGE",
@@ -203,19 +236,32 @@ if ($_GET) {
 					 "LINE2:inoctets#7FB37C:RX@ONU",
 					 "GPRINT:inoctets:MAX:Max\: %6.2lf dBm\\r",
 					);
+					$opts4 = array( "--start", "-1y", "--vertical-label=dBm", "--title=Yearly Power",
+					 "DEF:inoctets=$rrd_name:input:AVERAGE",
+					 "DEF:outoctets=$rrd_name:output:AVERAGE",
+					 "DEF:rx_olt=$rrd_name:rxolt:AVERAGE",
+					 "LINE2:rx_olt#D6213B:RX@OLT",
+					 "GPRINT:rx_olt:MAX:Max\: %6.2lf dBm\\r",
+					 "LINE2:outoctets#C6913B:TX@ONU",
+					 "GPRINT:outoctets:MAX:Max\: %6.2lf dBm\\r",
+					 "LINE2:inoctets#7FB37C:RX@ONU",
+					 "GPRINT:inoctets:MAX:Max\: %6.2lf dBm\\r",
+					);
 				}
-			
 			}
 			$rrd_traffic_url = $sn . "_" . $type . ".gif";
 			$rrd_traffic_url_week = $sn . "_" . $type . "_week.gif";
 			$rrd_traffic_url_month = $sn . "_" . $type . "_month.gif";
+			$rrd_traffic_url_year = $sn . "_" . $type . "_year.gif";			
 			$rrd_traffic = dirname(__FILE__) . "/rrd/" . $rrd_traffic_url;
 			$rrd_traffic_week = dirname(__FILE__) . "/rrd/" . $rrd_traffic_url_week;
 			$rrd_traffic_month = dirname(__FILE__) . "/rrd/" . $rrd_traffic_url_month;
+			$rrd_traffic_year = dirname(__FILE__) . "/rrd/" . $rrd_traffic_url_year;
 
 			$ret = rrd_graph($rrd_traffic, $opts);
 			$ret = rrd_graph($rrd_traffic_week, $opts2);
 			$ret = rrd_graph($rrd_traffic_month, $opts3);
+			$ret = rrd_graph($rrd_traffic_year, $opts4);
 
 			if( !is_array($ret) )
 			{
@@ -227,6 +273,7 @@ if ($_GET) {
 	print "<p><img src=\"rrd/" . $rrd_traffic_url . "\"></img></p>";
 	print "<p><img src=\"rrd/" . $rrd_traffic_url_week . "\"></img></p>";
 	print "<p><img src=\"rrd/" . $rrd_traffic_url_month . "\"></img></p>";
+	print "<p><img src=\"rrd/" . $rrd_traffic_url_year . "\"></img></p>";
 	print "<center>";
 	}
 }

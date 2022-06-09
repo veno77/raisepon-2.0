@@ -376,7 +376,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								<th>SFP</th>
 								<th>Created ONUs</th>
 								<th>Online ONUs</th>
-
 							</tr>  
 						</thead>
 				<?php
@@ -436,7 +435,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 								<th>SFP</th>
 								<th>Created ONUs</th>
 								<th>Online ONUs</th>
-
 							</tr>  
 						</thead>
 				<?php

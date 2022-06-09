@@ -27,7 +27,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 	}
 
-	// EDIT OLT
+	// EDIT PON
 	if ($pon_obj->getSubmit() == "EDIT") {
 		if (!empty($pon_obj->getPon_id()) && !empty($pon_obj->getName()) && !empty($pon_obj->getSlot_id()) && !empty($pon_obj->getPort_id()) && !empty($pon_obj->getCards_model_id ())) {
 			$error = $pon_obj->edit_pon();
@@ -41,7 +41,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		}
 	}
 	
-	// DELETE OLT
+	// DELETE PON
 	if ($pon_obj->getSubmit() == "DELETE") {
 		if (!empty($pon_obj->getPon_id())) {
 		$error = $pon_obj->delete_pon();
@@ -91,6 +91,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <?php
 if (!empty($pon_obj->getOlt())) {
+	
 ?>
 <div class="container">
 	<div class="text-center">
@@ -113,7 +114,7 @@ if (!empty($pon_obj->getOlt())) {
 					<?php
 					$rows = $pon_obj->build_table_pon(); 
 					foreach ($rows as $row) {
-												?>
+					?>
 						<tr>
 							<td><?php echo $row['NAME']; ?></td>
 							<td><?php echo $row['SLOT_ID']; ?></td>
@@ -121,9 +122,9 @@ if (!empty($pon_obj->getOlt())) {
 							<td><?php echo $row['CARDS_MODEL_NAME']; ?></td>
 							<td><button type="button" class="btn btn-default" onClick="getPon('<?php echo $row['ID']; ?>','<?php echo $row['OLT']; ?>');">EDIT</button></td>
 						</tr>
-						<?php
-						}
-						?>
+					<?php
+					}
+					?>
 					</tbody>
 				</table>
 			</div>

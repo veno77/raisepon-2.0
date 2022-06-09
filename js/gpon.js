@@ -73,7 +73,17 @@ function delete_selected(olt, pon_port) {
 		$('#myModal').modal('show'); 
 	});
 }
-
+function orderby(orderby, olt, pon_port, online, offline, pending) {
+	$('#output').html('<center><img src="pic/loading.gif" /></center>');
+	jQuery.ajax({
+		url: "index.php",
+		data: {olt_id: olt, pon_id: pon_port, orderby: orderby, SUBMIT: "LOAD", online: online, offline: offline, pending: pending},
+		type: "POST"
+	}).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
+}
 function setUniPortStatus(customer_id, port_num, type) {
 	var boza = port_num
 	var selected = $('#uni_num_' + port_num + ' option:selected');

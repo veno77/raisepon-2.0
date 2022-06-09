@@ -108,25 +108,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			<div class="table-responsive">
 				<table class="table table-bordered table-condensed table-hover">
 					<thead>
-						<tr align=center style=font-weight:bold>
-							<th><input type="checkbox" id="selectall"></th>
-							<th>ONU</th>
-							<th>Name</th>
-							<th class="hidden-xs hidden-sm">Address</th>
-							<th>SERVICE</th>
-							<!-- <th>RF</th> -->
-							<th class="hidden-xs hidden-sm">SN/MAC</th>
-							<th>PWR<br>(db)</th>
-							<th class="hidden-xs hidden-sm">DIST<br>(m)</th>
-							
-							<th>STATUS</th>
-							<!--<th>LAST ONLINE</th> -->
-							<th class="hidden-xs hidden-sm">OFFLINE<br>REASON</th>
-							<th>INFO</th>
-							<th class="hidden-xs hidden-sm">SYNC</th>
-							<?php if ($user_class >= "6") { ?><th>EDIT</th><?php } ?>
-						</tr>
-					</thead>
+						
 				<?php
 				if ($index_obj->getSubmit() == "CONFIRM_DELETE") {
 					foreach($_POST['data'] as $customers_id){
@@ -145,7 +127,29 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					$index_obj->setSubmit("LOAD");
 				}
 				if ($index_obj->getSubmit() == "LOAD") {
-					$row = $index_obj->getPon_data();	
+					$row = $index_obj->getPon_data();
+					
+					?>
+					<tr align=center style=font-weight:bold>
+							<th><input type="checkbox" id="selectall"></th>
+							<th>ONU</th>
+							<th>Name</th>
+							<th class="hidden-xs hidden-sm" onClick="orderby('ADDRESS','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Address</th>
+							<th>SERVICE</th>
+							<!-- <th>RF</th> -->
+							<th class="hidden-xs hidden-sm">SN/MAC</th>
+							<th>PWR<br>(db)</th>
+							<th class="hidden-xs hidden-sm">DIST<br>(m)</th>
+							
+							<th>STATUS</th>
+							<!--<th>LAST ONLINE</th> -->
+							<th class="hidden-xs hidden-sm">OFFLINE<br>REASON</th>
+							<th>INFO</th>
+							<th class="hidden-xs hidden-sm">SYNC</th>
+							<?php if ($user_class >= "6") { ?><th>EDIT</th><?php } ?>
+						</tr>
+					</thead>
+					<?php
 					$big_onu_id = type2id($row['SLOT_ID'], $row['PORT_ID'], "1");
 					$big_onu_id = $big_onu_id - 1;
 					$snmp_obj = new snmp_oid();
@@ -224,6 +228,28 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							}
 						}				
 					}
+				}else{
+					?>
+					<tr align=center style=font-weight:bold>
+							<th><input type="checkbox" id="selectall"></th>
+							<th>ONU</th>
+							<th>Name</th>
+							<th class="hidden-xs hidden-sm">Address</th>
+							<th>SERVICE</th>
+							<!-- <th>RF</th> -->
+							<th class="hidden-xs hidden-sm">SN/MAC</th>
+							<th>PWR<br>(db)</th>
+							<th class="hidden-xs hidden-sm">DIST<br>(m)</th>
+							
+							<th>STATUS</th>
+							<!--<th>LAST ONLINE</th> -->
+							<th class="hidden-xs hidden-sm">OFFLINE<br>REASON</th>
+							<th>INFO</th>
+							<th class="hidden-xs hidden-sm">SYNC</th>
+							<?php if ($user_class >= "6") { ?><th>EDIT</th><?php } ?>
+						</tr>
+					</thead>
+					<?php
 				}
 				$rows = $index_obj->build_table();
 				$count = 0;
