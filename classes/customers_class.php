@@ -1214,7 +1214,7 @@ class customers {
 			array_push($arr2, $row['PON_ONU_ID']);
 			}
 			
-			$pon_index = type2ponid($slot_id, $port_id);
+			$pon_index = $this->type2ponid($slot_id, $port_id);
 			$snmp_obj = new snmp_oid();
 			if ($this->pon_type == "EPON"){
 				$arr1 = range(1,64);

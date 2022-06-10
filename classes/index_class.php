@@ -130,13 +130,13 @@ class index {
 		return $rows;		
 	}
 	function build_table() {
-		if ($this->submit == "LOAD")
-			if (!empty($this->orderby)){
-				$order_by = $this->orderby;
-			}else{
-				$order_by = "PON_ONU_ID";
-			}
+		if ($this->submit == "LOAD") 
 			$where = "PON.ID='" . $this->pon_id ."' and OLT.ID='" . $this->olt_id . "'";
+		if (!empty($this->orderby)){
+			$order_by = $this->orderby;
+		}else{
+			$order_by = "PON_ONU_ID";
+		}
 		if ($this->submit == "SEARCH") {
 			if(!empty($this->name))
 				$where = "CUSTOMERS.NAME LIKE '%$this->name%'";
