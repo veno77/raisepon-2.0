@@ -240,6 +240,7 @@ where CUSTOMERS.ID = '$customer_id'");
 		$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $pon_type) . "." . $index_type2id;
 		$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $pon_type) . "." . $index_rf;
 		$onu_rf_rx_power_oid = $snmp_obj->get_pon_oid("onu_rf_rx_power_oid", $pon_type) . "." . $index_rf;
+		$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $pon_type) . "." . $index_type2id;
 		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 		$device_type = $session->get($device_type_oid);

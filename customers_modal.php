@@ -28,6 +28,13 @@ $customers_obj = new customers();
 	print "<input type=\"hidden\" name=\"old_pon_port\" value=\"". $customers_obj->getOld_pon_port() ."\">";
 	print "<input type=\"hidden\" name=\"old_pon_onu_id\" value=\"". $customers_obj->getOld_pon_onu_id() ."\">";
 	print "<input type=\"hidden\" name=\"old_ports\" value=\"". $customers_obj->getOld_ports() ."\">";
+	if ($customers_obj->getPage() == 'index'){
+		echo '<input type="hidden" name="page" value="'.$_POST['page'].'">';
+		echo '<input type="hidden" name="online" value="'.$_POST['online'].'">';
+		echo '<input type="hidden" name="offline" value="'.$_POST['offline'].'">';
+		echo '<input type="hidden" name="pending" value="'.$_POST['pending'].'">';
+		echo '<input type="hidden" name="submit_page" value="'.$_POST['submit_page'].'">';
+	}
 	if (!empty($customers_obj->getOld_onu_ip_address()))
 		print "<input type=\"hidden\" name=\"old_onu_ip_address\" value=\"". $customers_obj->getOld_onu_ip_address() ."\">"; 
 	print "<input type=\"hidden\" name=\"state_rf\" value=\"". $customers_obj->getState_rf() ."\">";	

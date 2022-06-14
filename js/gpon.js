@@ -272,10 +272,10 @@ function addPon(olt) {
 		$('#tools').dropdown();
 	});
 }
-function getCustomer(customers_id) {
+function getCustomer(customers_id, page, online, offline, pending, submit_page) {
 	jQuery.ajax({
 		url: "customers_modal.php",
-		data: {customers_id: customers_id},
+		data: {customers_id: customers_id, page: 'index', online: online, offline: offline, pending: pending, submit_page: submit_page},
 		type: "POST"
 	}).done(function(data){
 		$('#modalbody').html(data);

@@ -31,6 +31,7 @@ class customers {
 	private $vlan;
 	private $onu_ip_address;
 	private $old_onu_ip_address;
+	private $page;
 
 	function __construct() {
 		if (!empty($_SERVER["REQUEST_METHOD"])) {
@@ -58,6 +59,7 @@ class customers {
 				$this->vlan = !empty($_POST['vlan']) ? $this->test_input($_POST['vlan']) : null;
 				$this->onu_ip_address = !empty($_POST['onu_ip_address']) ? $this->test_input($_POST['onu_ip_address']) : null;
 				$this->old_onu_ip_address = !empty($_POST['old_onu_ip_address']) ? $this->test_input($_POST['old_onu_ip_address']) : null;
+				$this->page = !empty($_POST['page']) ? $this->test_input($_POST['page']) : null;
 
 			}
 		
@@ -172,6 +174,9 @@ class customers {
 	}
 	function getOld_onu_ip_address() {
 		return $this->old_onu_ip_address;
+	}
+	function getPage() {
+		return $this->page;
 	}
 	function add_customer() {
 		$pon_onu_id = $this->find_next_onu_id();

@@ -135,11 +135,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<th><input type="checkbox" id="selectall"></th>
 						<?php } ?>
 							<th>ONU</th>
-							<th>Name</th>
+							<th><button type="button" class="btn btn-default" onClick="orderby('NAME','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Name</th>
 							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('ADDRESS','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Address</th>
+							<th>EGN</th>
 							<th>SERVICE</th>
 							<!-- <th>RF</th> -->
-							<th class="hidden-xs hidden-sm">SN/MAC</th>
+							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('SN','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">SN/MAC</th>
 							<th>PWR<br>(db)</th>
 							<th class="hidden-xs hidden-sm">DIST<br>(m)</th>
 							
@@ -439,6 +440,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<?php } ?>
 						<td><?php echo $row['NAME']; ?></td>
 							<td class="hidden-xs hidden-sm"><?php echo $row['ADDRESS']; ?></td>
+							<td class="hidden-xs hidden-sm"><?php echo $row['EGN']; ?></td>
 							<td><?php echo $row['SERVICE_NAME']; ?></td>
 							<td class="hidden-xs hidden-sm"><?php echo $db_sn; ?></td>
 							<td><?php echo $power; ?></td>
@@ -448,7 +450,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<td class="hidden-xs hidden-sm"><?php echo $offline_reason; ?></td>
 							<td><?php if ($index_obj->getSubmit() != "UNASSIGNED") { echo "<a href=\"onu_details.php?id=" . $row['ID'] . "\">";} ?><button type="button" class="btn btn-default">INFO</button></а></td>
 							<td class="hidden-xs hidden-sm"><?php echo $sync; ?></td>
-							<?php if ($user_class >= "6") { ?><td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row['ID']; ?>');">EDIT</button></td><?php } ?>
+							<?php if ($user_class >= "6") { ?><td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row['ID']; ?>', 'index', '<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>','<?php echo $index_obj->getSubmit(); ?>');">EDIT</button></td><?php } ?>
 						</tr>
 					<?php 
 					$count = $count + 1 ; 

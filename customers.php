@@ -65,6 +65,37 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 
+if ($_POST['page'] == 'index'){ ?>
+	<form id="pageforward" action="index.php" method="post">
+<?php
+        echo '<input type="hidden" name="olt_id" value="'.$customers_obj->getOld_olt().'">';
+		echo '<input type="hidden" name="pon_id" value="'.$customers_obj->getOld_pon_port().'">';
+		echo '<input type="hidden" name="online" value="'.$_POST['online'].'">';
+		echo '<input type="hidden" name="offline" value="'.$_POST['offline'].'">';
+		echo '<input type="hidden" name="pending" value="'.$_POST['pending'].'">';
+		echo '<input type="hidden" name="SUBMIT" value="'.$_POST['submit_page'].'">';
+?>
+</form>
+<script type="text/javascript">
+$('#pageforward').submit(function() { 
+    jQuery.ajax({ 
+		url: "index.php",
+		data: $( "#pageforward" ).serialize(),
+		type: "POST",
+        success: function(data) { 
+            $('#output').html(data);
+        }
+    }).done(function(data) {
+		$('#output').html(data);
+		$('.dropdown-toggle').dropdown();
+	});
+	return false; 
+});
+$('#pageforward').submit();
+</script>
+<?php
+}
+
 $rows = $customers_obj->get_Illegal_onus();
 ?>
 <div class="container">
@@ -113,7 +144,7 @@ $rows = $customers_obj->get_Illegal_onus();
 	</div>
 </div>
 <div class="container">
-	<div class="row">
+	<div class="text-center">
 			<div class="col-md-4 col-md-offset-4">
 				<button type="button" class="btn btn-info" onClick="getCustomer();">ADD NEW CUSTOMER</button>
 		</div>
@@ -135,4 +166,7 @@ $rows = $customers_obj->get_Illegal_onus();
 		</div>
 	</div>
 </div>	
-
+<div class="container" >
+	<div id="output" class="text-center">
+	</div>
+</div>
