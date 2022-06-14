@@ -131,7 +131,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					
 					?>
 					<tr align=center style=font-weight:bold>
+						<?php if ($user_class >= "9") { ?>
 							<th><input type="checkbox" id="selectall"></th>
+						<?php } ?>
 							<th>ONU</th>
 							<th>Name</th>
 							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('ADDRESS','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Address</th>
@@ -231,7 +233,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				}else{
 					?>
 					<tr align=center style=font-weight:bold>
+						<?php if ($user_class >= "9") { ?>
 							<th><input type="checkbox" id="selectall"></th>
+						<?php } ?>
 							<th>ONU</th>
 							<th>Name</th>
 							<th class="hidden-xs hidden-sm">Address</th>
@@ -424,14 +428,13 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						}else{
 							echo "<tr align=\"right\">";
 						}
-
-						if ($index_obj->getSubmit() == "SEARCH") {
-											
-						?>
+						if ($user_class >= "9") { ?>	
 							<td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row['ID']; ?>"></td>	
+						<?php }
+						if ($index_obj->getSubmit() == "SEARCH") {									
+						?>
 							<td><button type="button" class="btn btn-default" onClick="ShowSamePon('<?php echo $row['OLT_ID'] . "','" . $row['PON_ID'] . "','" . $row['ID']; ?>');"><?php echo $row['OLT_NAME'] . "/" . $row['SLOT_ID'] . "/" . $row['PORT_ID'] . "/"	; echo $row['PON_ONU_ID']; ?></button></td>
 						<?php }else{ ?>
-							<td><input type="checkbox" class="case" name="check_list[]" value="<?php echo $row['ID']; ?>"></td>
 							<td><?php echo $row['PON_ONU_ID']; ?></td>
 						<?php } ?>
 						<td><?php echo $row['NAME']; ?></td>
@@ -454,7 +457,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			</table>
 		</div>
 	<div>Total: <?php echo $count; ?></div>
-	<?php if ($user_class >= "6") { ?>
+	<?php if ($user_class >= "9") { ?>
 	<div><button type="button" class="btn btn-danger" onClick="delete_selected('<?php echo $row['OLT_ID']; ?>','<?php echo $row['PON_ID']; ?>');">DELETE SELECTED</button></div>
 	<?php } ?>
 	<div>&nbsp;</div>
