@@ -28,11 +28,16 @@ $customers_obj = new customers();
 	print "<input type=\"hidden\" name=\"old_pon_port\" value=\"". $customers_obj->getOld_pon_port() ."\">";
 	print "<input type=\"hidden\" name=\"old_pon_onu_id\" value=\"". $customers_obj->getOld_pon_onu_id() ."\">";
 	print "<input type=\"hidden\" name=\"old_ports\" value=\"". $customers_obj->getOld_ports() ."\">";
-	if ($customers_obj->getPage() == 'index'){
-		echo '<input type="hidden" name="page" value="'.$_POST['page'].'">';
+	if ($_POST['submit_page'] == 'LOAD'){
 		echo '<input type="hidden" name="online" value="'.$_POST['online'].'">';
 		echo '<input type="hidden" name="offline" value="'.$_POST['offline'].'">';
 		echo '<input type="hidden" name="pending" value="'.$_POST['pending'].'">';
+		echo '<input type="hidden" name="submit_page" value="'.$_POST['submit_page'].'">';
+	}elseif ($_POST['submit_page'] == 'SEARCH'){
+		echo '<input type="hidden" name="name" value="'.$_POST['name'].'">';
+		echo '<input type="hidden" name="address" value="'.$_POST['address'].'">';
+		echo '<input type="hidden" name="egn" value="'.$_POST['egn'].'">';
+		echo '<input type="hidden" name="sn" value="'.$_POST['sn'].'">';
 		echo '<input type="hidden" name="submit_page" value="'.$_POST['submit_page'].'">';
 	}
 	if (!empty($customers_obj->getOld_onu_ip_address()))

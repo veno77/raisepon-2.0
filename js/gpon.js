@@ -272,10 +272,10 @@ function addPon(olt) {
 		$('#tools').dropdown();
 	});
 }
-function getCustomer(customers_id, page, online, offline, pending, submit_page) {
+function getCustomer(customers_id, online, offline, pending, submit_page) {
 	jQuery.ajax({
 		url: "customers_modal.php",
-		data: {customers_id: customers_id, page: 'index', online: online, offline: offline, pending: pending, submit_page: submit_page},
+		data: {customers_id: customers_id, online: online, offline: offline, pending: pending, submit_page: submit_page},
 		type: "POST"
 	}).done(function(data){
 		$('#modalbody').html(data);
@@ -285,6 +285,20 @@ function getCustomer(customers_id, page, online, offline, pending, submit_page) 
 		$('#tools').dropdown();
 	});
 }
+function getCustomerSearch(customers_id, name, address, egn, sn, submit_page) {
+	jQuery.ajax({
+		url: "customers_modal.php",
+		data: {customers_id: customers_id, name: name, address: address, egn: egn, sn: sn, submit_page: submit_page},
+		type: "POST"
+	}).done(function(data){
+		$('#modalbody').html(data);
+		$('#myModal').modal('show'); 
+		$('#xpon').dropdown();
+		$('#profiles').dropdown();
+		$('#tools').dropdown();
+	});
+}
+
 function editCustomer(olt, pon_port, customers_id) {
 	jQuery.ajax({
 		url: "customers_modal.php",

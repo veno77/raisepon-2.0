@@ -65,36 +65,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 
-if ($_POST['page'] == 'index'){ ?>
+if ($_POST['submit_page'] == 'LOAD'){ ?>
 	<form id="pageforward" action="index.php" method="post">
 <?php
-        echo '<input type="hidden" name="olt_id" value="'.$customers_obj->getOld_olt().'">';
-		echo '<input type="hidden" name="pon_id" value="'.$customers_obj->getOld_pon_port().'">';
-		echo '<input type="hidden" name="online" value="'.$_POST['online'].'">';
-		echo '<input type="hidden" name="offline" value="'.$_POST['offline'].'">';
-		echo '<input type="hidden" name="pending" value="'.$_POST['pending'].'">';
-		echo '<input type="hidden" name="SUBMIT" value="'.$_POST['submit_page'].'">';
+	echo '<input type="hidden" name="olt_id" value="'.$customers_obj->getOld_olt().'">';
+	echo '<input type="hidden" name="pon_id" value="'.$customers_obj->getOld_pon_port().'">';
+	echo '<input type="hidden" name="online" value="'.$_POST['online'].'">';
+	echo '<input type="hidden" name="offline" value="'.$_POST['offline'].'">';
+	echo '<input type="hidden" name="pending" value="'.$_POST['pending'].'">';
+	echo '<input type="hidden" name="SUBMIT" value="'.$_POST['submit_page'].'">';
 ?>
 </form>
 <script type="text/javascript">
-$('#pageforward').submit(function() { 
-    jQuery.ajax({ 
-		url: "index.php",
-		data: $( "#pageforward" ).serialize(),
-		type: "POST",
-        success: function(data) { 
-            $('#output').html(data);
-        }
-    }).done(function(data) {
-		$('#output').html(data);
-		$('.dropdown-toggle').dropdown();
-	});
-	return false; 
-});
+$('#pageforward').submit();
+</script>
+<?php } elseif ($_POST['submit_page'] == 'SEARCH'){ ?>
+	<form id="pageforward" action="index.php" method="post">
+<?php
+	echo '<input type="hidden" name="name" value="'.$_POST['name'].'">';
+	echo '<input type="hidden" name="address" value="'.$_POST['address'].'">';
+	echo '<input type="hidden" name="egn" value="'.$_POST['egn'].'">';
+	echo '<input type="hidden" name="sn" value="'.$_POST['sn'].'">';
+	echo '<input type="hidden" name="SUBMIT" value="'.$_POST['submit_page'].'">';
+?>
+</form>
+<script type="text/javascript">
 $('#pageforward').submit();
 </script>
 <?php
-}
+}else{
 
 $rows = $customers_obj->get_Illegal_onus();
 ?>
@@ -166,6 +165,10 @@ $rows = $customers_obj->get_Illegal_onus();
 		</div>
 	</div>
 </div>	
+<?php
+}
+?>
+
 <div class="container" >
 	<div id="output" class="text-center">
 	</div>

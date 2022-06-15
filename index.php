@@ -21,7 +21,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$PORT_ID = $row['PORT_ID'];
 		$PON_TYPE = $row['PON_TYPE'];
 	}
-}else{
+}
+if (!isset($_POST['initial'])){
 ?>
 <div class="container">
 	<div class="text-center">
@@ -51,6 +52,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						<label><input type="checkbox" id="offline" name="offline" value="YES" checked>offline</label>
 						<label><input type="checkbox" id="pending" name="pending" value="YES" checked>pending</label>
 						<input type="hidden" name="SUBMIT" value="LOAD">
+						<input type="hidden" name="initial" value="YES">
 						<button class="btn btn-basic" type="button" onClick="LoadIndex();">LOAD</button>	
 					</div>
 				</form>
@@ -70,6 +72,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 					<label for="sn">SN/MAC</label>
 					<input type="text" name="sn"  maxlength="15" size="15" class="form-control" placeholder="SN/MAC" aria-describedby="sizing-addon1">
 					<input type="hidden" name="SUBMIT" value="SEARCH">
+					<input type="hidden" name="initial" value="YES">
 					<button class="btn btn-basic"  type="button" onClick="SearchIndex();">SEARCH</button>
 				</form>
 			</div>
@@ -89,7 +92,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 <?php
 }
 ?>
-<div class="container" >
+<div class="container">
 	<div id="output" class="text-center">
 		<?php
 		if (!empty($index_obj->getPon_id()) || !empty($index_obj->getName()) || !empty($index_obj->getAddress()) || !empty($index_obj->getEgn()) || !empty($index_obj->getSn()) || $index_obj->getSubmit() == "UNASSIGNED") {
@@ -102,7 +105,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				print "<h2>Name: " . $index_obj->getName() . "</h2>";
 			?>
 			</div>
-		</div>
 		<!--	<form class="form-inline"  name="myform3" action="update.php" method="post"> -->
 		<div class="row justify-content-md-center">
 			<div class="table-responsive">
@@ -240,6 +242,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<th>ONU</th>
 							<th>Name</th>
 							<th class="hidden-xs hidden-sm">Address</th>
+							<th class="hidden-xs hidden-sm">EGN</th>
 							<th>SERVICE</th>
 							<!-- <th>RF</th> -->
 							<th class="hidden-xs hidden-sm">SN/MAC</th>
@@ -450,7 +453,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							<td class="hidden-xs hidden-sm"><?php echo $offline_reason; ?></td>
 							<td><?php if ($index_obj->getSubmit() != "UNASSIGNED") { echo "<a href=\"onu_details.php?id=" . $row['ID'] . "\">";} ?><button type="button" class="btn btn-default">INFO</button></а></td>
 							<td class="hidden-xs hidden-sm"><?php echo $sync; ?></td>
-							<?php if ($user_class >= "6") { ?><td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row['ID']; ?>', 'index', '<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>','<?php echo $index_obj->getSubmit(); ?>');">EDIT</button></td><?php } ?>
+							<?php if ($user_class >= "6") { 
+							if ($index_obj->getSubmit() == "SEARCH") {?>
+								<td><button type="button" class="btn btn-default" onClick="getCustomerSearch('<?php echo $row['ID']; ?>','<?php echo $index_obj->getName(); ?>','<?php echo $index_obj->getAddress(); ?>','<?php echo $index_obj->getEgn(); ?>','<?php echo $index_obj->getSn(); ?>','<?php echo $index_obj->getSubmit(); ?>');">EDIT</button></td>
+							<?php }else{ ?>
+								<td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>','<?php echo $index_obj->getSubmit(); ?>');">EDIT</button></td>
+							<?php }} ?>
 						</tr>
 					<?php 
 					$count = $count + 1 ; 
@@ -464,7 +472,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 	<?php } ?>
 	<div>&nbsp;</div>
 </div>
-<div></div>
+</div>
+</div>
+
+
 <div class="container">
 	<div class="modal fade" id="myModal" role="dialog">
 		<div class="modal-dialog"> 
