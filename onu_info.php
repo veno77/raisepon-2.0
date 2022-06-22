@@ -247,7 +247,9 @@ where CUSTOMERS.ID = '$customer_id'");
 		$device_type = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $device_type);
         $hw_revision = $session->get($hw_revision_oid);
 		$match_state = $session->get($match_state_oid);	
+		$olt_rx_power = $session->get($olt_rx_power_oid);
 		$onu_rf_rx_power = $session->get($onu_rf_rx_power_oid);
+		
 		if ($pon_type == "EPON")
 			$onu_rf_rx_power = round($onu_rf_rx_power/10,4) . " dBm";
 		if ($pon_type == "GPON")
@@ -266,8 +268,10 @@ where CUSTOMERS.ID = '$customer_id'");
 			$last_online = $year . "-". $month . "-". $day . "  " . $hour . ":" . $minute ;
 			return $last_online;
 			}
-		$olt_rx_power = $session->get($olt_rx_power_oid);
+
+
 		$olt_rx_power = round($olt_rx_power/10,4) . " dBm";
+		
 		/*
 		$onu_rf_status = $session->get($onu_rf_status_oid);
 		if ($onu_rf_status == "1") {
