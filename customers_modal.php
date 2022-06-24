@@ -28,6 +28,7 @@ $customers_obj = new customers();
 	print "<input type=\"hidden\" name=\"old_pon_port\" value=\"". $customers_obj->getOld_pon_port() ."\">";
 	print "<input type=\"hidden\" name=\"old_pon_onu_id\" value=\"". $customers_obj->getOld_pon_onu_id() ."\">";
 	print "<input type=\"hidden\" name=\"old_ports\" value=\"". $customers_obj->getOld_ports() ."\">";
+	print "<input type=\"hidden\" name=\"old_state\" value=\"". $customers_obj->getOld_state() ."\">";
 	if ($_POST['submit_page'] == 'LOAD'){
 		echo '<input type="hidden" name="online" value="'.$_POST['online'].'">';
 		echo '<input type="hidden" name="offline" value="'.$_POST['offline'].'">';
@@ -148,7 +149,7 @@ $customers_obj = new customers();
 		<?php
 		if (null !== $customers_obj->getCustomers_id()) {
 		?>
-			<label><input type="checkbox" id="state" name="state" value="YES"<?php if($customers_obj->getState() == "YES") print "checked" ?>> ACTIVE</label> 
+			<label><input type="checkbox" id="state" name="state" value="YES"<?php if($customers_obj->getOld_state() == "YES") print "checked" ?>> ACTIVE</label> 
 		<?php }else{ ?>
 			<label><input type="checkbox" id="state" name="state" value="YES" checked> ACTIVE</label> 
 		<?php } ?>

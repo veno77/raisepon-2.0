@@ -25,6 +25,7 @@ class customers {
 	private $pon_type;
 	private $auto;
 	private $state;
+	private $old_state;
 	private $state_rf;
 	private $netmask;
 	private $gateway;
@@ -60,6 +61,7 @@ class customers {
 				$this->onu_ip_address = !empty($_POST['onu_ip_address']) ? $this->test_input($_POST['onu_ip_address']) : null;
 				$this->old_onu_ip_address = !empty($_POST['old_onu_ip_address']) ? $this->test_input($_POST['old_onu_ip_address']) : null;
 				$this->page = !empty($_POST['page']) ? $this->test_input($_POST['page']) : null;
+				$this->old_state = !empty($_POST['old_state']) ? $this->test_input($_POST['old_state']) : "NO";
 
 			}
 		
@@ -126,6 +128,9 @@ class customers {
 	}
 	function getOld_ports() {
 		return $this->old_ports;
+	}
+	function getOld_state() {
+		return $this->old_state;
 	}
 	function getOlt() {
 		return $this->olt;
@@ -277,7 +282,11 @@ class customers {
 			if (!empty($error)) {
 				return $error;
 			}
-		
+			//SET NAME
+			$error = $this->set_name();
+			if (!empty($error)) {
+				return $error;
+			}
 			//CREATE RRD
 			//TRAFFIC RRD
 			$error = $this->onu_traffic_rrd();
@@ -395,20 +404,36 @@ class customers {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;	
 		}
-
-		//DELETE OLD ONU in OLT VIA SNMP
-		if (!empty($this->old_olt) && !empty($this->old_pon_port)	) {
+		//CHANGE NAME
+		$error = $this->set_name();
+		if (!empty($error)) {
+				return $error;
+			}
+		//CHANGE STATE
+		if ($this->old_state != $this->state) {
+			$error = $this->set_state();
+			if (!empty($error)) {
+				return $error;
+				try {
+					$conn = db_connect::getInstance();
+					$result = $conn->db->query("UPDATE CUSTOMERS SET STATE = '$this->old_state' where ID = '$this->customers_id'");
+				} catch (PDOException $e) {
+					$error = "Connection Failed:" . $e->getMessage() . "\n";
+					return $error;	
+				}
+			}
+		}
+			
+		//RECREATE ONU IF OLT and PON port CHANGED
+		if (($this->old_olt != $this->olt) && ($this->old_pon_port != $this->pon_port)	) {
 			$error = $this->delete_onu_via_snmp();
 			if (!empty($error)) {
 				return $error;
 			}
 			
-			//UNLINK OLD RRD
+		//UNLINK OLD RRD
 		//	array_map('unlink', glob(dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "*"));
-		}
-		sleep(1);
-		//ADD_ONU_VIA_SNMP	
-		if (!empty($this->olt) && !empty($this->pon_port)) {
+			sleep(1);
 			$error = $this->add_onu_via_snmp($this->sn);
 			if (!empty($error)) {
 				return $error;
@@ -514,7 +539,7 @@ class customers {
 			$this->old_service = $row["SERVICE"];
 			$this->old_ports = $row["PORTS"];
 			$this->auto = $row["AUTO"];
-			$this->state = $row["STATE"];
+			$this->old_state = $row["STATE"];
 			$this->service = $row["SERVICE"];
 			$this->state_rf = $row["STATE_RF"];
 			$this->old_onu_ip_address = $row["IP_ADDRESS"];
@@ -866,7 +891,6 @@ class customers {
 		$row_status_oid = $snmp_obj->get_pon_oid("row_status_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$dtype_oid = $snmp_obj->get_pon_oid("dtype_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$state_oid = $snmp_obj->get_pon_oid("onu_active_state_oid", $this->pon_type) . "." . $this->big_onu_id;
-		$description_oid = $snmp_obj->get_pon_oid("description_oid", $this->pon_type) . "." . $this->big_onu_id;
 		//EXECUTE SNMPSET TO ADD ONU
 		$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
 		if ($this->pon_type == "GPON") {
@@ -921,12 +945,7 @@ class customers {
 			return $error;
 		}
 		
-		//SET THE NAME
-		$session->set($description_oid, 's', $this->name);
-		if ($session->getError()) {
-			$error = var_dump($session->getError());
-			return $error;
-		}
+
 		
 		//SET RF STATE
 		if (!empty($this->state_rf)) {
@@ -974,6 +993,72 @@ class customers {
 		}
 		$session->close();
 		
+	}
+	
+	function set_name(){
+		  try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT CUSTOMERS.ID as C_ID, CUSTOMERS.NAME, CUSTOMERS.SN, CUSTOMERS.STATE, CUSTOMERS.STATE_RF, CUSTOMERS.AUTO, PON_ONU_ID, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.SERVICE, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW as RW, PON.ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, LINE_PROFILE.LINE_PROFILE_ID, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS as PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.SN = '$this->sn'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			$olt_ip_address = $row["IP_ADDRESS"];
+			$olt_rw = $row["RW"];
+			$port_id = $row["PORT_ID"];
+			$pon_onu_id = $row["PON_ONU_ID"];
+			$slot_id = $row["SLOT_ID"];
+			$name = $row["NAME"];
+			$pon_type = $row["PON_TYPE"];
+		}
+		$snmp_obj = new snmp_oid();
+		$big_onu_id = $this->type2id($slot_id, $port_id, $pon_onu_id);
+		$description_oid = $snmp_obj->get_pon_oid("description_oid", $pon_type) . "." . $big_onu_id;
+		$session = new SNMP(SNMP::VERSION_2C, $olt_ip_address, $olt_rw);
+		//SET THE NAME
+		$session->set($description_oid, 's', $name);
+		if ($session->getError()) {
+			$error = var_dump($session->getError());
+			return $error;
+		}
+	}
+	function set_state(){
+		  try {
+			$conn = db_connect::getInstance();
+			$result = $conn->db->query("SELECT CUSTOMERS.ID as C_ID, CUSTOMERS.NAME, CUSTOMERS.SN, CUSTOMERS.STATE, CUSTOMERS.STATE_RF, CUSTOMERS.AUTO, PON_ONU_ID, CUSTOMERS.PON_PORT, CUSTOMERS.OLT, CUSTOMERS.SERVICE, SERVICES.LINE_PROFILE_ID, SERVICES.SERVICE_PROFILE_ID, OLT.ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RW as RW, PON.ID, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, LINE_PROFILE.LINE_PROFILE_ID, SERVICE_PROFILE.SERVICE_PROFILE_ID, SERVICE_PROFILE.PORTS as PORTS from CUSTOMERS LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN LINE_PROFILE on SERVICES.LINE_PROFILE_ID=LINE_PROFILE.ID LEFT JOIN SERVICE_PROFILE on SERVICES.SERVICE_PROFILE_ID=SERVICE_PROFILE.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID where CUSTOMERS.SN = '$this->sn'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+        while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
+			$olt_ip_address = $row["IP_ADDRESS"];
+			$olt_rw = $row["RW"];
+			$port_id = $row["PORT_ID"];
+			$pon_onu_id = $row["PON_ONU_ID"];
+			$slot_id = $row["SLOT_ID"];
+			$state = $row["STATE"];
+			$pon_type = $row["PON_TYPE"];
+		}
+		$snmp_obj = new snmp_oid();
+		$big_onu_id = $this->type2id($slot_id, $port_id, $pon_onu_id);
+		$state_oid = $snmp_obj->get_pon_oid("onu_active_state_oid", $pon_type) . "." . $big_onu_id;
+		$session = new SNMP(SNMP::VERSION_2C, $olt_ip_address, $olt_rw);
+		//SET STATE
+		if ($this->state == "NO") {
+			$session->set($state_oid, 'i', '2');
+			if ($session->getError()) {
+			$error = var_dump($session->getError());
+			return $error;
+			}
+		}
+		if ($this->state == "YES"){
+			$session->set($state_oid, 'i', '1');
+			if ($session->getError()) {
+				$error = var_dump($session->getError());
+				return $error;
+			}
+		}
 	}
 	function onu_traffic_rrd() {
 		$traffic = array("traffic", "unicast", "broadcast", "multicast");
