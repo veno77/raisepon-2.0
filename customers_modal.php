@@ -8,7 +8,7 @@ $customers_obj = new customers();
                 $("#select-pon2").load("get.php?choice=" + $("#select-olt2").val());
         });
 	});
-	$(function() {
+/*	$(function() {
 		$("#auto").click(function() {
 		   if ($(this).is(":checked")) { 
 			  $("#select-olt2").prop("disabled", true);
@@ -19,6 +19,7 @@ $customers_obj = new customers();
 		   }
 		});
 	});
+*/
 </script>
 <form id="contact_form" action="customers.php" method="post">
 <?php if (null !== $customers_obj->getCustomers_id()) {
@@ -72,7 +73,7 @@ $customers_obj = new customers();
 	<div class="col-md-4 col-md-offset-2">
 		<div class="form-group">
 			<label for="olt">OLT*</label>
-			<select class="form-control" id="select-olt2" name="olt" <?php if($customers_obj->getAuto() == "YES") print "disabled" ?>>
+			<select class="form-control" id="select-olt2" name="olt">
 				<?php 
 				if (null == $customers_obj->getOlt())
 					print "	<option value=\"\">Select</option>";
@@ -93,7 +94,7 @@ $customers_obj = new customers();
 	<div class="col-md-4"> 
 		<div class="form-group">
 			<label for="pon_port">PON PORT*</label>
-			<select class="form-control" id="select-pon2" name="pon_port" <?php if($customers_obj->getAuto() == "YES") print "disabled" ?>>
+			<select class="form-control" id="select-pon2" name="pon_port" >
 				<?php if (null !== $customers_obj->getCustomers_id() || null !== $customers_obj->getPon_port() || null !== $customers_obj->getOld_pon_port()) {
 				//	echo $customers_obj->getOld_olt();
 					$rows = $customers_obj->get_Pon_ports();
