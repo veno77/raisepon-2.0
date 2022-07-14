@@ -425,7 +425,7 @@ class customers {
 		}
 			
 		//RECREATE ONU IF OLT and PON port CHANGED
-		if (($this->old_olt != $this->olt) && ($this->old_pon_port != $this->pon_port)	) {
+		//if (($this->old_olt != $this->olt) && ($this->old_pon_port != $this->pon_port)	) {
 			$error = $this->delete_onu_via_snmp();
 			if (!empty($error)) {
 				return $error;
@@ -438,7 +438,7 @@ class customers {
 			if (!empty($error)) {
 				return $error;
 			}
-		} 	
+		//} 	
 	}
 	
 	
