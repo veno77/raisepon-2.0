@@ -455,7 +455,7 @@ if (!isset($_POST['initial'])){
 							<td class="hidden-xs hidden-sm"><?php echo $sync; ?></td>
 							<?php if ($user_class >= "6") { 
 							if ($index_obj->getSubmit() == "SEARCH") {?>
-								<td><button type="button" class="btn btn-default" onClick="getCustomerSearch('<?php echo $row['ID']; ?>','<?php echo $index_obj->getName(); ?>','<?php echo $index_obj->getAddress(); ?>','<?php echo $index_obj->getEgn(); ?>','<?php echo $index_obj->getSn(); ?>','<?php echo $index_obj->getSubmit(); ?>');">EDIT</button></td>
+								<td><button type="button" class="btn btn-default" onClick="getCustomerSearch('<?php echo $row['ID']; ?>','<?php echo $index_obj->getSubmit(); ?>');">EDIT</button></td>
 							<?php }else{ ?>
 								<td><button type="button" class="btn btn-default" onClick="getCustomer('<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>','<?php echo $index_obj->getSubmit(); ?>');">EDIT</button></td>
 							<?php }} ?>

@@ -285,10 +285,10 @@ function getCustomer(customers_id, online, offline, pending, submit_page) {
 		$('#tools').dropdown();
 	});
 }
-function getCustomerSearch(customers_id, name, address, egn, sn, submit_page) {
+function getCustomerSearch(customers_id, submit_page) {
 	jQuery.ajax({
 		url: "customers_modal.php",
-		data: {customers_id: customers_id, name: name, address: address, egn: egn, sn: sn, submit_page: submit_page},
+		data: {customers_id: customers_id, submit_page: submit_page},
 		type: "POST"
 	}).done(function(data){
 		$('#modalbody').html(data);

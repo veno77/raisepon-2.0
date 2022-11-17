@@ -36,10 +36,10 @@ $customers_obj = new customers();
 		echo '<input type="hidden" name="pending" value="'.$_POST['pending'].'">';
 		echo '<input type="hidden" name="submit_page" value="'.$_POST['submit_page'].'">';
 	}elseif ($_POST['submit_page'] == 'SEARCH'){
-		echo '<input type="hidden" name="name" value="'.$_POST['name'].'">';
-		echo '<input type="hidden" name="address" value="'.$_POST['address'].'">';
-		echo '<input type="hidden" name="egn" value="'.$_POST['egn'].'">';
-		echo '<input type="hidden" name="sn" value="'.$_POST['sn'].'">';
+		echo '<input type="hidden" name="name" value="'. $customers_obj->getName() .'">';
+		echo '<input type="hidden" name="address" value="'.$customers_obj->getAddress().'">';
+		echo '<input type="hidden" name="egn" value="'.$customers_obj->getEgn().'">';
+		echo '<input type="hidden" name="sn" value="'.$customers_obj->getSn().'">';
 		echo '<input type="hidden" name="submit_page" value="'.$_POST['submit_page'].'">';
 	}
 	if (!empty($customers_obj->getOld_onu_ip_address()))
