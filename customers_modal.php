@@ -30,12 +30,12 @@ $customers_obj = new customers();
 	print "<input type=\"hidden\" name=\"old_pon_onu_id\" value=\"". $customers_obj->getOld_pon_onu_id() ."\">";
 	print "<input type=\"hidden\" name=\"old_ports\" value=\"". $customers_obj->getOld_ports() ."\">";
 	print "<input type=\"hidden\" name=\"old_state\" value=\"". $customers_obj->getOld_state() ."\">";
-	if ($_POST['submit_page'] == 'LOAD'){
+	if (!empty($_POST['submit_page']) && $_POST['submit_page'] == 'LOAD'){
 		echo '<input type="hidden" name="online" value="'.$_POST['online'].'">';
 		echo '<input type="hidden" name="offline" value="'.$_POST['offline'].'">';
 		echo '<input type="hidden" name="pending" value="'.$_POST['pending'].'">';
 		echo '<input type="hidden" name="submit_page" value="'.$_POST['submit_page'].'">';
-	}elseif ($_POST['submit_page'] == 'SEARCH'){
+	}elseif (!empty($_POST['submit_page']) && $_POST['submit_page'] == 'SEARCH'){
 		echo '<input type="hidden" name="name" value="'. $customers_obj->getName() .'">';
 		echo '<input type="hidden" name="address" value="'.$customers_obj->getAddress().'">';
 		echo '<input type="hidden" name="egn" value="'.$customers_obj->getEgn().'">';

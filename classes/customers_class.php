@@ -647,11 +647,11 @@ class customers {
 	
 	
 	function get_Pon_ports() {
-		if (!isset($this->old_olt))
-			$this->old_olt = $this->olt;
+		if (!isset($this->olt))
+			$this->olt = $this->old_olt;
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT ID, NAME, SLOT_ID, PORT_ID from PON where OLT='$this->old_olt' order by SLOT_ID, PORT_ID");
+			$result = $conn->db->query("SELECT ID, NAME, SLOT_ID, PORT_ID from PON where OLT='$this->olt' order by SLOT_ID, PORT_ID");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
