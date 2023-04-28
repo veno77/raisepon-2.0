@@ -1065,8 +1065,8 @@ class customers {
 		foreach ($traffic as $tr) {
 			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_" . $tr . ".rrd";
 			$opts = array( "--step", "300", "--start", "0",
-			   "DS:input:DERIVE:600:0:U",
-			   "DS:output:DERIVE:600:0:U",
+			   "DS:input:DERIVE:1800:0:U",
+			   "DS:output:DERIVE:1800:0:U",
 			   "RRA:AVERAGE:0.5:1:600",
 			   "RRA:AVERAGE:0.5:6:700",
 			   "RRA:AVERAGE:0.5:24:775",
@@ -1091,8 +1091,8 @@ class customers {
 		for ($i=1; $i <= $this->ports; $i++) {
 			$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_" . $i . ".rrd";
 			$opts = array( "--step", "300", "--start", "0",
-			   "DS:input:DERIVE:600:0:U",
-			   "DS:output:DERIVE:600:0:U",
+			   "DS:input:DERIVE:1800:0:U",
+			   "DS:output:DERIVE:1800:0:U",
 			   "RRA:AVERAGE:0.5:1:600",
 			   "RRA:AVERAGE:0.5:6:700",
 			   "RRA:AVERAGE:0.5:24:775",
