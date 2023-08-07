@@ -1117,7 +1117,6 @@ class customers {
 		$rrd_name = dirname(dirname(__FILE__)) . "/rrd/" . $this->sn . "_power.rrd";
 		$opts = array( "--step", "300", "--start", "0",
 		   "DS:input:GAUGE:1800:U:U",
-		   "DS:output:GAUGE:1800:U:U",
 		   "DS:rxolt:GAUGE:1800:U:U",
            "DS:rfin:GAUGE:1800:U:U",
 		   "RRA:AVERAGE:0.5:1:600",

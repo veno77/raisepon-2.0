@@ -813,13 +813,10 @@ where CUSTOMERS.ID = '$customer_id'");
 			if ($rf == "Yes") {
 				$opts4 = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
 				"DEF:inoctets=$rrd_power:input:AVERAGE",
-				"DEF:outoctets=$rrd_power:output:AVERAGE",
 				"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
 				"DEF:rf_in=$rrd_power:rfin:AVERAGE",
 				"LINE2:rx_olt#D6213B:RX@OLT",
 				"GPRINT:rx_olt:LAST:Last\: %6.2lf dBm\\r",
-				"LINE2:outoctets#C6913B:TX@ONU",
-				"GPRINT:outoctets:LAST:Last\: %6.2lf dBm\\r",
 				"LINE2:inoctets#7FB37C:RX@ONU",
 				"GPRINT:inoctets:LAST:Last\: %6.2lf dBm\\r",
 				"LINE2:rf_in#FFD87C:RF@ONU",
@@ -828,12 +825,9 @@ where CUSTOMERS.ID = '$customer_id'");
 			} else {
 				$opts4 = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
 				"DEF:inoctets=$rrd_power:input:AVERAGE",
-				"DEF:outoctets=$rrd_power:output:AVERAGE",
 				"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
 				"LINE2:rx_olt#D6213B:RX@OLT",
 				"GPRINT:rx_olt:LAST:Last\: %6.2lf dBm\\r",
-				"LINE2:outoctets#C6913B:TX@ONU",
-				"GPRINT:outoctets:LAST:Last\: %6.2lf dBm\\r",
 				"LINE2:inoctets#7FB37C:RX@ONU",
 				"GPRINT:inoctets:LAST:Last\: %6.2lf dBm\\r",
 				);

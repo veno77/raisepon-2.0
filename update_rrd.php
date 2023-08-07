@@ -103,14 +103,14 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 					if ($recv_power > 32767)
 						$recv_power = $recv_power - 65535 - 1;
 					$recv_power = round(($recv_power-15000)/500,2);
-					$send_power = $session->get($send_power_oid);
-					$send_power = round(($send_power-15000)/500,2);
+				//	$send_power = $session->get($send_power_oid);
+				//	$send_power = round(($send_power-15000)/500,2);
 				}
 				if ($row['PON_TYPE'] == "EPON") {
 					$recv_power = $session->get($recv_power_oid);
 					$recv_power = round(10*log10($recv_power/10000),2);
-					$send_power = $session->get($send_power_oid);
-					$send_power = round(10*log10($send_power/10000),2);
+				//	$send_power = $session->get($send_power_oid);
+				//	$send_power = round(10*log10($send_power/10000),2);
 				}
   
 			
@@ -121,8 +121,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				} else {
 					$rf_input_power = "0";
 				}
-				$ret = rrd_update($rrd_power, array("N:$recv_power:$send_power:$olt_rx_power:$rf_input_power"));
-				echo $recv_power . " " . $send_power ." " .$olt_rx_power . " " . $rf_input_power . "\n" ;
+				$ret = rrd_update($rrd_power, array("N:$recv_power:$olt_rx_power:$rf_input_power"));
+				echo $recv_power . " " .$olt_rx_power . " " . $rf_input_power . "\n" ;
 				if( $ret == 0 )
 				{
 					$err = rrd_error();
