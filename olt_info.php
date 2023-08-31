@@ -135,6 +135,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$index = 10000000;
 		if ($olt_model_name == "ISCOM6820-GP" || $olt_model_name == "ISCOM6820-EP")
 			$index = 30000000;
+		if ($olt_model_name == "ISCOM6800")
+			$index = 90000000;
 		if ($reason == "1")
 			$reason = "noError(1)";
 		if ($reason == "2")
@@ -273,7 +275,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		snmp_set_quick_print(TRUE);
 		snmp_set_enum_print(TRUE);
 		snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro, 1000000);
+		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro, 5000000);
 		$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
 		if ($status) {
 			print "Interfaces";
@@ -469,7 +471,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		snmp_set_quick_print(TRUE);
 		snmp_set_enum_print(TRUE);
 		snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro, 1000000);
+		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro, 5000000);
 		$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
 		if ($status) {
 			$dot3StatsIndex = $snmp_obj->get_pon_oid("dot3StatsIndex", "OLT");

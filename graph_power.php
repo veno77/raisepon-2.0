@@ -34,7 +34,6 @@ if ($_GET) {
 			if ($rf == "1") {
 				$opts = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
 					"DEF:inoctets=$rrd_power:input:AVERAGE",
-					"DEF:outoctets=$rrd_power:output:AVERAGE",
 					"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
 					"DEF:rf_in=$rrd_power:rfin:AVERAGE",
 					"LINE2:rx_olt#D6213B:RX@OLT",
@@ -49,7 +48,6 @@ if ($_GET) {
 				       );
 				$opts2 = array( "--start", "-1w", "--vertical-label=dBm", "--title=Weekly Power",
 					"DEF:inoctets=$rrd_power:input:AVERAGE",
-                                        "DEF:outoctets=$rrd_power:output:AVERAGE",
                                         "DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
                                         "DEF:rf_in=$rrd_power:rfin:AVERAGE",
 					"LINE2:rx_olt#D6213B:RX@OLT",
@@ -63,7 +61,6 @@ if ($_GET) {
 				       );
 				$opts3 = array( "--start", "-1m", "--vertical-label=dBm", "--title=Monthly Power",
 					"DEF:inoctets=$rrd_power:input:AVERAGE",
-                                        "DEF:outoctets=$rrd_power:output:AVERAGE",
                                         "DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
                                         "DEF:rf_in=$rrd_power:rfin:AVERAGE",
                                         "LINE2:rx_olt#D6213B:RX@OLT",
@@ -79,7 +76,6 @@ if ($_GET) {
 			} else {
 				$opts = array( "--start", "-1d", "--vertical-label=dBm", "--title=Daily Power",
 					"DEF:inoctets=$rrd_power:input:AVERAGE",
-					"DEF:outoctets=$rrd_power:output:AVERAGE",
 					"DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
 					"LINE2:rx_olt#D6213B:RX@OLT",
 					"GPRINT:rx_olt:LAST:Last\: %6.2lf dBm\\r",
@@ -90,7 +86,6 @@ if ($_GET) {
 				       );
 				$opts2 = array( "--start", "-1w", "--vertical-label=dBm", "--title=Weekly Power",
 					 "DEF:inoctets=$rrd_power:input:AVERAGE",
-					 "DEF:outoctets=$rrd_power:output:AVERAGE",
 					 "DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
 					 "LINE2:rx_olt#D6213B:RX@OLT",
 					 "GPRINT:rx_olt:MAX:Max\: %6.2lf dBm\\r",
@@ -101,7 +96,6 @@ if ($_GET) {
 				);
 				$opts3 = array( "--start", "-1m", "--vertical-label=dBm", "--title=Monthly Power",
 					 "DEF:inoctets=$rrd_power:input:AVERAGE",
-					 "DEF:outoctets=$rrd_power:output:AVERAGE",
 					 "DEF:rx_olt=$rrd_power:rxolt:AVERAGE",
 					 "LINE2:rx_olt#D6213B:RX@OLT",
 					 "GPRINT:rx_olt:MAX:Max\: %6.2lf dBm\\r",

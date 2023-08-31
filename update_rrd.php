@@ -214,7 +214,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	if ($ip_address_state[$ip_address] == "up") {
 		$ethernet_port_info = array(); 
 		$dot3StatsIndex = $snmp_obj->get_pon_oid("dot3StatsIndex", "OLT");
-		$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
+		$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 5000000);
 		$output = $session->walk($dot3StatsIndex);
 		foreach ($output as $oid => $index) {
 			$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $index . "_traffic.rrd";
