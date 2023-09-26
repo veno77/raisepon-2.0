@@ -65,17 +65,27 @@ Query OK, 0 rows affected (0.00 sec)
 $mysql -u raisepon -p raisepon < raisepon.sql 
 Enter password: 
 
-#set the crontab
 
-$sudo vi /etc/crontab 
 
-#add the following lines at the bottom of the file
+#add the following lines in crontab 
 
-*/5 * * * *     www-data     /usr/bin/php -f /var/www/html/raisepon-2.0/update_rrd_data.php > /dev/null 2>&1
-*/15 * * * *     www-data     /usr/bin/php -f /var/www/html/raisepon-2.0/update_rrd_power.php > /dev/null 2>&1
-*/5 * * * *     www-data     /usr/bin/php -f /var/www/html/raisepon-2.0/update_auto.php > /dev/null 2>&1
 
-#save the file esc : x enter
+Add the following to your crontab if you want to have graphs:
+
+*/15 * * * *     www-data     /usr/bin/php -f /path/to/your/webcontent/update_rrd.php > /dev/null 2>&1
+
+Add this if you want ONUs added via cli or without authorization to the OLTs to be synchronized to the RAISEPON
+
+* */1 * * *     www-data     /usr/bin/php -f /path/to/your/webcontent/update_data.php > /dev/null 2>&1
+
+Add also this if you want to use AUTO ONU registering based on Illegal ONUs found in OLT devices:
+
+* * * * *     www-data     /usr/bin/php -f /path/to/your/webcontent/update_auto.php > /dev/null 2>&1
+
+Add this if you configure backup of the database and OLTs' startup-config via ftp:
+
+0 2 * * *     www-data     /usr/bin/php -f /path/to/your/webcontent/update_backup.php > /dev/null 2>&1
+
 
 #open your web browser and go to http://your-ip-address/raisepon-2.0/
 

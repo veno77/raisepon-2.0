@@ -892,7 +892,7 @@ class customers {
 		$dtype_oid = $snmp_obj->get_pon_oid("dtype_oid", $this->pon_type) . "." . $this->big_onu_id;
 		$state_oid = $snmp_obj->get_pon_oid("onu_active_state_oid", $this->pon_type) . "." . $this->big_onu_id;
 		//EXECUTE SNMPSET TO ADD ONU
-		$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
+		$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw, 5000000);
 		if ($this->pon_type == "GPON") {
 			if (!empty($service_profile_id)) {
 				$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $row_status_oid), array('s', 'i', 'i', 'i'), array($this->sn, $line_profile_id, $service_profile_id, '4')); 
@@ -932,7 +932,7 @@ class customers {
 			}
 
 		}
-		
+		/*	
 		if ($session->getError()) {
 			try {
 				$conn = db_connect::getInstance();
@@ -945,7 +945,7 @@ class customers {
 			return $error;
 		}
 		
-
+		*/
 		
 		//SET RF STATE
 		if (!empty($this->state_rf)) {
