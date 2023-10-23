@@ -65,7 +65,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 }
 
 
-if ($_POST['submit_page'] == 'LOAD'){ ?>
+if (isset($_POST['submit_page']) && $_POST['submit_page'] == 'LOAD'){ ?>
 	<form id="pageforward" action="index.php" method="post">
 <?php
 	echo '<input type="hidden" name="olt_id" value="'.$customers_obj->getOld_olt().'">';
@@ -79,7 +79,7 @@ if ($_POST['submit_page'] == 'LOAD'){ ?>
 <script type="text/javascript">
 $('#pageforward').submit();
 </script>
-<?php } elseif ($_POST['submit_page'] == 'SEARCH'){ ?>
+<?php } elseif (isset($_POST['submit_page']) && $_POST['submit_page'] == 'SEARCH'){ ?>
 	<form id="pageforward" action="index.php" method="post">
 <?php
 	echo '<input type="hidden" name="name" value="'.$_POST['name'].'">';

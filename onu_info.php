@@ -771,8 +771,8 @@ where CUSTOMERS.ID = '$customer_id'");
 			foreach ($pkts as $tr) {
 				$$tr = dirname(__FILE__) . "/rrd/" . $sn . "_" . $tr . ".rrd";
 				${$tr."_opts"} = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=pkts/s", "--title=Daily $tr",
-				"DEF:inoctets=${$tr}:input:AVERAGE",
-				"DEF:outoctets=${$tr}:output:AVERAGE",
+				"DEF:inoctets={$$tr}:input:AVERAGE",
+				"DEF:outoctets={$$tr}:output:AVERAGE",
 				"AREA:inoctets#00FF00:In",
 				"LINE1:outoctets#0000FF:Out\\r",
 				"GPRINT:inoctets:MAX:IN Max\: %6.0lf pkts/s",
