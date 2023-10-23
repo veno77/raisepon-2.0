@@ -12,9 +12,9 @@ I suggest using latest FreeBSD or Debian Stable Release.
 You need:
 
 Apache 2.4 or later
-PHP 7.0 or later 
-PHP 7.x Extensions + Mysql PDO
-Mysql 5.6 or later 
+PHP 8.0 or later 
+PHP 8.x Extensions + Mysql PDO
+Mysql 5.7 or later 
 net-snmp + php-snmp
 rrdtool + pecl-rrd(php-rrd in Debian)
 
