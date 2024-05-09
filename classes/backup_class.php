@@ -93,7 +93,7 @@ class backup {
 			return $error;
 		}
 		while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
-			if ($row["BACKUP"])
+			if ($row["BACKUP_ID"])
 				$error = ("ERROR: THIS BACKUP FTP IS ASSIGNED TO OLT, Please remove it from OLT config and then delete it!!");
 				return $error;
 		}
