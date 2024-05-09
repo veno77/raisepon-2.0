@@ -87,7 +87,7 @@ class backup {
 		// CHECK IF BACKUP FTP IS ASSIGNED TO ANY OLT
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT BACKUP from OLT where BACKUP =  '$this->id'");
+			$result = $conn->db->query("SELECT BACKUP_ID from OLT where BACKUP_ID='$this->id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
