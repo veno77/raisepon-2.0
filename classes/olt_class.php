@@ -10,6 +10,7 @@ class olt {
 	public $snmp_community_rw;
 	public $backup_id;
 	private $submit;
+	public $type;
 	
 	function __construct() {
 		if (!empty($_SERVER["REQUEST_METHOD"])) {
@@ -22,6 +23,7 @@ class olt {
 				$this->olt_old_ip = isset($_POST['old_ip'])	? $this->test_input($_POST['old_ip']) : null;
 				$this->snmp_community_rw = isset($_POST['rw']) ? $this->test_input($_POST['rw']) : null;
 				$this->backup_id = isset($_POST['backup_id']) ? $this->test_input($_POST['backup_id']) : null;
+				$this->type = isset($_POST['type']) ? $this->test_input($_POST['type']) : null;				
 				$this->submit = isset($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
 			}
 			
@@ -273,7 +275,7 @@ class olt {
 	function get_data_olt() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT ID, NAME, MODEL, INET_NTOA(IP_ADDRESS) as IP_ADDRESS, RO, RW, BACKUP_ID from OLT where ID='$this->olt_id'");
+			$result = $conn->db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE as TYPE, OLT_MODEL.NAME as OLT_MODEL_NAME, BACKUP_STATUS.DATE, BACKUP_STATUS.REASON from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN BACKUP_STATUS on OLT.ID = BACKUP_STATUS.OLT where OLT.ID ='$this->olt_id'");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
@@ -286,6 +288,7 @@ class olt {
 			$this->snmp_community_rw = $row["RW"];
 			$this->olt_model = $row["MODEL"];
 			$this->backup_id = $row["BACKUP_ID"];
+			$this->type = $row["TYPE"];
 		}	
 		
 		
@@ -325,9 +328,15 @@ class olt {
 	}
 	function save_olt() {
 		$this->get_data_olt();
-		$save_oid = '1.3.6.1.4.1.8886.1.2.1.1.0';
-		$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $this->snmp_community_rw, 2000000, 3);
-        $session->set($save_oid, 'i', '2');
+		if ($this->type == "XGSPON"){
+			$save_oid = '1.3.6.1.4.1.8886.2.1.1.34.0';
+			$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $this->snmp_community_rw, 2000000, 3);
+			$session->set($save_oid, 'i', '1');	
+		}else{
+			$save_oid = '1.3.6.1.4.1.8886.1.2.1.1.0';
+			$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $this->snmp_community_rw, 2000000, 3);
+			$session->set($save_oid, 'i', '2');
+		}
        	if ($session->getError()) {
        		exit(var_dump($session->getError()));
 		}

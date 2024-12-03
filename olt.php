@@ -105,7 +105,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						$snmp_obj = new snmp_oid();
 						snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 						$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 1500000, 3);
-						$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
+						if ($row['TYPE'] == "XGSPON") {
+							$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "XGSPON_OLT"));
+						}else{
+							$status = $session->get($snmp_obj->get_pon_oid("olt_status_oid", "OLT"));
+
+						}
 						$temp = '';
 						$save = '';
 						$cpu = '';
@@ -115,7 +120,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 						if ($status) {
 							$status = "<font color=green>Online</font>";
 							$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
-							$temp = $session->get($snmp_obj->get_pon_oid("olt_temp_oid", "OLT"));
+							if ($row['TYPE'] == "XGSPON") {
+								$temp = $session->get($snmp_obj->get_pon_oid("olt_temp_oid", "XGSPON_OLT"));
+							}else{
+								$temp = $session->get($snmp_obj->get_pon_oid("olt_temp_oid", "OLT"));
+							}
 							if ($temp > '65') {
 								$temp = "<font color=red>" . $temp . "\xc2\xb0C</font>";
 							}else {
@@ -126,11 +135,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							snmp_set_enum_print(TRUE);
 							snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
 							$session = new SNMP(SNMP::VERSION_1, $row['IP_ADDRESS'], $row['RO']);
-							$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
+							if ($row['TYPE'] == "XGSPON") {							
+								$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "XGSPON_OLT");
+							}else{
+								$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
+							}
 							$cpus = $session->walk($olt_cpu_oid);
 							foreach ($cpus as $cpu_oid => $cpu) {
 								$slot = str_replace($olt_cpu_oid, '', substr($cpu_oid, 0, -1));
 								$slot = str_replace('.','',$slot);
+								if ($row['TYPE'] == "XGSPON")
+									$cpu = $cpu/100;
 								if ($cpu > '50') {
 									$cpu = "Slot" . $slot . ": <font color=red>" . $cpu . "%</font>";
 								}else{
@@ -140,7 +155,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 							}
 							snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 							$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
-							$sysuptime = $session->get($snmp_obj->get_pon_oid("sys_uptime_oid", "OLT"));
+							if ($row['TYPE'] == "XGSPON") {														
+								$sysuptime = $session->get($snmp_obj->get_pon_oid("sys_uptime_oid", "XGSPON_OLT"));
+							}else{
+								$sysuptime = $session->get($snmp_obj->get_pon_oid("sys_uptime_oid", "OLT"));
+							}
 							$sysuptime_days = floor($sysuptime/(100*3600*24));
 							$sysuptime_hours = $sysuptime/(100*3600)%24;
 							$sysuptime_minutes = $sysuptime/(100*60)%60;

@@ -116,7 +116,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 	if ($type == "info"){
 		try {
-			$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE, OLT_MODEL.NAME as OLT_MODEL_NAME, BACKUP_STATUS.DATE, BACKUP_STATUS.REASON from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN BACKUP_STATUS on OLT.ID = BACKUP_STATUS.OLT where OLT.ID = '$olt_id'");
+			$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE as TYPE, OLT_MODEL.NAME as OLT_MODEL_NAME, BACKUP_STATUS.DATE, BACKUP_STATUS.REASON from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN BACKUP_STATUS on OLT.ID = BACKUP_STATUS.OLT where OLT.ID = '$olt_id'");
 
 			} catch (PDOException $e) {
 					echo "Connection Failed:" . $e->getMessage() . "\n";
@@ -131,6 +131,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$olt_model_name = $row['OLT_MODEL_NAME'];
 			$date = $row['DATE'];
 			$reason = $row['REASON'];
+		}
+		
+		if ($olt_type == "XGSPON") {
+			$type = "XGSPON_OLT";
+		}else{
+			$type = "OLT";
 		}
 		$index = 10000000;
 		if ($olt_model_name == "ISCOM6820-GP" || $olt_model_name == "ISCOM6820-EP")
@@ -171,13 +177,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$reason = "badSourceFileType(16)";
 		if ($reason == "17")
 			$reason = "badDestFileType(17)";
-		$sys_uptime_oid = $snmp_obj->get_pon_oid("sys_uptime_oid", "olt");
-		$olt_serial_number_oid = $snmp_obj->get_pon_oid("olt_serial_number_oid", "olt");
-		$olt_hw_version_oid = $snmp_obj->get_pon_oid("olt_hw_version_oid", "olt");
-		$olt_model_oid = $snmp_obj->get_pon_oid("olt_model_oid", "olt");
-		$olt_slot_num_oid = $snmp_obj->get_pon_oid("olt_slot_num_oid", "olt");
-		$olt_mac_address_oid = $snmp_obj->get_pon_oid("olt_mac_address_oid", "olt");
-
+		$sys_uptime_oid = $snmp_obj->get_pon_oid("sys_uptime_oid", $type);
+		$olt_serial_number_oid = $snmp_obj->get_pon_oid("olt_serial_number_oid", $type);
+		$olt_hw_version_oid = $snmp_obj->get_pon_oid("olt_hw_version_oid", $type);
+		$olt_model_oid = $snmp_obj->get_pon_oid("olt_model_oid", $type);
+		$olt_slot_num_oid = $snmp_obj->get_pon_oid("olt_slot_num_oid", $type);
+		$olt_mac_address_oid = $snmp_obj->get_pon_oid("olt_mac_address_oid", $type);
 		$raisecomSWFileVersion1_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.2." . $index . ".0.1" ;
 		$raisecomSWFileVersion2_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.2." . $index . ".0.2" ;
 		$raisecomSWFileCommit1_oid = "1.3.6.1.4.1.8886.1.26.3.1.1.3." . $index . ".0.1" ;
@@ -198,35 +203,39 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$olt_hw_version = $session->get($olt_hw_version_oid);	
 			$olt_model = $session->get($olt_model_oid);	
 			$olt_slot_num = $session->get($olt_slot_num_oid);	
-			$raisecomSWFileVersion1 = $session->get($raisecomSWFileVersion1_oid);
-			$raisecomSWFileVersion2 = $session->get($raisecomSWFileVersion2_oid);
-			$raisecomSWFileCommit1 = $session->get($raisecomSWFileCommit1_oid);
-			if ($raisecomSWFileCommit1 == "1") {
-				$raisecomSWFileCommit1 = "(committed)";
+			if ($olt_type == "XGSPON") {
+				$raisecomSWFileVersion1_oid = "1.3.6.1.4.1.8886.2.1.1.12.0";
+				$raisecomSWFileVersion1 = $session->get($raisecomSWFileVersion1_oid);
 			}else{
-				$raisecomSWFileCommit1 = "";
-			}
-			$raisecomSWFileCommit2 = $session->get($raisecomSWFileCommit2_oid);
-			
-			if ($raisecomSWFileCommit2 == "1") {
-				$raisecomSWFileCommit2 = "(committed)";
-			}else{
-				$raisecomSWFileCommit2 = "";
-			}
-			$raisecomSWFileActivate1 = $session->get($raisecomSWFileActivate1_oid);
-			if ($raisecomSWFileActivate1 == "1") {
-					$raisecomSWFileActivate1 = "(active)";
-			}else{
-					$raisecomSWFileActivate1 = "";
-			}
-			$raisecomSWFileActivate2 = $session->get($raisecomSWFileActivate2_oid);
+				$raisecomSWFileVersion1 = $session->get($raisecomSWFileVersion1_oid);
+				$raisecomSWFileVersion2 = $session->get($raisecomSWFileVersion2_oid);
+				$raisecomSWFileCommit1 = $session->get($raisecomSWFileCommit1_oid);
+				if ($raisecomSWFileCommit1 == "1") {
+					$raisecomSWFileCommit1 = "(committed)";
+				}else{
+					$raisecomSWFileCommit1 = "";
+				}
+				$raisecomSWFileCommit2 = $session->get($raisecomSWFileCommit2_oid);
+				
+				if ($raisecomSWFileCommit2 == "1") {
+					$raisecomSWFileCommit2 = "(committed)";
+				}else{
+					$raisecomSWFileCommit2 = "";
+				}
+				$raisecomSWFileActivate1 = $session->get($raisecomSWFileActivate1_oid);
+				if ($raisecomSWFileActivate1 == "1") {
+						$raisecomSWFileActivate1 = "(active)";
+				}else{
+						$raisecomSWFileActivate1 = "";
+				}
+				$raisecomSWFileActivate2 = $session->get($raisecomSWFileActivate2_oid);
 
-			if ($raisecomSWFileActivate2 == "1") {
-					$raisecomSWFileActivate2 = "(active)";
-			}else{
-					$raisecomSWFileActivate2 = "";
+				if ($raisecomSWFileActivate2 == "1") {
+						$raisecomSWFileActivate2 = "(active)";
+				}else{
+						$raisecomSWFileActivate2 = "";
+				}
 			}
-
 			snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
 			$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro);
 			$substr = array("\"", " ", "Hex-STRING:");
@@ -450,6 +459,110 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 				}
 				print "</table></div>";		
 			}
+			$snmpget = "/usr/local/bin/snmpget";
+			if(!is_file($snmpget)) {
+				$snmpget = "/usr/bin/snmpget";
+			}
+			if ($olt_type == "XGSPON") {
+				$pon_port_info = array(); 
+				$rcGponPONPortIndex = $snmp_obj->get_pon_oid("rcGponPONPortIndex", "XGSPON");
+				$output = $session->walk($rcGponPONPortIndex);
+				foreach ($output as $oid => $index) {
+					$ifAdminStatus_oid = $snmp_obj->get_pon_oid("ifAdminStatus", "XGSPON_OLT") . "." . $index;;
+					$ifDescr_oid = $snmp_obj->get_pon_oid("ifDescr", "XGSPON_OLT") . "." . $index;
+					$rcGponPONPortOperStatus_oid = $snmp_obj->get_pon_oid("rcGponPONPortOperStatus", "XGSPON"). "." . $index;
+					$rcGponPONPortRegisteredONUNumber_oid = $snmp_obj->get_pon_oid("rcGponPONPortRegisteredONUNumber", "XGSPON"). "." . $index;
+					$rcGponPONPortSFPOperStatus_oid = $snmp_obj->get_pon_oid("rcGponPONPortSFPOperStatus", "XGSPON"). "." . $index;
+					$rcGponPONPortAllocIdLeft_oid = $snmp_obj->get_pon_oid("rcGponPONPortAllocIdLeft", "XGSPON"). "." . $index;
+					exec("$snmpget -Onq -Ir -v2c -c $ro $ip_address $ifAdminStatus_oid", $output , $return_var);
+					foreach($output as $line) {
+						if (strpos($line, $ifAdminStatus_oid) !== false) {
+						$line = str_replace("." . $ifAdminStatus_oid, " ", $line);
+						$ifAdminStatus = $line;
+						}
+					}
+					exec("$snmpget -Onq -Ir -v2c -c $ro $ip_address $ifDescr_oid", $output , $return_var);
+					foreach($output as $line) {
+						if (strpos($line, $ifDescr_oid) !== false) {
+						$line = str_replace("." . $ifDescr_oid, " ", $line);
+						$ifDescr = $line;
+						}
+					}
+					exec("$snmpget -Onq -Ir -v2c -c $ro $ip_address $rcGponPONPortOperStatus_oid", $output , $return_var);
+					foreach($output as $line) {
+						if (strpos($line, $rcGponPONPortOperStatus_oid) !== false) {
+						$line = str_replace("." . $rcGponPONPortOperStatus_oid, " ", $line);
+						$rcGponPONPortOperStatus = $line;
+						}
+					}
+					exec("$snmpget -Onq -Ir -v2c -c $ro $ip_address $rcGponPONPortRegisteredONUNumber_oid", $output , $return_var);
+					foreach($output as $line) {
+						if (strpos($line, $rcGponPONPortRegisteredONUNumber_oid) !== false) {
+						$line = str_replace("." . $rcGponPONPortRegisteredONUNumber_oid, " ", $line);
+						$rcGponPONPortRegisteredONUNumber = $line;
+						}
+					}
+					exec("$snmpget -Onq -Ir -v2c -c $ro $ip_address $rcGponPONPortSFPOperStatus_oid", $output , $return_var);
+					foreach($output as $line) {
+						if (strpos($line, $rcGponPONPortSFPOperStatus_oid) !== false) {
+						$line = str_replace("." . $rcGponPONPortSFPOperStatus_oid, " ", $line);
+						$rcGponPONPortSFPOperStatus = $line;
+						}
+					}
+					exec("$snmpget -Onq -Ir -v2c -c $ro $ip_address $rcGponPONPortAllocIdLeft_oid", $output , $return_var);
+					foreach($output as $line) {
+						if (strpos($line, $rcGponPONPortAllocIdLeft_oid) !== false) {
+						$line = str_replace("." . $rcGponPONPortAllocIdLeft_oid, " ", $line);
+						$rcGponPONPortAllocIdLeft = $line;
+						}
+					}
+					if ($ifAdminStatus == "1") {
+						$ifAdminStatus = "<font color=green>Up</font>";
+					}else if ($ifAdminStatus == "2") {
+						$ifAdminStatus = "<font color=red>Down</font>";
+					}
+					if ($rcGponPONPortOperStatus == "1") {
+						$rcGponPONPortOperStatus = "<font color=green>Up</font>";
+					}else if ($rcGponPONPortOperStatus == "2") {
+						$rcGponPONPortOperStatus = "<font color=red>Down</font>";
+					}
+					if ($rcGponPONPortSFPOperStatus == "1") {
+						$rcGponPONPortSFPOperStatus = "<font color=green>ok</font>";
+					}else if ($rcGponPONPortSFPOperStatus == "2") {
+						$rcGponPONPortSFPOperStatus = "<font color=red>tx_fault</font>";
+					}else if ($rcGponPONPortSFPOperStatus == "3") {
+						$rcGponPONPortSFPOperStatus = "Unknown";
+					}
+					
+					// $rcGponPONPortAllocIdLeft = 256 - $rcGponPONPortAllocIdLeft;
+					$pon_port_info[$index] = array($ifDescr, $ifAdminStatus, $rcGponPONPortOperStatus, $rcGponPONPortSFPOperStatus, $rcGponPONPortAllocIdLeft, $rcGponPONPortRegisteredONUNumber);		
+				}
+			
+				?>
+				<div class="table-responsive">
+					<table class="table table-bordered table-condensed table-hover">
+						<thead>
+							<tr>
+								<th>ID</th>
+								<th>Description</th>
+								<th>Admin</th>
+								<th>State</th>
+								<th>SFP</th>
+								<th>Created ONUs</th>
+								<th>Online ONUs</th>
+							</tr>  
+						</thead>
+				<?php
+				$data = array();
+				foreach ($pon_port_info as $index => $data) {
+					print "<tr  align=center><td>" . $index . "</td>";
+					foreach ($data as $d) {
+						print "<td>" . $d . "</td>";
+					}
+					print "</tr>";
+				}
+				print "</table></div>";		
+			}
 		}	
 	}
 	if ($type == "graphs"){
@@ -545,7 +658,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$rrd_name_cpu = dirname(__FILE__) . "/rrd/" . $ip_address . "_cpu.rrd";
 			$opts = array( "--start", "-1d", "--lower-limit=0", "--vertical-label=Utilization %", "--title=OLT CPU");
 			$snmp_obj = new snmp_oid();
-			$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
+			if($olt_type == "XGSPON"){
+				$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "XGSPON_OLT");				
+			}else{
+				$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
+			}
 			snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
 			snmp_set_quick_print(TRUE);
 			snmp_set_enum_print(TRUE);

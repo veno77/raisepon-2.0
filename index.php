@@ -183,7 +183,7 @@ if (!isset($_POST['initial'])){
 						}
 					}
 				
-					if ($row['PON_TYPE'] == "GPON") {
+					if ($row['PON_TYPE'] == "GPON" || $row['PON_TYPE'] == "XGSPON") {
 						exec("$snmpbulkget -OnqE -Cr128 -v2c -c $row[RO] $row[IP_ADDRESS] $onu_sn_oid_boi", $output , $return_var);
 						$onu_sn = array();
 						foreach($output as $line) {
@@ -308,6 +308,11 @@ if (!isset($_POST['initial'])){
 										if ($dot3MpcpRoundTripTime > '46')
 											$onu_register_distance = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
 									}
+									if ($row['PON_TYPE'] == "XGSPON") {
+										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+										$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
+										$onu_register_distance = $session->get($onu_register_distance_oid);
+									}
 								}
 								$power = $index_obj->get_rx_power($row['ID']);
 								if ($power) {
@@ -353,7 +358,7 @@ if (!isset($_POST['initial'])){
 								$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 								$offline_reason = $session->get($onu_offline_reason_oid);
 							}
-							if ($row['PON_TYPE'] == "GPON") {
+							if ($row['PON_TYPE'] == "GPON" || $row['PON_TYPE'] == "XGSPON") {
 								if ($offline_reason == '1') {
 									$offline_reason = "unknown(1)" ;
 								} else if($offline_reason == '6') {
@@ -392,6 +397,8 @@ if (!isset($_POST['initial'])){
 								}
 													
 							}
+							
+							
 							//SYNC CHCECK
 							if ($index_obj->getSubmit() == "LOAD") {
 								$check_sn = str_replace("\"", "", $onu_sn[$big_onu_id]);

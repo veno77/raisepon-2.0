@@ -438,7 +438,12 @@ class customers {
 			if (!empty($error)) {
 				return $error;
 			}
-		//} 	
+		//} 
+		//CHANGE NAME
+		$error = $this->set_name();
+		if (!empty($error)) {
+				return $error;
+			}		
 	}
 	
 	
@@ -727,13 +732,25 @@ class customers {
 					if ($output) {
 						$one_olt = array();
 						foreach ($output as $sn_oid => $sn_value) {
-							$sn = preg_replace("/[^A-Za-z0-9 ]/", '', $sn_value);
+					/*
+							$sn = preg_replace("/[^A-Za-z0-9 ]/", '', $sn_value);						
 							$sn_array = str_split($sn_value);
+
 							$new_sn_array = array();
 							foreach ($sn_array as $sn_arr) {
 								$sn_arr = ord($sn_arr);
 								array_push($new_sn_array, $sn_arr);
 							}
+					*/
+							$sn = preg_replace("/[^A-Za-z0-9 ]/", '', $sn_value);						
+							$sn_array = str_split($sn_value);
+
+							$new_sn_array = array();
+							foreach ($sn_array as $sn_arr) {
+								$sn_arr = ord($sn_arr);
+								array_push($new_sn_array, $sn_arr);
+							}
+			#	print_r($new_sn_array); exit;
 							$sn_array = implode(".", $new_sn_array);
 							$pon_interface = str_replace(".", "", str_replace($sn_array, "", str_replace($illegal_onu_sn_oid, "", $sn_oid)));
 							$pon_port = bindec(substr(decbin($pon_interface), -6));
@@ -754,6 +771,53 @@ class customers {
 						}
 						$all_olt_illegal[$row["ID"]] = $one_olt;				
 					}
+				}
+				if ($row['TYPE'] == "XGSPON") {
+					//XGSPON
+					$illegal_onu_sn_oid = $snmp_obj->get_pon_oid("illegal_onu_sn_oid", "XGSPON");
+					$illegal_onu_login_time_oid = $snmp_obj->get_pon_oid("illegal_onu_login_time_oid", "XGSPON");
+					snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+					snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
+					snmp_set_quick_print(TRUE);
+					snmp_set_enum_print(TRUE);
+					$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
+					$output = @$session->walk($illegal_onu_sn_oid);
+					
+					if ($output) {
+						$one_olt = array();
+						foreach ($output as $sn_oid => $sn_value) {
+				
+							$sn = preg_replace("/[^A-Za-z0-9 ]/", '', $sn_value);						
+							$sn_array = str_split($sn_value);
+
+							$new_sn_array = array();
+							foreach ($sn_array as $sn_arr) {
+								$sn_arr = ord($sn_arr);
+								array_push($new_sn_array, $sn_arr);
+							}
+			#	print_r($new_sn_array); exit;
+							$sn_array = implode(".", $new_sn_array);
+							$pon_interface = str_replace(".", "", str_replace($sn_array, "", str_replace($illegal_onu_sn_oid, "", $sn_oid)));
+			#echo $pon_interface ; exit;
+							$pon_port = bindec(substr(decbin($pon_interface), -21, 6));
+							$slot = bindec(substr(decbin($pon_interface), -26, 5));
+							snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
+							$session = new SNMP(SNMP::VERSION_2C, $row["IP_ADDRESS"], $row["RO"], 100000);
+							//$time = $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array);
+							$search = array(" ", "\"");
+							$time = str_replace($search, "", $session->get($illegal_onu_login_time_oid . "." . $pon_interface . "." . $sn_array));
+							$year = hexdec(substr($time, 0, 4));
+							$month = str_pad(hexdec(substr($time, 4,2)), 2, "0", STR_PAD_LEFT);
+							$day = str_pad(hexdec(substr($time, 6,2)), 2, "0", STR_PAD_LEFT);
+							$hour = str_pad(hexdec(substr($time, 8,2)), 2, "0", STR_PAD_LEFT);
+							$minute = str_pad(hexdec(substr($time, 10,2)), 2, "0", STR_PAD_LEFT);
+							$seconds = str_pad(hexdec(substr($time, 12,2)), 2, "0", STR_PAD_LEFT);
+							$time = $year . "-" . $month . "-" . $day . "," . $hour . ":" . $minute . ":" . $seconds;
+							array_push($one_olt, array($sn, $slot, $pon_port, $time));
+						}
+						$all_olt_illegal[$row["ID"]] = $one_olt;				
+					}
+					
 				}
 			}	
 		}
@@ -932,6 +996,16 @@ class customers {
 			}
 
 		}
+		
+		if ($this->pon_type == "XGSPON") {
+			$gponONUCreateMode_oid = $snmp_obj->get_pon_oid("gponONUCreateMode", $this->pon_type) . "." . $this->big_onu_id;
+			$session->set(array($row_status_oid), array('i'), array('4'));
+			if (!empty($service_profile_id)) {
+				$session->set(array($sn_oid, $line_profile_oid, $service_profile_oid, $gponONUCreateMode_oid, $row_status_oid), array('s', 'i', 'i', 'i', 'i'), array($this->sn, $line_profile_id, $service_profile_id,  '1', '1')); 
+			} else {
+				$session->set(array($sn_oid, $gponONUCreateMode_oid, $row_status_oid), array('s', 'i', 'i'), array($this->sn, '1', '1'));
+			}
+		}
 		/*	
 		if ($session->getError()) {
 			try {
@@ -958,6 +1032,9 @@ class customers {
 					$index_rf = (3<<28)+($slot_id * 10000000 + $port_id * 100000 + ($this->pon_onu_id%100) * 1000 + 1);
 				}
 			}
+			if ($this->pon_type == "XGSPON") {
+				$index_rf = $snmp_obj->RmtOnuIntId($slot_id, $port_id, $this->pon_onu_id, "1");
+			}
 			$onu_rf_status_oid = $snmp_obj->get_pon_oid("onu_rf_status_oid", $this->pon_type) . "." . $index_rf;
 			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 			$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
@@ -983,6 +1060,9 @@ class customers {
 				}else{
 					$index_uni = (3<<28)+(10000000 * $slot_id + 100000 * $port_id + 1000 * ($this->pon_onu_id%100)) + $row['UNI_PORT_ID'];
 				}
+			}
+			if ($this->pon_type == "XGSPON") {
+				$index_uni = $snmp_obj->RmtOnuIntId($slot_id, $port_id, $this->pon_onu_id, $row['UNI_PORT_ID']);
 			}
 			$uni_port_admin_set = $snmp_obj->get_pon_oid("uni_port_admin_set_oid", $this->pon_type) . "." . $index_uni;
 			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
@@ -1164,6 +1244,15 @@ class customers {
         $pon_id = bindec($slot . $pon_port);
         return $pon_id;
 	}
+	function type3ponid ($slot, $pon_port) {
+		$interface_type_id = "1010";
+		$system_id = "00";
+        $slot = str_pad(decbin($slot), 5, "0", STR_PAD_LEFT);
+        $pon_port = str_pad(decbin($pon_port), 6, "0", STR_PAD_LEFT);
+        $tail = "000000000000000";
+        $pon_id =bindec($interface_type_id . $system_id . $slot . $pon_port . $tail) + 1;       
+        return $pon_id;
+	}	
 	function update_rf_sql() {
 		try {
 			$conn = db_connect::getInstance();
@@ -1312,6 +1401,11 @@ class customers {
 			if ($this->pon_type == "GPON"){
 				$arr1 = range(1,128);
 				$PONPortMinOnuIndex = $snmp_obj->get_pon_oid("rcGponPONPortMinOnuIndex", $this->pon_type) . "." . $pon_index;
+			}
+			if ($this->pon_type == "XGSPON"){
+				$pon_index = $this->type3ponid($slot_id, $port_id);
+				$arr1 = range(1,128);
+				$PONPortMinOnuIndex = $snmp_obj->get_pon_oid("gponPortMinOnuIndex", $this->pon_type) . "." . $pon_index;
 			}
 			$session = new SNMP(SNMP::VERSION_2C, $this->olt_ip_address, $olt_rw);
 			$snmp_port_min_onu_index = $session->get($PONPortMinOnuIndex); 

@@ -8,6 +8,12 @@ $snmp_obj = new snmp_oid();
 
 $ip_address_state = array();
 
+$snmpget = "/usr/local/bin/snmpget";
+if(!is_file($snmpget)) {
+	$snmpget = "/usr/bin/snmpget";
+}
+
+
 try {
 	$conn = db_connect::getInstance();
 	$result = $conn->db->query("SELECT ID, NAME, MODEL, INET_NTOA(IP_ADDRESS) as IP_ADDRESS, RO, RW from OLT");
@@ -47,8 +53,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	$sn = $row["SN"];
 	$ip_address = $row["IP_ADDRESS"];
 	$customers_obj = new customers();
-	$big_onu_id = $customers_obj->type2id($row['SLOT_ID'], $row['PORT_ID'], $row['PON_ONU_ID']);
-		
+	if(isset($row['SLOT_ID']))
+		$big_onu_id = $customers_obj->type2id($row['SLOT_ID'], $row['PORT_ID'], $row['PON_ONU_ID']);
 	
 	if ($row['PON_TYPE'] == "GPON") {
 		
@@ -59,6 +65,21 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		}
 		$catv_input_id = $index_2;
 	}
+	$total_input_traffic = 0;
+	$total_output_traffic = 0;
+	if ($row['PON_TYPE'] == "XGSPON") {
+		$interface_pon = "010";
+		$slot = str_pad(decbin($row['SLOT_ID']),5, "0", STR_PAD_LEFT);
+		$pon_port = str_pad(decbin($row['PORT_ID']), 6, "0", STR_PAD_LEFT);
+		$onu_id = str_pad(decbin($row['PON_ONU_ID']), 10, "0", STR_PAD_LEFT);
+		$onu_port_id = str_pad(decbin("1"), 8, "0", STR_PAD_LEFT);
+		$index_2 = bindec($interface_pon . $slot . $pon_port . $onu_id . $onu_port_id);
+		$catv_input_id = $snmp_obj->RmtOnuIntId($row['SLOT_ID'], $row['PORT_ID'], $row['PON_ONU_ID'], "1");
+		$traffic_id = $row['SLOT_ID'] * 10000000 + $row['PORT_ID'] * 100000 + $row['PON_ONU_ID'];
+		$traffic_in_oid = $snmp_obj->get_pon_oid("gponRmtOnuDevTxOctV", "XGSPON") . "." . $traffic_id;
+		$traffic_out_oid = $snmp_obj->get_pon_oid("gponRmtOnuDevRxOctV", "XGSPON") . "." . $traffic_id;
+	}
+	
 	if ($row['PON_TYPE'] == "EPON") {
 		$index_2 = $row['SLOT_ID'] * 10000000 + $row['PORT_ID'] * 100000 + $row['PON_ONU_ID'];
 	}
@@ -73,7 +94,16 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			return $error;
 		}
 	}
-	
+	$rrd_traffic = dirname(__FILE__) . "/rrd/" . $sn . "_traffic.rrd"; 
+	if (!is_file($rrd_traffic)) {
+		$customers_obj = new customers();
+		$customers_obj->setSn($sn);
+		$error = $customers_obj->onu_traffic_rrd();
+		if (!empty($error)) {
+			return $error;
+		}
+	}
+
 	
 	if(isset($row['IP_ADDRESS'])) { 
 		if ($ip_address_state[$ip_address] == "up") {
@@ -98,11 +128,19 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				$olt_rx_power = $session->get($olt_rx_power_oid);
 				$olt_rx_power = round($olt_rx_power/10,4);
 
-				if ($row['PON_TYPE'] == "GPON") {
+				if ($row['PON_TYPE'] == "GPON" || $row['PON_TYPE'] == "XGSPON" ) {
 					$recv_power = $session->get($recv_power_oid);
 					if ($recv_power > 32767)
 						$recv_power = $recv_power - 65535 - 1;
 					$recv_power = round(($recv_power-15000)/500,2);
+					// $total_input_traffic = $session->get($traffic_in_oid);
+					// $total_output_traffic = $session->get($traffic_out_oid);
+					// $ret = rrd_update($rrd_traffic, array("N:$total_input_traffic:$total_output_traffic"));
+					// if( $ret == 0 )
+					// {
+						// $err = rrd_error();
+						// echo "ERROR occurred: $err\n";
+					// }
 				//	$send_power = $session->get($send_power_oid);
 				//	$send_power = round(($send_power-15000)/500,2);
 				}
@@ -153,6 +191,8 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				if ($hgu !== "Yes") {
 					for ($i=1; $i <= $row['PORTS']; $i++) {
 						$ethernet_id = $row['SLOT_ID'] * 10000000 + $row['PORT_ID'] * 100000 + $row['PON_ONU_ID'] * 1000 + $i;
+						if ($row['PON_TYPE'] == "XGSPON")
+							$ethernet_id = $snmp_obj->RmtOnuIntId($row['SLOT_ID'], $row['PORT_ID'], $row['PON_ONU_ID'], $i);
 						$octets_ethernet = dirname(__FILE__) . "/rrd/" . $sn . "_" . $i . ".rrd";
 						if(!is_file($octets_ethernet)) {
 							$opts = array( "--step", "300", "--start", "0",
@@ -197,7 +237,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 // UPDATE OLT GRAPHS
 
 try {
-	$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID");
+	$result = $db->query("SELECT OLT.ID, OLT.NAME as OLT_NAME, MODEL, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT.RW as RW, OLT_MODEL.TYPE as TYPE from OLT LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID");
 } catch (PDOException $e) {
 	echo "Connection Failed:" . $e->getMessage() . "\n";
 	exit;
@@ -248,8 +288,13 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				echo "ERROR occurred: $err\n";
 			}
 		}
-		$olt_temp_oid = $snmp_obj->get_pon_oid("olt_temp_oid", "OLT");
-		$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
+		if ($olt_type == "XGSPON") {
+			$olt_temp_oid = $snmp_obj->get_pon_oid("olt_temp_oid", "XGSPON_OLT");
+			$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "XGSPON_OLT");
+		}else{
+			$olt_temp_oid = $snmp_obj->get_pon_oid("olt_temp_oid", "OLT");
+			$olt_cpu_oid = $snmp_obj->get_pon_oid("olt_cpu_oid", "OLT");
+		}
 		$rrd_name_temp = dirname(__FILE__) . "/rrd/" . $ip_address . "_temp.rrd";
 		$rrd_name_cpu = dirname(__FILE__) . "/rrd/" . $ip_address . "_cpu.rrd";
 		$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
@@ -295,8 +340,9 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			$slot = str_replace($olt_cpu_oid, '', substr($cpu_oid, 0, -1));
 			$slot = str_replace('.','',$slot);
 			array_push($opts, "DS:cpu$slot:GAUGE:1800:0:100");
-			$olt_cpu = $olt_cpu . ":" . $cpu;
+			$olt_cpu = $cpu/100;
 		}
+
 		array_push($opts,
 			   "RRA:AVERAGE:0.5:1:600",
 			   "RRA:AVERAGE:0.5:6:700",
@@ -317,17 +363,17 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		}
 		//$boza = array("$olt_cpu");
 		//print_r($boza)	;
-		$ret = rrd_update($rrd_name_cpu, array("N$olt_cpu"));
+		$ret = rrd_update($rrd_name_cpu, array("N:$olt_cpu"));
 		if( $ret == 0 )
 		{
 			$err = rrd_error();
-				echo "ERROR occurred: $err\n";
+			echo "ERROR occurred: $err\n";
 		}
 	}
 }
 // UPDATE PON PORTS GRAPHS
 try {
-	$result = $db->query("SELECT PON.ID, PON.SLOT_ID, PON.PORT_ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO from PON LEFT JOIN OLT on PON.OLT=OLT.ID");
+	$result = $db->query("SELECT PON.ID, PON.SLOT_ID, PON.PORT_ID, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, CARDS_MODEL.PON_TYPE, OLT.RO from PON LEFT JOIN OLT on PON.OLT=OLT.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID");
 } catch (PDOException $e) {
 	echo "Connection Failed:" . $e->getMessage() . "\n";
 	exit;
@@ -336,7 +382,11 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	$ip_address = $row['IP_ADDRESS'];
 	if ($ip_address_state[$ip_address] == "up") {
 		$pon_obj = new pon();
-		$port = $pon_obj->type2ponid($row['SLOT_ID'],$row['PORT_ID']);	
+		if ($row['PON_TYPE'] == "XGSPON") {
+			$port = $pon_obj->type3ponid($row['SLOT_ID'],$row['PORT_ID']);	
+		}else{
+			$port = $pon_obj->type2ponid($row['SLOT_ID'],$row['PORT_ID']);	
+		}
 		$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_traffic.rrd";
 		$rrd_unicast = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_unicast.rrd";
 		$rrd_broadcast = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $port . "_broadcast.rrd";
@@ -405,37 +455,59 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				return $err;
 			}	
 		}
-		
-		
-		$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
-		$total_input_traffic = $session->get($ifHCInOctets);
-		$total_output_traffic = $session->get($ifHCOutOctets);
-		$ret = rrd_update($rrd_name, array("N:$total_input_traffic:$total_output_traffic"));
-		$unicast_in = $session->get($ifHCInUcastPkts);
-		$unicast_out = $session->get($ifHCOutUcastPkts);
-		$ret = rrd_update($rrd_unicast, array("N:$unicast_in:$unicast_out"));
-		if( $ret == 0 )
-		{
-			$err = rrd_error();
-			echo "ERROR occurred: $err\n";
-		}
+		if ($row['PON_TYPE'] == "XGSPON") {
+			exec("$snmpget -Onq -Ir -v2c -c $row[RO] $row[IP_ADDRESS] $ifHCInOctets", $output , $return_var);
+			foreach($output as $line) {
+				if (strpos($line, $ifHCInOctets) !== false) {
+					$line = str_replace("." . $ifHCInOctets, " ", $line);
+				//	$line = explode(" ", $line);
+					$total_input_traffic = $line;
+				}
+			}
+			exec("$snmpget -Onq -Ir -v2c -c $row[RO] $row[IP_ADDRESS] $ifHCOutOctets", $output , $return_var);
+			foreach($output as $line) {
+				if (strpos($line, $ifHCOutOctets) !== false) {
+					$line = str_replace("." . $ifHCOutOctets, " ", $line);
+				//	$line = explode(" ", $line);
+					$total_output_traffic = $line;
+				}
+			}						
+			$ret = rrd_update($rrd_name, array("N:$total_input_traffic:$total_output_traffic"));
+		}else{
+			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+			snmp_set_oid_output_format(SNMP_OID_OUTPUT_NUMERIC);
+			snmp_set_quick_print(TRUE);
+			snmp_set_enum_print(TRUE);		
+			$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);		
+			$total_input_traffic = $session->get($ifHCInOctets);
+			$total_output_traffic = $session->get($ifHCOutOctets);
+			$ret = rrd_update($rrd_name, array("N:$total_input_traffic:$total_output_traffic"));
+			$unicast_in = $session->get($ifHCInUcastPkts);
+			$unicast_out = $session->get($ifHCOutUcastPkts);
+			$ret = rrd_update($rrd_unicast, array("N:$unicast_in:$unicast_out"));
+			if( $ret == 0 )
+			{
+				$err = rrd_error();
+				echo "ERROR occurred: $err\n";
+			}
 
-		$broadcast_in = $session->get($ifHCInBroadcastPkts);
-		$broadcast_out = $session->get($ifHCOutBroadcastPkts);
-		$ret = rrd_update($rrd_broadcast, array("N:$broadcast_in:$broadcast_out"));
-		if( $ret == 0 )
-		{
-			$err = rrd_error();
-			echo "ERROR occurred: $err\n";
-		}
-		
-		$multicast_in = $session->get($ifHCInMulticastPkts);
-		$multicast_out = $session->get($ifHCOutMulticastPkts);
-		$ret = rrd_update($rrd_multicast, array("N:$multicast_in:$multicast_out"));
-		if( $ret == 0 )
-		{
-			$err = rrd_error();
-			echo "ERROR occurred: $err\n";
+			$broadcast_in = $session->get($ifHCInBroadcastPkts);
+			$broadcast_out = $session->get($ifHCOutBroadcastPkts);
+			$ret = rrd_update($rrd_broadcast, array("N:$broadcast_in:$broadcast_out"));
+			if( $ret == 0 )
+			{
+				$err = rrd_error();
+				echo "ERROR occurred: $err\n";
+			}
+			
+			$multicast_in = $session->get($ifHCInMulticastPkts);
+			$multicast_out = $session->get($ifHCOutMulticastPkts);
+			$ret = rrd_update($rrd_multicast, array("N:$multicast_in:$multicast_out"));
+			if( $ret == 0 )
+			{
+				$err = rrd_error();
+				echo "ERROR occurred: $err\n";
+			}
 		}
 	}
 }

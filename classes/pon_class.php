@@ -270,7 +270,15 @@ class pon {
         $pon_id = bindec($slot . $pon_port);
         return $pon_id;
 	}
-
+	function type3ponid ($slot, $pon_port) {
+		$interface_type_id = "1010";
+		$system_id = "00";
+        $slot = str_pad(decbin($slot), 5, "0", STR_PAD_LEFT);
+        $pon_port = str_pad(decbin($pon_port), 6, "0", STR_PAD_LEFT);
+        $tail = "000000000000000";
+        $pon_id =bindec($interface_type_id . $system_id . $slot . $pon_port . $tail) + 1;       
+        return $pon_id;
+	}	
 	
 }
 
