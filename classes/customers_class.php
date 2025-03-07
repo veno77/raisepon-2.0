@@ -829,7 +829,7 @@ class customers {
 	function get_Service() {
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT ID, NAME from SERVICES");
+			$result = $conn->db->query("SELECT ID, NAME from SERVICES ORDER BY NAME");
 		} catch (PDOException $e) {
 			$error = "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;
