@@ -42,6 +42,9 @@ $sudo chown -R www-data:www-data rrd
 
 #install Mysql/MariaDB server
 $sudo apt-get install mysql-server
+#install mydql pdo (replace X.x with your php version)
+
+$sudo apt-get install phpX.x-pdo-mysql
 
 #start mysql-server
 $sudo service mysqld start
