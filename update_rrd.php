@@ -124,7 +124,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $row['PON_TYPE']) . "." . $big_onu_id;
 				// RF Power 
 				$rf_input_power_oid = $snmp_obj->get_pon_oid("onu_rf_rx_power_oid", $row['PON_TYPE']) . "." . $catv_input_id;
-				$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
+				$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 500000, 2);
 				$olt_rx_power = $session->get($olt_rx_power_oid);
 				$olt_rx_power = round($olt_rx_power/10,4);
 

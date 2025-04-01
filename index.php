@@ -294,14 +294,12 @@ if (!isset($_POST['initial'])){
 								if ($index_obj->getSubmit() == "LOAD") {
 									$onu_register_distance = $onu_register_distance_arr[$big_onu_id];
 								}else{
+									snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+									$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 500000, 2);
 									if ($row['PON_TYPE'] == "GPON") {
-										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-										$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 										$onu_register_distance = $session->get($onu_register_distance_oid);
 									}
 									if ($row['PON_TYPE'] == "EPON") {
-										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-										$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 										$dot3MpcpRoundTripTime = $session->get($dot3MpcpRoundTripTime);
 										if ($dot3MpcpRoundTripTime <= '46')
 											$onu_register_distance = '1';
@@ -309,8 +307,6 @@ if (!isset($_POST['initial'])){
 											$onu_register_distance = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
 									}
 									if ($row['PON_TYPE'] == "XGSPON") {
-										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-										$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 										$onu_register_distance = $session->get($onu_register_distance_oid);
 									}
 								}
@@ -354,8 +350,6 @@ if (!isset($_POST['initial'])){
 							if ($index_obj->getSubmit() == "LOAD") {
 								$offline_reason = $onu_offline_reason[$big_onu_id];
 							}else{
-								snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-								$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 								$offline_reason = $session->get($onu_offline_reason_oid);
 							}
 							if ($row['PON_TYPE'] == "GPON" || $row['PON_TYPE'] == "XGSPON") {
@@ -405,7 +399,7 @@ if (!isset($_POST['initial'])){
 							}else{
 								if ($row['PON_TYPE'] == "EPON") {
 									snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-									$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
+									$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 500000, 2);
 									$check_sn = $session->get($onu_sn_oid);
 									$check_sn = trim(str_replace('Hex-STRING: ', '', $check_sn));
 									$check_sn = str_replace('"', '', str_replace(' ', '', $check_sn));
