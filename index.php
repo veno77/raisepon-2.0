@@ -139,7 +139,7 @@ if (!isset($_POST['initial'])){
 							<th>ONU</th>
 							<th><button type="button" class="btn btn-default" onClick="orderby('NAME','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Name</th>
 							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('ADDRESS','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Address</th>
-							<th>EGN</th>
+							<th class="hidden-xs hidden-sm">EGN</th>
 							<th>SERVICE</th>
 							<!-- <th>RF</th> -->
 							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('SN','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">SN/MAC</th>
