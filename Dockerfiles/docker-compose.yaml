@@ -1,0 +1,31 @@
+services:
+  raisepondb:
+    build:
+      context: ./db/
+    image: vtvelkov/raisepon_db
+    container_name: raisepon_db
+    command: --lower_case_table_names=1
+    ports: 
+      - "3307:3306"
+    volumes:
+      - raisedb:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=WPvbdUbIk5
+      - MYSQL_DATABASE=raisepon
+      - MYSQL_USER=raisepon
+      - MYSQL_PASSWORD=r41sepon
+
+  raiseponweb:
+    build:
+      context: ./web/
+    image: vtvelkov/raisepon_web
+    container_name: raisepon_web
+    ports:
+      - "8088:80"
+    volumes:
+      - raisewebrrd:/var/www/html/rrd
+
+
+volumes:
+  raisedb: {}
+  raisewebrrd: {}
