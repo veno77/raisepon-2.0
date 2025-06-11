@@ -1,52 +1,20 @@
-RAISEPON 2.0
+RAISEPON 2.0 Docker Build
 
 Raisepon is Opensource php/mysql software written to manage Subscriber base on RAISECOM's GPON/GEPON OLTs ISCOM5508(B), ISCOM5508-GP, ISCOM6820-EP, ISCOM6820-GP, 
 ISCOM6860, ISCOM6800. Supported are most of RAISECOM ONUs.
 
 Web interface is implemented with Bootstrap(https://getbootstrap.com/) and jQuery(https://jquery.com/). API relies on PHP-JWT(https://github.com/firebase/php-jwt)
 
-Installation:
+Docker Installation:
 
-I suggest using latest FreeBSD or Debian Stable Release.
+Composer file is in Dockerfiles/
 
-You need:
+Download or copy content of docker-compose.yaml on your docker host and run "docker compose up -d"
+There two docker containers created one for the database and one for the web application.
+Web application by default is listening on port 8088. There is rsyslogd configured and listening on UDP port 1514 if you want to collect logs from the OLTs, you have to point them with the appropriate commands to send syslog to your host IP.
+There are three volumes created by default, one for the database, one for the rrd/ files and one for the log files.
 
-Apache 2.4 or later
-PHP 8.0 or later 
-PHP 8.x Extensions + Mysql PDO
-Mysql 5.7 or later 
-net-snmp + php-snmp
-rrdtool + pecl-rrd(php-rrd in Debian)
-
-Copy the files to your web folder.
-Create database "raisepon" and load in it the supplied raisepon.sql file. 
-Grant permissions to user for databse "raisepon". Modify classes/db_connect_class.php and dbconnect.php to match the mysql user,pass.
-
-
-Add the following to your crontab if you want to have graphs:
-
-*/15 * * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_rrd.php > /dev/null 2>&1
-
-Add this if you want ONUs added via cli or without authorization to the OLTs to be synchronized to the RAISEPON
-
-* */1 * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_data.php > /dev/null 2>&1
-
-Add also this if you want to use AUTO ONU registering based on Illegal ONUs found in OLT devices:
-
-* * * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_auto.php > /dev/null 2>&1
-
-Add this if you configure backup of the database and OLTs' startup-config via ftp:
-
-0 2 * * *     www     /usr/local/bin/php -f /path/to/your/webcontent/update_backup.php > /dev/null 2>&1
-
-
-Configure your OLTs to send logs to your syslogd server. 
-
-Edit your sylogd.conf:
-
-local7.*                                        /var/log/raisepon.log
-
-Create rrd/ directory under the raisepon root tree.
+Web interface is at: http://your-host-ip:8088/
 
 Default username/password for web interface admin/admin123.
 
