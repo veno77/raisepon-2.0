@@ -10,7 +10,7 @@ header("Refresh: $sec; url=$page");
 
 print "<h2><center>Logs from OLTs<center></h2>";
 
-$my_file = "/var/log/gpon.log";
+$my_file = "/var/log/raisepon.log";
 $lines = file($my_file);
 $lines=str_replace("^M","",$lines);
 $ii = "0";
