@@ -24,7 +24,19 @@ services:
       - "8088:80"
     volumes:
       - raisewebrrd:/var/www/html/rrd
+      - raiselog:/var/log/raisepon
+
+  rsyslog:
+    build:
+      context: ./rsyslog/
+    image: vtvelkov/rsyslog
+    container_name: raisepon_rsyslog
+    ports:
+      - "1514:514/udp"
+    volumes:
+      - raiselog:/var/log/raisepon
 
 volumes:
   raisedb: {}
   raisewebrrd: {}
+  raiselog: {}

@@ -3,7 +3,7 @@ FROM php:8.2-apache
 # Install required packages and PHP extensions
 RUN apt-get update && \
     apt-get -y upgrade && \
-    apt-get install -y git snmp libsnmp-dev rrdtool cron librrd-dev rsyslog && \
+    apt-get install -y git snmp libsnmp-dev rrdtool cron librrd-dev && \
     docker-php-ext-install mysqli pdo pdo_mysql snmp && \
     pecl install rrd && \
     docker-php-ext-enable rrd
@@ -15,9 +15,10 @@ RUN git clone -b docker_build --single-branch https://github.com/veno77/raisepon
 RUN mkdir -p /tmp/raisepon/rrd && \
     cp -rf /tmp/raisepon/* /var/www/html/ && \
     mv "$PHP_INI_DIR/php.ini-development" "$PHP_INI_DIR/php.ini" && \
-    chown -R www-data:www-data /var/www/html/rrd 
+    chown -R www-data:www-data /var/www/html/rrd && \
+    mkdir -p /var/log/raisepon
 
-COPY rsyslog.conf /etc/rsyslog.conf
+#COPY rsyslog.conf /etc/rsyslog.conf
 
 # Add cron jobs (Update paths to real PHP script locations inside the container)
 RUN echo "*/15 * * * * www-data /usr/local/bin/php /var/www/html/update_rrd.php > /dev/null 2>&1" >> /etc/crontab && \
@@ -26,5 +27,9 @@ RUN echo "*/15 * * * * www-data /usr/local/bin/php /var/www/html/update_rrd.php 
     echo "0 2 * * * www-data /usr/local/bin/php /var/www/html/update_backup.php > /dev/null 2>&1" >> /etc/crontab 
 
 # Start Apache and cron in foreground
-CMD service cron start && apache2-foreground && service rsyslogd start
+# Add a startup script
+COPY docker-entrypoint.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
 
+# Use entrypoint to launch all services
+ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
