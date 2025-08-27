@@ -111,7 +111,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 			//GET STATUS via SNMP
 			snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
 			$status_oid = $snmp_obj->get_pon_oid("onu_status_oid", $row['PON_TYPE']) . "." . $big_onu_id;
-			$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
+			$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 5000000, 1);
 			$status = $session->get($status_oid);				
 			if ($status == "1") {		
 				echo $sn . "\n";
@@ -124,7 +124,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 				$olt_rx_power_oid = $snmp_obj->get_pon_oid("olt_rx_power_oid", $row['PON_TYPE']) . "." . $big_onu_id;
 				// RF Power 
 				$rf_input_power_oid = $snmp_obj->get_pon_oid("onu_rf_rx_power_oid", $row['PON_TYPE']) . "." . $catv_input_id;
-				$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 500000, 2);
+				$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 5000000, 1);
 				$olt_rx_power = $session->get($olt_rx_power_oid);
 				$olt_rx_power = round($olt_rx_power/10,4);
 
@@ -254,7 +254,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 	if ($ip_address_state[$ip_address] == "up") {
 		$ethernet_port_info = array(); 
 		$dot3StatsIndex = $snmp_obj->get_pon_oid("dot3StatsIndex", "OLT");
-		$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 5000000);
+		$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 5000000, 1);
 		$output = $session->walk($dot3StatsIndex);
 		foreach ($output as $oid => $index) {
 			$rrd_name = dirname(__FILE__) . "/rrd/" . $ip_address . "_" . $index . "_traffic.rrd";
@@ -333,7 +333,7 @@ while ($row = $result->fetch(PDO::FETCH_ASSOC)) {
 		snmp_set_quick_print(TRUE);
 		snmp_set_enum_print(TRUE);
 		snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-		$session = new SNMP(SNMP::VERSION_1, $row['IP_ADDRESS'], $row['RO']);
+		$session = new SNMP(SNMP::VERSION_1, $row['IP_ADDRESS'], $row['RO'], 5000000, 1);
 		$cpus = $session->walk($olt_cpu_oid);
 		$olt_cpu = "";
 		foreach ($cpus as $cpu_oid => $cpu) {

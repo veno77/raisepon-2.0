@@ -253,7 +253,7 @@ where CUSTOMERS.ID = '$customer_id'");
 		$onu_rf_rx_power_oid = $snmp_obj->get_pon_oid("onu_rf_rx_power_oid", $pon_type) . "." . $index_rf;
 		$onu_offline_reason_oid = $snmp_obj->get_pon_oid("onu_offline_reason_oid", $pon_type) . "." . $index_type2id;
 		snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro, 500000, 2);
+		$session = new SNMP(SNMP::VERSION_2C, $ip_address, $ro, 5000000, 1);
 		$device_type = $session->get($device_type_oid);
 		$device_type = preg_replace('/[\x00-\x1F\x7F-\xFF]/', '', $device_type);
         $hw_revision = $session->get($hw_revision_oid);
