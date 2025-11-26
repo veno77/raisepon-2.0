@@ -16,13 +16,13 @@
 /*!40111 SET @OLD_SQL_NOTES=@@SQL_NOTES, SQL_NOTES=0 */;
 
 --
--- Table structure for table `accounts`
+-- Table structure for table `ACCOUNTS`
 --
 
-DROP TABLE IF EXISTS `accounts`;
+DROP TABLE IF EXISTS `ACCOUNTS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `accounts` (
+CREATE TABLE `ACCOUNTS` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `USERNAME` varchar(20) NOT NULL,
   `PASSWORD` char(40) NOT NULL,
@@ -33,13 +33,13 @@ CREATE TABLE `accounts` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `backup`
+-- Table structure for table `BACKUP`
 --
 
-DROP TABLE IF EXISTS `backup`;
+DROP TABLE IF EXISTS `BACKUP`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `backup` (
+CREATE TABLE `BACKUP` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `NAME` varchar(255) NOT NULL,
   `IP_ADDRESS` int(10) unsigned NOT NULL,
@@ -51,13 +51,13 @@ CREATE TABLE `backup` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `backup_email`
+-- Table structure for table `BACKUP_EMAIL`
 --
 
-DROP TABLE IF EXISTS `backup_email`;
+DROP TABLE IF EXISTS `BACKUP_EMAIL`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `backup_email` (
+CREATE TABLE `BACKUP_EMAIL` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `EMAIL` varchar(75) NOT NULL,
   PRIMARY KEY (`ID`)
@@ -65,13 +65,13 @@ CREATE TABLE `backup_email` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `backup_status`
+-- Table structure for table `BACKUP_STATUS`
 --
 
-DROP TABLE IF EXISTS `backup_status`;
+DROP TABLE IF EXISTS `BACKUP_STATUS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `backup_status` (
+CREATE TABLE `BACKUP_STATUS` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `OLT` int(11) NOT NULL,
   `DATE` datetime NOT NULL,
@@ -81,13 +81,13 @@ CREATE TABLE `backup_status` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `cards`
+-- Table structure for table `CARDS`
 --
 
-DROP TABLE IF EXISTS `cards`;
+DROP TABLE IF EXISTS `CARDS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `cards` (
+CREATE TABLE `CARDS` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `OLT_ID` int(11) NOT NULL,
   `SLOT` smallint(6) NOT NULL,
@@ -97,13 +97,13 @@ CREATE TABLE `cards` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `cards_model`
+-- Table structure for table `CARDS_MODEL`
 --
 
-DROP TABLE IF EXISTS `cards_model`;
+DROP TABLE IF EXISTS `CARDS_MODEL`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `cards_model` (
+CREATE TABLE `CARDS_MODEL` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `NAME` varchar(50) NOT NULL,
   `PON_TYPE` enum('EPON','GPON','XGSPON') NOT NULL,
@@ -114,13 +114,13 @@ CREATE TABLE `cards_model` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `customers`
+-- Table structure for table `CUSTOMERS`
 --
 
-DROP TABLE IF EXISTS `customers`;
+DROP TABLE IF EXISTS `CUSTOMERS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `customers` (
+CREATE TABLE `CUSTOMERS` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `NAME` varchar(255) NOT NULL,
   `ADDRESS` varchar(255) NOT NULL,
@@ -137,17 +137,17 @@ CREATE TABLE `customers` (
   PRIMARY KEY (`ID`),
   KEY `OLT` (`OLT`),
   KEY `PON_PORT` (`PON_PORT`)
-) ENGINE=InnoDB AUTO_INCREMENT=610 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=619 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `history`
+-- Table structure for table `HISTORY`
 --
 
-DROP TABLE IF EXISTS `history`;
+DROP TABLE IF EXISTS `HISTORY`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `history` (
+CREATE TABLE `HISTORY` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `CUSTOMERS_ID` int(11) NOT NULL,
   `DATE` datetime NOT NULL,
@@ -156,17 +156,17 @@ CREATE TABLE `history` (
   `USER_ID` int(11) NOT NULL,
   PRIMARY KEY (`ID`),
   KEY `CUSTOMERS_ID` (`CUSTOMERS_ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=1378 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=1398 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `ip_pool`
+-- Table structure for table `IP_POOL`
 --
 
-DROP TABLE IF EXISTS `ip_pool`;
+DROP TABLE IF EXISTS `IP_POOL`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `ip_pool` (
+CREATE TABLE `IP_POOL` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `SUBNET` int(10) unsigned NOT NULL,
   `NETMASK` int(10) unsigned NOT NULL,
@@ -179,13 +179,13 @@ CREATE TABLE `ip_pool` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `line_profile`
+-- Table structure for table `LINE_PROFILE`
 --
 
-DROP TABLE IF EXISTS `line_profile`;
+DROP TABLE IF EXISTS `LINE_PROFILE`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `line_profile` (
+CREATE TABLE `LINE_PROFILE` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `NAME` varchar(255) NOT NULL,
   `LINE_PROFILE_ID` tinyint(4) NOT NULL,
@@ -195,13 +195,13 @@ CREATE TABLE `line_profile` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `not_paid`
+-- Table structure for table `NOT_PAID`
 --
 
-DROP TABLE IF EXISTS `not_paid`;
+DROP TABLE IF EXISTS `NOT_PAID`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `not_paid` (
+CREATE TABLE `NOT_PAID` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `SN` varchar(255) NOT NULL,
   PRIMARY KEY (`ID`)
@@ -209,13 +209,13 @@ CREATE TABLE `not_paid` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `olt`
+-- Table structure for table `OLT`
 --
 
-DROP TABLE IF EXISTS `olt`;
+DROP TABLE IF EXISTS `OLT`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `olt` (
+CREATE TABLE `OLT` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `NAME` varchar(255) NOT NULL,
   `MODEL` tinyint(4) NOT NULL,
@@ -228,13 +228,13 @@ CREATE TABLE `olt` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `olt_cards`
+-- Table structure for table `OLT_CARDS`
 --
 
-DROP TABLE IF EXISTS `olt_cards`;
+DROP TABLE IF EXISTS `OLT_CARDS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `olt_cards` (
+CREATE TABLE `OLT_CARDS` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `OLT_MODEL_ID` int(11) NOT NULL,
   `CARDS_MODEL_ID` int(11) NOT NULL,
@@ -243,13 +243,13 @@ CREATE TABLE `olt_cards` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `olt_ip_pools`
+-- Table structure for table `OLT_IP_POOLS`
 --
 
-DROP TABLE IF EXISTS `olt_ip_pools`;
+DROP TABLE IF EXISTS `OLT_IP_POOLS`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `olt_ip_pools` (
+CREATE TABLE `OLT_IP_POOLS` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `OLT_ID` int(11) NOT NULL,
   `IP_POOL_ID` int(11) NOT NULL,
@@ -259,13 +259,13 @@ CREATE TABLE `olt_ip_pools` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `olt_model`
+-- Table structure for table `OLT_MODEL`
 --
 
-DROP TABLE IF EXISTS `olt_model`;
+DROP TABLE IF EXISTS `OLT_MODEL`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `olt_model` (
+CREATE TABLE `OLT_MODEL` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `NAME` varchar(50) NOT NULL,
   `SLOTS` smallint(6) NOT NULL,
@@ -275,13 +275,13 @@ CREATE TABLE `olt_model` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `onu`
+-- Table structure for table `ONU`
 --
 
-DROP TABLE IF EXISTS `onu`;
+DROP TABLE IF EXISTS `ONU`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `onu` (
+CREATE TABLE `ONU` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `NAME` varchar(50) NOT NULL,
   `PORTS` tinyint(4) NOT NULL,
@@ -294,28 +294,43 @@ CREATE TABLE `onu` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `onu_rx_power`
+-- Table structure for table `ONU_DIST`
 --
 
-DROP TABLE IF EXISTS `onu_rx_power`;
+DROP TABLE IF EXISTS `ONU_DIST`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `onu_rx_power` (
+CREATE TABLE `ONU_DIST` (
+  `ID` int(11) NOT NULL AUTO_INCREMENT,
+  `CUSTOMERS_ID` int(11) NOT NULL,
+  `DIST` int(11) NOT NULL,
+  PRIMARY KEY (`ID`)
+) ENGINE=InnoDB AUTO_INCREMENT=158 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `ONU_RX_POWER`
+--
+
+DROP TABLE IF EXISTS `ONU_RX_POWER`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `ONU_RX_POWER` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `CUSTOMERS_ID` int(11) NOT NULL,
   `RX_POWER` float NOT NULL,
   PRIMARY KEY (`ID`)
-) ENGINE=InnoDB AUTO_INCREMENT=151 DEFAULT CHARSET=utf8;
+) ENGINE=InnoDB AUTO_INCREMENT=156 DEFAULT CHARSET=utf8;
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `pon`
+-- Table structure for table `PON`
 --
 
-DROP TABLE IF EXISTS `pon`;
+DROP TABLE IF EXISTS `PON`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `pon` (
+CREATE TABLE `PON` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `NAME` varchar(255) NOT NULL,
   `OLT` int(11) NOT NULL,
@@ -328,13 +343,44 @@ CREATE TABLE `pon` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `service_profile`
+-- Table structure for table `SERVICES`
 --
 
-DROP TABLE IF EXISTS `service_profile`;
+DROP TABLE IF EXISTS `SERVICES`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `service_profile` (
+CREATE TABLE `SERVICES` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `NAME` varchar(255) NOT NULL,
+  `LINE_PROFILE_ID` int(11) NOT NULL,
+  `SERVICE_PROFILE_ID` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SERVICES_PON_PORTS`
+--
+
+DROP TABLE IF EXISTS `SERVICES_PON_PORTS`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SERVICES_PON_PORTS` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `PON_ID` int(11) NOT NULL,
+  `SERVICE_ID` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Table structure for table `SERVICE_PROFILE`
+--
+
+DROP TABLE IF EXISTS `SERVICE_PROFILE`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!40101 SET character_set_client = utf8 */;
+CREATE TABLE `SERVICE_PROFILE` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `NAME` varchar(255) NOT NULL,
   `PORTS` tinyint(4) NOT NULL,
@@ -348,44 +394,13 @@ CREATE TABLE `service_profile` (
 /*!40101 SET character_set_client = @saved_cs_client */;
 
 --
--- Table structure for table `services`
+-- Table structure for table `UNI`
 --
 
-DROP TABLE IF EXISTS `services`;
+DROP TABLE IF EXISTS `UNI`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `services` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `NAME` varchar(255) NOT NULL,
-  `LINE_PROFILE_ID` int(11) NOT NULL,
-  `SERVICE_PROFILE_ID` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `services_pon_ports`
---
-
-DROP TABLE IF EXISTS `services_pon_ports`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `services_pon_ports` (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `PON_ID` int(11) NOT NULL,
-  `SERVICE_ID` int(11) NOT NULL,
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-/*!40101 SET character_set_client = @saved_cs_client */;
-
---
--- Table structure for table `uni`
---
-
-DROP TABLE IF EXISTS `uni`;
-/*!40101 SET @saved_cs_client     = @@character_set_client */;
-/*!40101 SET character_set_client = utf8 */;
-CREATE TABLE `uni` (
+CREATE TABLE `UNI` (
   `ID` int(11) NOT NULL AUTO_INCREMENT,
   `CUSTOMER_ID` int(11) NOT NULL,
   `UNI_PORT_ID` tinyint(4) NOT NULL,
@@ -403,4 +418,4 @@ CREATE TABLE `uni` (
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-03 10:20:03
+-- Dump completed on 2025-11-26 13:55:10
