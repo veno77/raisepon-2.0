@@ -16,6 +16,7 @@ class index {
 	public $offline;
 	public $pending;
 	private $orderby;
+	public $initial;
 	function __construct() {
 		if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			$this->onu_id = isset($_POST['onu_id'])	? $this->test_input($_POST['onu_id']) : null;
@@ -31,13 +32,16 @@ class index {
 			$this->pending = isset($_POST['pending']) ? $this->test_input($_POST['pending']) : null;
 			$this->orderby = isset($_POST['orderby']) ? $this->test_input($_POST['orderby']) : null;
 			$this->submit = isset($_POST['SUBMIT'])	? $this->test_input($_POST['SUBMIT']) : null;
-		
+			$this->initial = isset($_POST['initial'])	? $this->test_input($_POST['initial']) : null;
 		
 		}
 		if ($_SERVER["REQUEST_METHOD"] == "GET") {
 			$this->onu_id = isset($_GET['id'])	? $this->test_input($_GET['id']) : null;
 		}
 	}	
+	function getInitial(){
+		return $this->initial;
+	}
 	function getSubmit() {
 		return $this->submit;
 	}
@@ -129,6 +133,35 @@ class index {
 		$rows = $result->fetchAll();
 		return $rows;		
 	}
+	
+	function update_dist($id, $distance){
+	
+		try {
+			$conn = db_connect::getInstance();
+			$result2 = $conn->db->query("SELECT count(*) from ONU_DIST where CUSTOMERS_ID = '$id'");
+		} catch (PDOException $e) {
+			$error = "Connection Failed:" . $e->getMessage() . "\n";
+			return $error;
+		}
+		$count = $result2->fetchColumn(); 
+		if ($count > "0" ) {
+			try {
+				$conn = db_connect::getInstance();
+				$result2 = $conn->db->query("UPDATE ONU_DIST SET DIST = '$distance' where CUSTOMERS_ID = '$id'");
+			} catch (PDOException $e) {
+				$error = "Connection Failed:" . $e->getMessage() . "\n";
+				return $error;	
+			}	 
+		} else {
+			try {
+				$conn = db_connect::getInstance();
+				$result2 = $conn->db->query("INSERT INTO ONU_DIST (CUSTOMERS_ID, DIST) VALUES ('$id', '$distance')");
+			} catch (PDOException $e) {
+				$error = "Connection Failed:" . $e->getMessage() . "\n";
+				return $error;	
+			}	 
+		}
+	}	
 	function build_table() {
 		if ($this->submit == "LOAD") 
 			$where = "PON.ID='" . $this->pon_id ."' and OLT.ID='" . $this->olt_id . "'";
@@ -151,7 +184,7 @@ class index {
 			$where = "CUSTOMERS.OLT is NULL or CUSTOMERS.PON_PORT is NULL";
 		try {
 			$conn = db_connect::getInstance();
-			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, CUSTOMERS.EGN, SN, SERVICES.NAME as SERVICE_NAME, OLT.ID as OLT_ID, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE as TYPE, PON.ID as PON_ID, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID WHERE " . $where ." order by " . $order_by);
+			$result = $conn->db->query("SELECT CUSTOMERS.ID, CUSTOMERS.NAME, CUSTOMERS.ADDRESS, CUSTOMERS.EGN, SN, SERVICES.NAME as SERVICE_NAME, OLT.ID as OLT_ID, OLT.NAME as OLT_NAME, INET_NTOA(OLT.IP_ADDRESS) as IP_ADDRESS, OLT.RO as RO, OLT_MODEL.TYPE as TYPE, PON.ID as PON_ID, PON.NAME as PON_NAME, PON.PORT_ID as PORT_ID, PON.SLOT_ID as SLOT_ID, PON.CARDS_MODEL_ID, CARDS_MODEL.PON_TYPE, PON_ONU_ID, DIST from CUSTOMERS LEFT JOIN SERVICES on CUSTOMERS.SERVICE=SERVICES.ID LEFT JOIN OLT on CUSTOMERS.OLT=OLT.ID LEFT JOIN OLT_MODEL on OLT.MODEL=OLT_MODEL.ID LEFT JOIN PON on CUSTOMERS.PON_PORT=PON.ID LEFT JOIN CARDS_MODEL on PON.CARDS_MODEL_ID=CARDS_MODEL.ID LEFT JOIN ONU_DIST on CUSTOMERS.ID=ONU_DIST.CUSTOMERS_ID WHERE " . $where ." order by " . $order_by);
 		} catch (PDOException $e) {
 			$error =  "Connection Failed:" . $e->getMessage() . "\n";
 			return $error;

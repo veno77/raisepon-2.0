@@ -22,7 +22,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$PON_TYPE = $row['PON_TYPE'];
 	}
 }
-if (!isset($_POST['initial'])){
+
+
+if ($index_obj->getInitial() != "YES"){
 ?>
 <div class="container">
 	<div class="text-center">
@@ -91,7 +93,15 @@ if (!isset($_POST['initial'])){
 </div>
 <?php
 }
+
+
+
 ?>
+
+
+
+
+
 <div class="container">
 	<div id="output" class="text-center">
 		<?php
@@ -144,7 +154,7 @@ if (!isset($_POST['initial'])){
 							<!-- <th>RF</th> -->
 							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('SN','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">SN/MAC</th>
 							<th>PWR<br>(db)</th>
-							<th class="hidden-xs hidden-sm">DIST<br>(m)</th>
+							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('DIST','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">DIST<br>(m)</th>
 							
 							<th>STATUS</th>
 							<!--<th>LAST ONLINE</th> -->
@@ -310,6 +320,9 @@ if (!isset($_POST['initial'])){
 										$onu_register_distance = $session->get($onu_register_distance_oid);
 									}
 								}
+								
+								$index_obj->update_dist($row['ID'],$onu_register_distance);
+
 								$power = $index_obj->get_rx_power($row['ID']);
 								if ($power) {
 									if ($power < "-25") {

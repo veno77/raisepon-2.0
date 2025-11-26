@@ -77,7 +77,7 @@ function orderby(orderby, olt, pon_port, online, offline, pending) {
 	$('#output').html('<center><img src="pic/loading.gif" /></center>');
 	jQuery.ajax({
 		url: "index.php",
-		data: {olt_id: olt, pon_id: pon_port, orderby: orderby, SUBMIT: "LOAD", online: online, offline: offline, pending: pending},
+		data: {olt_id: olt, pon_id: pon_port, orderby: orderby, SUBMIT: "LOAD", online: online, offline: offline, pending: pending, initial: "YES"},
 		type: "POST"
 	}).done(function(data) {
 		$('#output').html(data);
