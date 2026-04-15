@@ -5,8 +5,6 @@ services:
     image: vtvelkov/raisepon_db
     container_name: raisepon_db
     command: --lower_case_table_names=1
-    ports: 
-      - "3307:3306"
     volumes:
       - raisedb:/var/lib/mysql
     environment:
@@ -14,6 +12,22 @@ services:
       - MYSQL_DATABASE=raisepon
       - MYSQL_USER=raisepon
       - MYSQL_PASSWORD=r41sepon
+
+  flyway:
+    image: flyway/flyway
+    container_name: raisepon_flyway
+    depends_on:
+      - raisepondb
+    command: >
+      -url=jdbc:mysql://raisepondb:3306/raisepon
+      -user=root
+      -password=WPvbdUbIk5
+      -baselineOnMigrate=true
+      -validateOnMigrate=true
+      -connectRetries=60
+      migrate
+    volumes:
+      - ./db/migrations:/flyway/sql
 
   raiseponweb:
     build:
