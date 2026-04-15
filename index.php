@@ -22,7 +22,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 		$PON_TYPE = $row['PON_TYPE'];
 	}
 }
-if (!isset($_POST['initial'])){
+
+
+if ($index_obj->getInitial() != "YES"){
 ?>
 <div class="container">
 	<div class="text-center">
@@ -91,7 +93,15 @@ if (!isset($_POST['initial'])){
 </div>
 <?php
 }
+
+
+
 ?>
+
+
+
+
+
 <div class="container">
 	<div id="output" class="text-center">
 		<?php
@@ -139,12 +149,12 @@ if (!isset($_POST['initial'])){
 							<th>ONU</th>
 							<th><button type="button" class="btn btn-default" onClick="orderby('NAME','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Name</th>
 							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('ADDRESS','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">Address</th>
-							<th>EGN</th>
+							<th class="hidden-xs hidden-sm">EGN</th>
 							<th>SERVICE</th>
 							<!-- <th>RF</th> -->
 							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('SN','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">SN/MAC</th>
 							<th>PWR<br>(db)</th>
-							<th class="hidden-xs hidden-sm">DIST<br>(m)</th>
+							<th class="hidden-xs hidden-sm"><button type="button" class="btn btn-default" onClick="orderby('DIST','<?php echo $row['OLT']; ?>','<?php echo $row['ID']; ?>','<?php echo $index_obj->getOnline(); ?>','<?php echo $index_obj->getOffline(); ?>','<?php echo $index_obj->getPending(); ?>');">DIST<br>(m)</th>
 							
 							<th>STATUS</th>
 							<!--<th>LAST ONLINE</th> -->
@@ -294,14 +304,12 @@ if (!isset($_POST['initial'])){
 								if ($index_obj->getSubmit() == "LOAD") {
 									$onu_register_distance = $onu_register_distance_arr[$big_onu_id];
 								}else{
+									snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
+									$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 500000, 2);
 									if ($row['PON_TYPE'] == "GPON") {
-										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-										$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 										$onu_register_distance = $session->get($onu_register_distance_oid);
 									}
 									if ($row['PON_TYPE'] == "EPON") {
-										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-										$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 										$dot3MpcpRoundTripTime = $session->get($dot3MpcpRoundTripTime);
 										if ($dot3MpcpRoundTripTime <= '46')
 											$onu_register_distance = '1';
@@ -309,11 +317,12 @@ if (!isset($_POST['initial'])){
 											$onu_register_distance = number_format(round(($dot3MpcpRoundTripTime - 46)*1.6));
 									}
 									if ($row['PON_TYPE'] == "XGSPON") {
-										snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-										$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 										$onu_register_distance = $session->get($onu_register_distance_oid);
 									}
 								}
+								
+								$index_obj->update_dist($row['ID'],$onu_register_distance);
+
 								$power = $index_obj->get_rx_power($row['ID']);
 								if ($power) {
 									if ($power < "-25") {
@@ -354,8 +363,6 @@ if (!isset($_POST['initial'])){
 							if ($index_obj->getSubmit() == "LOAD") {
 								$offline_reason = $onu_offline_reason[$big_onu_id];
 							}else{
-								snmp_set_valueretrieval(SNMP_VALUE_PLAIN);
-								$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
 								$offline_reason = $session->get($onu_offline_reason_oid);
 							}
 							if ($row['PON_TYPE'] == "GPON" || $row['PON_TYPE'] == "XGSPON") {
@@ -405,7 +412,7 @@ if (!isset($_POST['initial'])){
 							}else{
 								if ($row['PON_TYPE'] == "EPON") {
 									snmp_set_valueretrieval(SNMP_VALUE_LIBRARY);
-									$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO']);
+									$session = new SNMP(SNMP::VERSION_2C, $row['IP_ADDRESS'], $row['RO'], 500000, 2);
 									$check_sn = $session->get($onu_sn_oid);
 									$check_sn = trim(str_replace('Hex-STRING: ', '', $check_sn));
 									$check_sn = str_replace('"', '', str_replace(' ', '', $check_sn));
