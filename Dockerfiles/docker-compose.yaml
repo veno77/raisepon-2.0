@@ -14,7 +14,9 @@ services:
       - MYSQL_PASSWORD=r41sepon
 
   flyway:
-    image: flyway/flyway
+    build:
+      context: .
+    image: vtvelkov/raisepon_flyway
     container_name: raisepon_flyway
     depends_on:
       - raisepondb
@@ -27,7 +29,6 @@ services:
       -connectRetries=60
       migrate
     volumes:
-      - ./db/migrations:/flyway/sql
 
   raiseponweb:
     build:
