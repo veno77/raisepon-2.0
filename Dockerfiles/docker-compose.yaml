@@ -12,24 +12,35 @@ services:
       - MYSQL_DATABASE=raisepon
       - MYSQL_USER=raisepon
       - MYSQL_PASSWORD=r41sepon
-
+    healthcheck:
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$$MYSQL_ROOT_PASSWORD --silent"]
+      interval: 5s
+      timeout: 5s
+      retries: 30
+      start_period: 20s
+    restart: unless-stopped
+    networks:
+      - raisepon_net
   flyway:
     build:
-      context: .
+      context: ./flyway/
     image: vtvelkov/raisepon_flyway
     container_name: raisepon_flyway
     depends_on:
-      - raisepondb
-    command: >
-      -url=jdbc:mysql://raisepondb:3306/raisepon
-      -user=root
-      -password=WPvbdUbIk5
-      -baselineOnMigrate=true
-      -validateOnMigrate=true
-      -connectRetries=60
-      migrate
-    volumes:
-
+      raisepondb:
+        condition: service_healthy
+    entrypoint: ["flyway"]
+    command:
+      - "-url=jdbc:mysql://raisepondb:3306/raisepon?allowPublicKeyRetrieval=true&useSSL=false"
+      - "-user=root"
+      - "-password=WPvbdUbIk5"
+      - "-baselineOnMigrate=true"
+      - "-validateOnMigrate=true"
+      - "migrate"
+    volumes: []
+    restart: on-failure
+    networks:
+      - raisepon_net
   raiseponweb:
     build:
       context: ./web/
@@ -40,7 +51,9 @@ services:
     volumes:
       - raisewebrrd:/var/www/html/rrd
       - raiselog:/var/log/raisepon
-
+    restart: unless-stopped
+    networks:
+        - raisepon_net
   rsyslog:
     build:
       context: ./rsyslog/
@@ -50,8 +63,13 @@ services:
       - "1514:514/udp"
     volumes:
       - raiselog:/var/log/raisepon
-
+    restart: unless-stopped
+    networks:
+      - raisepon_net
 volumes:
   raisedb: {}
   raisewebrrd: {}
   raiselog: {}
+networks:
+  raisepon_net:
+    driver: bridge
