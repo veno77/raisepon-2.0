@@ -41,6 +41,8 @@ services:
     restart: on-failure
     networks:
       - raisepon_net
+    environment:
+      - FLYWAY_LOCATIONS=filesystem:/flyway/sql
   raiseponweb:
     build:
       context: ./web/

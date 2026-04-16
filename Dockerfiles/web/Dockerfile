@@ -29,7 +29,8 @@ RUN echo "*/15 * * * * www-data /usr/local/bin/php /var/www/html/update_rrd.php 
 # Start Apache and cron in foreground
 # Add a startup script
 COPY docker-entrypoint.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/docker-entrypoint.sh && \
+    chmod +x /usr/local/bin/docker-entrypoint.sh
 
 # Use entrypoint to launch all services
 ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
