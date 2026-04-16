@@ -5,9 +5,28 @@ on:
     branches: [ "docker_build" ]
   workflow_dispatch:
 
+env:
+  REGISTRY: docker.io
+  USERNAME: vtvelkov
+
 jobs:
   build-and-push:
     runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        include:
+          - name: raisepon_web
+            context: ./Dockerfiles/web
+
+          - name: raisepon_db
+            context: ./Dockerfiles/db
+
+          - name: raisepon_flyway
+            context: ./Dockerfiles/flyway
+
+          - name: rsyslog
+            context: ./Dockerfiles/rsyslog
 
     steps:
       - name: Checkout repo
@@ -21,44 +40,14 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-  
-      
-      # 🔹 WEB
-      - name: Build & push raisepon_web
-        uses: docker/build-push-action@v5
-        with:
-          context: ./Dockerfiles/web
-          push: true
-          tags: |
-            vtvelkov/raisepon_web:latest
-            vtvelkov/raisepon_web:${{ github.sha }}
 
-      # 🔹 DB
-      - name: Build & push raisepon_db
-        uses: docker/build-push-action@v5
+      - name: Build & push ${{ matrix.name }}
+        uses: docker/build-push-action@v6
         with:
-          context: ./Dockerfiles/db
+          context: ${{ matrix.context }}
           push: true
           tags: |
-            vtvelkov/raisepon_db:latest
-            vtvelkov/raisepon_db:${{ github.sha }}
-
-      # 🔹 FLYWAY
-      - name: Build & push raisepon_flyway
-        uses: docker/build-push-action@v5
-        with:
-          context: ./Dockerfiles/flyway
-          push: true
-          tags: |
-            vtvelkov/raisepon_flyway:latest
-            vtvelkov/raisepon_flyway:${{ github.sha }}
-
-      # 🔹 RSYSLOG
-      - name: Build & push rsyslog
-        uses: docker/build-push-action@v5
-        with:
-          context: ./Dockerfiles/rsyslog
-          push: true
-          tags: |
-            vtvelkov/rsyslog:latest
-            vtvelkov/rsyslog:${{ github.sha }}
+            ${{ env.USERNAME }}/${{ matrix.name }}:latest
+            ${{ env.USERNAME }}/${{ matrix.name }}:${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
