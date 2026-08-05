@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				echo "<center><div class=\"bg-success  text-white\">OLT added Succesfully</div></center>";
+				echo "<center><div class=\"bg-success  text-white\">OLT added Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: Name, OLT IP_Address, RO and RW Communities and OLT Model are required fields!</div></center>";
@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				print "<center><div class=\"bg-success  text-white\">OLT Edited Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">OLT Edited Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: Name, OLT IP_Address, RO and RW Communities and OLT Model are required fields! Or you are missing OLT_ID!</div></center>";
@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				print "<center><div class=\"bg-success  text-white\">OLT Deleted Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">OLT Deleted Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: OLT_ID missing!</div></center>";
@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				print "<center><div class=\"bg-success  text-white\">OLT Config Saved Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">OLT Config Saved Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: OLT_ID missing!</div></center>";
