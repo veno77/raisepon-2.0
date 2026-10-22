@@ -19,7 +19,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				echo "<center><div class=\"bg-success  text-white\">FTP added Succesfully</div></center>";
+				echo "<center><div class=\"bg-success  text-white\">FTP added Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: Name, IP_Address, USERNAME, PASSWORD and DIRECTORY are required fields!</div></center>";
@@ -33,7 +33,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				print "<center><div class=\"bg-success  text-white\">FTP Edited Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">FTP Edited Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: Name, IP_Address, USERNAME, PASSWORD and DIRECTORY are required fields! Or you are missing ID!</div></center>";
@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				print "<center><div class=\"bg-success  text-white\">FTP Deleted Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">FTP Deleted Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: ID missing!</div></center>";
@@ -62,7 +62,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				echo "<center><div class=\"bg-success  text-white\">Email added Succesfully</div></center>";
+				echo "<center><div class=\"bg-success  text-white\">Email added Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: Email is required field!</div></center>";
@@ -76,7 +76,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				print "<center><div class=\"bg-success  text-white\">Email Edited Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">Email Edited Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: Email is required field! Or you are missing ID!</div></center>";
@@ -90,7 +90,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo $error;	
 			}else{
-				print "<center><div class=\"bg-success  text-white\">Email Deleted Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">Email Deleted Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: ID missing!</div></center>";

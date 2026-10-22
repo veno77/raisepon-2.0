@@ -20,7 +20,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo "<center><div class=\"bg-danger text-white\">" . $error . "</div></center>";	
 			}else{
-				echo "<center><div class=\"bg-success  text-white\">PON Port added Succesfully</div></center>";
+				echo "<center><div class=\"bg-success  text-white\">PON Port added Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: Name, SLOT_ID, PORT_ID and MODEL_CARD are required fields!</div></center>";
@@ -34,7 +34,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo "<center><div class=\"bg-danger text-white\">" . $error . "</div></center>";
 			}else{
-				print "<center><div class=\"bg-success  text-white\">PON Edited Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">PON Edited Successfully</div></center>";
 			}
 		} else {
 			echo "<center><div class=\"bg-danger text-white\">ERROR: Name, SLOT_ID, PORT_ID and MODEL_CARD are required fields! Or you are missing PON_ID!</div></center>";
@@ -48,7 +48,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 			if (isset($error)) {
 				echo "<center><div class=\"bg-danger text-white\">" . $error . "</div></center>";	
 			}else{
-				print "<center><div class=\"bg-success  text-white\">PON Port Deleted Succesfully</div></center>";
+				print "<center><div class=\"bg-success  text-white\">PON Port Deleted Successfully</div></center>";
 
 			}
 		} else {
